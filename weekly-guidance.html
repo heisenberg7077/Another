@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<head>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <!-- Header -->
+  <header class="header">
+    <nav class="nav">
+      <a href="/index.html" class="logo">🌱 Weekly Crop Guidance</a>
+      <ul class="nav-links">
+        <li><a href="/index.html">🏠 Home</a></li>
+        <li><a href="/my-tasks.html">📋 My Tasks</a></li>
+        <li><a href="#" onclick="logoutAndRefresh()">Logout</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <div class="guidance-container">
+    <!-- Guidance Header -->
+    <div class="guidance-header">
+      <h1>🌱 Weekly Crop Guidance</h1>
+      <p id="cropInfo">Select a crop to view detailed weekly guidance</p>
+      <div style="margin-top: 1rem;">
+        <a href="/weekly-guidance-enhanced.html" class="btn btn-primary" style="background: rgba(255,255,255,0.2); color: white; border: 2px solid white;">
+          🚀 Enhanced Progress Tracking
+        </a>
+      </div>
+    </div>
+
+    <!-- Week Selector -->
+    <div class="week-selector" id="weekSelector" style="display: none;">
+      <div class="week-nav">
+        <button class="week-btn" id="prevWeekBtn">← Previous</button>
+        <button class="week-btn" id="nextWeekBtn">Next →</button>
+      </div>
+      <div class="week-info">
+        <div class="week-title" id="weekTitle">Week 1</div>
+        <div class="week-subtitle" id="weekSubtitle">Nursery Preparation</div>
+      </div>
+      <div class="week-nav">
+        <button class="week-btn" id="jumpToWeekBtn">Jump to Week</button>
+      </div>
+    </div>
+
+    <!-- Guidance Content -->
+    <div class="guidance-content" id="guidanceContent" style="display: none;">
+      <!-- Main Content -->
+      <div class="main-content">
+        <!-- Weekly Tasks -->
+        <div class="section-card">
+          <div class="section-header">
+            📋 Weekly Tasks
+          </div>
+          <div class="section-content" id="weeklyTasks">
+            <div class="loading">Loading tasks...</div>
+          </div>
+        </div>
+
+        <!-- Crop Stages -->
+        <div class="section-card">
+          <div class="section-header">
+            🌱 Growth Stages
+          </div>
+          <div class="section-content" id="cropStages">
+            <div class="loading">Loading stages...</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sidebar -->
+      <div class="sidebar">
+        <!-- Progress Summary -->
+        <div class="section-card">
+          <div class="section-header">
+            📊 Progress Summary
+          </div>
+          <div class="section-content">
+            <div class="progress-summary" id="progressSummary">
+              <div class="loading">Loading progress...</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Videos -->
+        <div class="section-card">
+          <div class="section-header">
+            🎥 Educational Videos
+          </div>
+          <div class="section-content">
+            <div class="video-list" id="videoList">
+              <div class="loading">Loading videos...</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Fertilizers & Pesticides -->
+        <div class="section-card">
+          <div class="section-header">
+            🌿 Fertilizers & Pesticides
+          </div>
+          <div class="section-content" id="fertilizersPesticides">
+            <div class="loading">Loading fertilizers and pesticides...</div>
+          </div>
+        </div>
+        
+        <!-- Growing Tips -->
+        <div class="tips-section" id="tipsSection" style="display: none;">
+          <h3>💡 Growing Tips</h3>
+          <div id="tipsContent">
+            <div class="loading">Loading tips...</div>
+          </div>
+        </div>
+        
+        <!-- Weather Recommendations -->
+        <div class="weather-recommendations" id="weatherSection" style="display: none;">
+          <div class="weather-title">🌤️ Weather Recommendations</div>
+          <div id="weatherContent">
+            <div class="loading">Loading weather recommendations...</div>
+          </div>
+        </div>
+        
+        <!-- Task Dependencies -->
+        <div class="task-dependencies" id="dependenciesSection" style="display: none;">
+          <div class="dependency-title">🔗 Task Dependencies</div>
+          <div id="dependenciesContent">
+            <div class="loading">Loading task dependencies...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- No Data State -->
+    <div class="no-data" id="noDataState">
+      <h3>No Active Crops</h3>
+      <p>You don't have any active crop monitoring sessions.</p>
+      <a href="/index.html" class="btn btn-primary">Start Growing a Crop</a>
+    </div>
+  </div>
+
+  <!-- Video Modal -->
+  <div id="videoModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="videoModalTitle">Video</h2>
+        <span class="close" onclick="closeVideoModal()">&times;</span>
+      </div>
+      <div class="modal-body">
+        <div class="video-container" id="videoContainer">
+          <!-- Video will be embedded here -->
+        </div>
+        <div id="videoDescription"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let currentCrop = null;
+    let currentWeek = 1;
+    let maxWeeks = 20;
+    let activeCrops = [];
+    let currentSessionId = null;
+
+    // Check authentication
+    async function ensureAuth() {
+      try {
+        const response = await fetch('/api/me');
+        const me = await response.json();
+        if (!me.authenticated) {
+          alert('Please login to access weekly guidance.');
+          window.location.href = '/login.html';
+          return false;
+        }
+        return true;
+      } catch (error) {
+        console.error('Auth check failed:', error);
+        window.location.href = '/login.html';
+        return false;
+      }
+    }
+
+    // Load active crops
+    async function loadActiveCrops() {
+      try {
+        const response = await fetch('/api/active-crops');
+        if (response.ok) {
+          const data = await response.json();
+          activeCrops = data.active_crops;
+          
+          if (activeCrops.length === 0) {
+            document.getElementById('noDataState').style.display = 'block';
+            return;
+          }
+          
+          // Use the first active crop
+          currentCrop = activeCrops[0];
+          currentSessionId = currentCrop.id;
+          maxWeeks = currentCrop.total_weeks;
+          currentWeek = currentCrop.current_week;
+          
+          document.getElementById('cropInfo').textContent = 
+            `${currentCrop.crop_name} - ${currentCrop.land_size} acres - ${currentCrop.soil_type}`;
+          
+          document.getElementById('weekSelector').style.display = 'flex';
+          document.getElementById('guidanceContent').style.display = 'grid';
+          document.getElementById('noDataState').style.display = 'none';
+          
+          loadWeeklyGuidance();
+        } else {
+          throw new Error('Failed to load active crops');
+        }
+      } catch (error) {
+        console.error('Error loading active crops:', error);
+        document.getElementById('noDataState').style.display = 'block';
+      }
+    }
+
+    // Load weekly guidance
+    async function loadWeeklyGuidance() {
+      if (!currentCrop) return;
+      
+      try {
+        // Update week display
+        document.getElementById('weekTitle').textContent = `Week ${currentWeek}`;
+        document.getElementById('weekSubtitle').textContent = getWeekSubtitle(currentWeek);
+        
+        // Load comprehensive weekly guidance
+        const response = await fetch(`/api/crops/${currentCrop.crop_id}/weekly-guidance/${currentWeek}`);
+        if (response.ok) {
+          const guidance = await response.json();
+          displayWeeklyGuidance(guidance);
+        } else {
+          throw new Error('Failed to load weekly guidance');
+        }
+        
+        // Load progress for this week
+        loadWeekProgress();
+        
+      } catch (error) {
+        console.error('Error loading weekly guidance:', error);
+        showError('Failed to load weekly guidance. Please try again.');
+      }
+    }
+
+    // Display weekly guidance
+    function displayWeeklyGuidance(guidance) {
+      displayWeeklyTasks(guidance.weekly_tasks);
+      displayCropStages(guidance.stages);
+      displayVideos(guidance.videos);
+      displayFertilizersPesticides(guidance.fertilizers, guidance.pesticides);
+      
+      // Load enhanced features
+      loadCropTips();
+      loadWeatherRecommendations();
+      loadTaskDependencies();
+    }
+
+    // Display weekly tasks
+    function displayWeeklyTasks(tasks) {
+      const container = document.getElementById('weeklyTasks');
+      
+      if (tasks.length === 0) {
+        container.innerHTML = '<div class="no-data">No specific tasks for this week. Continue with general maintenance.</div>';
+        return;
+      }
+      
+      container.innerHTML = tasks.map(task => {
+        const priorityClass = `priority-${task.priority.toLowerCase()}`;
+        return `
+          <div class="task-item" data-task-id="${task.id}">
+            <div class="task-header">
+              <div class="task-title">${task.task_title}</div>
+              <div class="task-priority ${priorityClass}">${task.priority}</div>
+            </div>
+            
+            <div class="task-description">${task.task_description}</div>
+            
+            <div class="task-details">
+              <div class="detail-item">
+                <div class="detail-label">Duration</div>
+                <div class="detail-value">${task.estimated_duration || 'Not specified'}</div>
+              </div>
+              <div class="detail-item">
+                <div class="detail-label">Type</div>
+                <div class="detail-value">${task.task_type}</div>
+              </div>
+              <div class="detail-item">
+                <div class="detail-label">Equipment</div>
+                <div class="detail-value">${task.equipment_needed || 'None'}</div>
+              </div>
+              <div class="detail-item">
+                <div class="detail-label">Materials</div>
+                <div class="detail-value">${task.materials_needed || 'None'}</div>
+              </div>
+            </div>
+            
+            ${task.step_by_step_instructions ? `
+              <div class="instructions">
+                <h4>📝 Step-by-Step Instructions</h4>
+                <ol>${task.step_by_step_instructions.split('\n').map(step => `<li>${step}</li>`).join('')}</ol>
+              </div>
+            ` : ''}
+            
+            ${task.tips_and_notes ? `
+              <div class="tips-notes">
+                <h4>💡 Tips & Notes</h4>
+                <p>${task.tips_and_notes}</p>
+              </div>
+            ` : ''}
+            
+            ${task.safety_precautions ? `
+              <div class="safety-precautions">
+                <h4>⚠️ Safety Precautions</h4>
+                <p>${task.safety_precautions}</p>
+              </div>
+            ` : ''}
+            
+            <div class="task-actions">
+              ${task.video_url ? `
+                <button class="btn btn-outline-primary" onclick="playVideo('${task.video_url}', '${task.task_title}')">
+                  🎥 Watch Video
+                </button>
+              ` : ''}
+              <button class="btn btn-primary" onclick="markTaskComplete(${task.id}, '${task.task_title}')">
+                ✅ Mark Complete
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // Display crop stages
+    function displayCropStages(stages) {
+      const container = document.getElementById('cropStages');
+      
+      if (stages.length === 0) {
+        container.innerHTML = '<div class="no-data">No specific stages for this week.</div>';
+        return;
+      }
+      
+      container.innerHTML = stages.map(stage => `
+        <div class="task-item">
+          <div class="task-header">
+            <div class="task-title">${stage.title}</div>
+            <div class="task-priority priority-medium">${stage.difficulty_level || 'Medium'}</div>
+          </div>
+          
+          <div class="task-description">${stage.detailed_description || stage.tasks}</div>
+          
+          <div class="task-details">
+            <div class="detail-item">
+              <div class="detail-label">Duration</div>
+              <div class="detail-value">${stage.time_required || 'Not specified'}</div>
+            </div>
+            <div class="detail-item">
+              <div class="detail-label">Equipment</div>
+              <div class="detail-value">${stage.equipment_needed || 'None'}</div>
+            </div>
+            <div class="detail-item">
+              <div class="detail-label">Weeks</div>
+              <div class="detail-value">${stage.start_week}-${stage.end_week}</div>
+            </div>
+          </div>
+          
+          ${stage.video_url ? `
+            <div class="task-actions">
+              <button class="btn btn-outline-primary" onclick="playVideo('${stage.video_url}', '${stage.title}')">
+                🎥 Watch Video
+              </button>
+            </div>
+          ` : ''}
+        </div>
+      `).join('');
+    }
+
+    // Display videos
+    function displayVideos(videos) {
+      const container = document.getElementById('videoList');
+      
+      if (videos.length === 0) {
+        container.innerHTML = '<div class="no-data">No videos available for this week.</div>';
+        return;
+      }
+      
+      container.innerHTML = videos.map(video => `
+        <div class="video-item" onclick="playVideo('${video.video_url}', '${video.video_title}')">
+          <div class="video-thumbnail">
+            ${video.thumbnail_url ? 
+              `<img src="${video.thumbnail_url}" alt="${video.video_title}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 6px;">` : 
+              '▶️'
+            }
+          </div>
+          <div class="video-info">
+            <div class="video-title">${video.video_title}</div>
+            <div class="video-meta">
+              ${video.duration_minutes ? `${video.duration_minutes} min` : ''} • 
+              ${video.video_type} • 
+              ${video.is_featured ? 'Featured' : 'Regular'}
+            </div>
+            ${video.description ? `<div class="video-description">${video.description}</div>` : ''}
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // Display fertilizers and pesticides
+    function displayFertilizersPesticides(fertilizers, pesticides) {
+      const container = document.getElementById('fertilizersPesticides');
+      
+      let content = '';
+      
+      if (fertilizers.length > 0) {
+        content += '<h4>🌿 Fertilizers</h4>';
+        content += fertilizers.map(f => `
+          <div class="task-item">
+            <div class="task-title">${f.name}</div>
+            <div class="task-details">
+              <div class="detail-item">
+                <div class="detail-label">Quantity</div>
+                <div class="detail-value">${f.quantity}</div>
+              </div>
+              <div class="detail-item">
+                <div class="detail-label">Price</div>
+                <div class="detail-value">${f.price}</div>
+              </div>
+              <div class="detail-item">
+                <div class="detail-label">Gap Days</div>
+                <div class="detail-value">${f.gap_days || 'N/A'}</div>
+              </div>
+            </div>
+          </div>
+        `).join('');
+      }
+      
+      if (pesticides.length > 0) {
+        content += '<h4>🛡️ Pesticides</h4>';
+        content += pesticides.map(p => `
+          <div class="task-item">
+            <div class="task-title">${p.name}</div>
+            <div class="task-details">
+              <div class="detail-item">
+                <div class="detail-label">Application</div>
+                <div class="detail-value">${p.application}</div>
+              </div>
+              <div class="detail-item">
+                <div class="detail-label">Quantity</div>
+                <div class="detail-value">${p.quantity}</div>
+              </div>
+              <div class="detail-item">
+                <div class="detail-label">Price</div>
+                <div class="detail-value">${p.price}</div>
+              </div>
+            </div>
+          </div>
+        `).join('');
+      }
+      
+      if (content === '') {
+        content = '<div class="no-data">No fertilizers or pesticides for this week.</div>';
+      }
+      
+      container.innerHTML = content;
+    }
+
+    // Load week progress
+    async function loadWeekProgress() {
+      if (!currentSessionId) return;
+      
+      try {
+        const response = await fetch(`/api/crop-progress/${currentSessionId}/week/${currentWeek}`);
+        if (response.ok) {
+          const progress = await response.json();
+          displayProgressSummary(progress.progress_summary);
+        }
+      } catch (error) {
+        console.error('Error loading progress:', error);
+      }
+    }
+
+    // Display progress summary
+    function displayProgressSummary(summary) {
+      const container = document.getElementById('progressSummary');
+      
+      const completionPercentage = summary.total_tasks > 0 ? 
+        Math.round((summary.completed_tasks / summary.total_tasks) * 100) : 0;
+      
+      container.innerHTML = `
+        <h3>Week ${currentWeek} Progress</h3>
+        <div class="progress-stats">
+          <div class="stat-item">
+            <div class="stat-number">${summary.completed_tasks}</div>
+            <div class="stat-label">Completed</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-number">${summary.in_progress_tasks}</div>
+            <div class="stat-label">In Progress</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-number">${summary.not_started_tasks}</div>
+            <div class="stat-label">Not Started</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-number">${completionPercentage}%</div>
+            <div class="stat-label">Complete</div>
+          </div>
+        </div>
+      `;
+    }
+
+    // Play video
+    function playVideo(videoUrl, title) {
+      document.getElementById('videoModalTitle').textContent = title;
+      document.getElementById('videoContainer').innerHTML = `
+        <iframe src="${videoUrl}" frameborder="0" allowfullscreen></iframe>
+      `;
+      document.getElementById('videoModal').style.display = 'block';
+    }
+
+    // Close video modal
+    function closeVideoModal() {
+      document.getElementById('videoModal').style.display = 'none';
+      document.getElementById('videoContainer').innerHTML = '';
+    }
+
+    // Mark task as complete
+    async function markTaskComplete(taskId, taskTitle) {
+      try {
+        const response = await fetch(`/api/crop-progress/${currentSessionId}/task/${taskId}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            completion_status: 'completed',
+            notes: `Task completed: ${taskTitle}`,
+            rating: 5
+          })
+        });
+        
+        if (response.ok) {
+          showSuccess('Task marked as complete!');
+          loadWeekProgress();
+          // Reload the current week to update task status
+          loadWeeklyGuidance();
+        } else {
+          throw new Error('Failed to update task');
+        }
+      } catch (error) {
+        console.error('Error updating task:', error);
+        showError('Failed to update task. Please try again.');
+      }
+    }
+
+    // Navigation functions
+    function goToPreviousWeek() {
+      if (currentWeek > 1) {
+        currentWeek--;
+        loadWeeklyGuidance();
+      }
+    }
+
+    function goToNextWeek() {
+      if (currentWeek < maxWeeks) {
+        currentWeek++;
+        loadWeeklyGuidance();
+      }
+    }
+
+    function jumpToWeek() {
+      const week = prompt(`Enter week number (1-${maxWeeks}):`, currentWeek);
+      if (week && week >= 1 && week <= maxWeeks) {
+        currentWeek = parseInt(week);
+        loadWeeklyGuidance();
+      }
+    }
+
+    // Get week subtitle
+    function getWeekSubtitle(week) {
+      const subtitles = {
+        1: 'Nursery Preparation',
+        2: 'Seeding and Initial Care',
+        3: 'Seedling Care and First Fertilization',
+        4: 'Transplanting Preparation',
+        5: 'Transplanting',
+        6: 'Post-Transplant Care',
+        7: 'Vegetative Growth Management',
+        8: 'Flowering Stage Preparation',
+        9: 'Flowering and Fruit Set',
+        10: 'Fruit Development',
+        11: 'Pre-Harvest Preparation',
+        12: 'Harvesting'
+      };
+      return subtitles[week] || 'Growth and Development';
+    }
+
+    // Utility functions
+    function showSuccess(message) {
+      // Simple success notification
+      alert('✅ ' + message);
+    }
+
+    function showError(message) {
+      // Simple error notification
+      alert('❌ ' + message);
+    }
+
+    // Logout function
+    async function logoutAndRefresh() {
+      await fetch('/api/logout', { method: 'POST' });
+      window.location.href = '/login.html';
+    }
+
+    // Event listeners
+    document.getElementById('prevWeekBtn').addEventListener('click', goToPreviousWeek);
+    document.getElementById('nextWeekBtn').addEventListener('click', goToNextWeek);
+    document.getElementById('jumpToWeekBtn').addEventListener('click', jumpToWeek);
+
+    // Close modal when clicking outside
+    window.addEventListener('click', function(event) {
+      const modal = document.getElementById('videoModal');
+      if (event.target === modal) {
+        closeVideoModal();
+      }
+    });
+
+    // Initialize the application
+    async function initializeApp() {
+      const isAuthenticated = await ensureAuth();
+      if (isAuthenticated) {
+        await loadActiveCrops();
+      }
+    }
+
+    // Enhanced features functions
+    async function loadCropTips() {
+      try {
+        const response = await fetch(`/api/crops/${currentCrop.crop_id}/tips?week=${currentWeek}`);
+        if (response.ok) {
+          const tips = await response.json();
+          displayCropTips(tips);
+        }
+      } catch (error) {
+        console.error('Error loading crop tips:', error);
+      }
+    }
+    
+    async function loadWeatherRecommendations() {
+      try {
+        const response = await fetch(`/api/crops/${currentCrop.crop_id}/weather-recommendations?week=${currentWeek}`);
+        if (response.ok) {
+          const recommendations = await response.json();
+          displayWeatherRecommendations(recommendations);
+        }
+      } catch (error) {
+        console.error('Error loading weather recommendations:', error);
+      }
+    }
+    
+    async function loadTaskDependencies() {
+      try {
+        const response = await fetch(`/api/crops/${currentCrop.crop_id}/task-dependencies?week=${currentWeek}`);
+        if (response.ok) {
+          const dependencies = await response.json();
+          displayTaskDependencies(dependencies);
+        }
+      } catch (error) {
+        console.error('Error loading task dependencies:', error);
+      }
+    }
+    
+    function displayCropTips(tips) {
+      const container = document.getElementById('tipsContent');
+      const section = document.getElementById('tipsSection');
+      
+      if (tips.length === 0) {
+        container.innerHTML = '<p>No tips available for this week.</p>';
+        section.style.display = 'none';
+        return;
+      }
+      
+      section.style.display = 'block';
+      container.innerHTML = tips.map(tip => `
+        <div class="tip-item">
+          <div class="tip-category">${tip.tip_category}</div>
+          <div class="tip-title">${tip.tip_title}</div>
+          <div class="tip-description">${tip.tip_description}</div>
+          ${tip.tip_image_url ? `<img src="${tip.tip_image_url}" alt="${tip.tip_title}" style="width: 100%; max-width: 300px; border-radius: 6px; margin-top: 0.5rem;">` : ''}
+        </div>
+      `).join('');
+    }
+    
+    function displayWeatherRecommendations(recommendations) {
+      const container = document.getElementById('weatherContent');
+      const section = document.getElementById('weatherSection');
+      
+      if (recommendations.length === 0) {
+        section.style.display = 'none';
+        return;
+      }
+      
+      section.style.display = 'block';
+      container.innerHTML = recommendations.map(rec => `
+        <div class="weather-item">
+          <strong>${rec.weather_condition}</strong> (${rec.priority} Priority): ${rec.recommendation}
+        </div>
+      `).join('');
+    }
+    
+    function displayTaskDependencies(dependencies) {
+      const container = document.getElementById('dependenciesContent');
+      const section = document.getElementById('dependenciesSection');
+      
+      if (dependencies.length === 0) {
+        section.style.display = 'none';
+        return;
+      }
+      
+      section.style.display = 'block';
+      container.innerHTML = dependencies.map(dep => `
+        <div class="dependency-item">
+          <strong>${dep.dependency_type}</strong>: Task ${dep.task_id} depends on Task ${dep.depends_on_task_id}
+        </div>
+      `).join('');
+    }
+    
+    // Enhanced video modal
+    function playVideo(videoUrl, videoTitle) {
+      const modal = document.getElementById('videoModal');
+      const title = document.getElementById('videoModalTitle');
+      const player = document.getElementById('modalVideoPlayer');
+      
+      title.textContent = videoTitle;
+      player.src = videoUrl;
+      modal.style.display = 'block';
+    }
+    
+    function closeVideoModal() {
+      const modal = document.getElementById('videoModal');
+      const player = document.getElementById('modalVideoPlayer');
+      
+      modal.style.display = 'none';
+      player.src = '';
+    }
+    
+    // Close modal when clicking outside
+    window.onclick = function(event) {
+      const modal = document.getElementById('videoModal');
+      if (event.target === modal) {
+        closeVideoModal();
+      }
+    }
+
+    // Start the application
+    document.addEventListener('DOMContentLoaded', initializeApp);
+  </script>
+</body>
+</html>

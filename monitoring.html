@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🌾 Crop Monitoring Dashboard</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="/style.css">
+  <style>
+    .monitoring-dashboard {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+    
+    .dashboard-header {
+      background: linear-gradient(135deg, #4a7c59 0%, #28a745 100%);
+      color: white;
+      padding: 2rem;
+      border-radius: 15px;
+      margin-bottom: 2rem;
+      text-align: center;
+    }
+    
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+    
+    .stat-card {
+      background: white;
+      padding: 1.5rem;
+      border-radius: 12px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      text-align: center;
+      border-left: 4px solid #4a7c59;
+    }
+    
+    .stat-number {
+      font-size: 2.5rem;
+      font-weight: bold;
+      color: #4a7c59;
+      margin-bottom: 0.5rem;
+    }
+    
+    .stat-label {
+      color: #666;
+      font-size: 0.9rem;
+    }
+    
+    .filters-section {
+      background: white;
+      padding: 1.5rem;
+      border-radius: 12px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      margin-bottom: 2rem;
+    }
+    
+    .filters-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      align-items: end;
+    }
+    
+    .monitoring-table {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+    }
+    
+    .table-header {
+      background: #f8f9fa;
+      padding: 1rem 1.5rem;
+      border-bottom: 2px solid #e9ecef;
+      font-weight: 600;
+      color: #4a7c59;
+    }
+    
+    .table-content {
+      max-height: 600px;
+      overflow-y: auto;
+    }
+    
+    .monitoring-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
+      padding: 1rem 1.5rem;
+      border-bottom: 1px solid #e9ecef;
+      align-items: center;
+      transition: background-color 0.2s ease;
+    }
+    
+    .monitoring-row:hover {
+      background-color: #f8f9fa;
+    }
+    
+    .monitoring-row:nth-child(even) {
+      background-color: #fafafa;
+    }
+    
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    
+    .user-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: #4a7c59;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      font-size: 0.8rem;
+    }
+    
+    .crop-info {
+      font-weight: 600;
+      color: #2d1e2f;
+    }
+    
+    .progress-bar {
+      width: 100%;
+      height: 8px;
+      background: #e9ecef;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #4a7c59 0%, #28a745 100%);
+      transition: width 0.3s ease;
+    }
+    
+    .status-badge {
+      padding: 0.25rem 0.75rem;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+    
+    .status-active {
+      background: rgba(40, 167, 69, 0.1);
+      color: #28a745;
+    }
+    
+    .status-completed {
+      background: rgba(23, 162, 184, 0.1);
+      color: #17a2b8;
+    }
+    
+    .status-paused {
+      background: rgba(255, 193, 7, 0.1);
+      color: #ffc107;
+    }
+    
+    .status-cancelled {
+      background: rgba(220, 53, 69, 0.1);
+      color: #dc3545;
+    }
+    
+    .action-buttons {
+      display: flex;
+      gap: 0.5rem;
+    }
+    
+    .btn-sm {
+      padding: 0.25rem 0.5rem;
+      font-size: 0.8rem;
+    }
+    
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+    }
+    
+    .modal-content {
+      background-color: #fefefe;
+      margin: 5% auto;
+      padding: 0;
+      border-radius: 15px;
+      width: 90%;
+      max-width: 800px;
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+    
+    .modal-header {
+      background: linear-gradient(135deg, #4a7c59 0%, #28a745 100%);
+      color: white;
+      padding: 1.5rem 2rem;
+      border-radius: 15px 15px 0 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .modal-body {
+      padding: 2rem;
+    }
+    
+    .close {
+      color: white;
+      font-size: 2rem;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    
+    .close:hover {
+      opacity: 0.7;
+    }
+    
+    .task-list {
+      display: grid;
+      gap: 1rem;
+    }
+    
+    .task-item {
+      background: #f8f9fa;
+      padding: 1rem;
+      border-radius: 8px;
+      border-left: 4px solid #4a7c59;
+    }
+    
+    .task-completed {
+      background: #d4edda;
+      border-left-color: #28a745;
+    }
+    
+    .loading {
+      text-align: center;
+      padding: 2rem;
+      color: #666;
+    }
+    
+    .no-data {
+      text-align: center;
+      padding: 3rem;
+      color: #666;
+      background: #f8f9fa;
+      border-radius: 12px;
+      border: 2px dashed #dee2e6;
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header class="header">
+    <nav class="nav">
+      <a href="/index.html" class="logo">🌾 Crop Monitoring Dashboard</a>
+      <ul class="nav-links">
+        <li><a href="/index.html">← Back to Main</a></li>
+        <li><a href="#" onclick="logoutAndRefresh()">Logout</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <div class="monitoring-dashboard">
+    <!-- Dashboard Header -->
+    <div class="dashboard-header">
+      <h1>🌾 Crop Monitoring Dashboard</h1>
+      <p>Monitor all active crop growing sessions and user progress</p>
+    </div>
+
+    <!-- Statistics -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-number" id="totalSessions">-</div>
+        <div class="stat-label">Total Sessions</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number" id="activeSessions">-</div>
+        <div class="stat-label">Active Sessions</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number" id="completedSessions">-</div>
+        <div class="stat-label">Completed</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number" id="totalUsers">-</div>
+        <div class="stat-label">Active Users</div>
+      </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="filters-section">
+      <h3>🔍 Filters & Search</h3>
+      <div class="filters-grid">
+        <div class="form-group">
+          <label for="statusFilter">Status:</label>
+          <select id="statusFilter" class="form-control">
+            <option value="">All Status</option>
+            <option value="active">Active</option>
+            <option value="completed">Completed</option>
+            <option value="paused">Paused</option>
+            <option value="cancelled">Cancelled</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="cropFilter">Crop:</label>
+          <select id="cropFilter" class="form-control">
+            <option value="">All Crops</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="userFilter">User:</label>
+          <input type="text" id="userFilter" class="form-control" placeholder="Search by username">
+        </div>
+        <div class="form-group">
+          <button id="refreshData" class="btn btn-primary">🔄 Refresh Data</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Monitoring Table -->
+    <div class="monitoring-table">
+      <div class="table-header">
+        <div class="monitoring-row">
+          <div>👤 User</div>
+          <div>🌾 Crop</div>
+          <div>📅 Started</div>
+          <div>📊 Progress</div>
+          <div>📈 Week</div>
+          <div>🏷️ Status</div>
+          <div>⚙️ Actions</div>
+        </div>
+      </div>
+      <div class="table-content" id="monitoringTableContent">
+        <div class="loading">Loading monitoring data...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Session Details Modal -->
+  <div id="sessionModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>📊 Session Details</h2>
+        <span class="close" onclick="closeSessionModal()">&times;</span>
+      </div>
+      <div class="modal-body" id="sessionModalBody">
+        <!-- Session details will be populated here -->
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let monitoringData = [];
+    let filteredData = [];
+
+    // Check authentication
+    async function ensureAuth() {
+      try {
+        const response = await fetch('/api/me');
+        const me = await response.json();
+        if (!me.authenticated || !me.is_admin) {
+          alert('Access denied. Admin privileges required.');
+          window.location.href = '/login.html';
+          return false;
+        }
+        return true;
+      } catch (error) {
+        console.error('Auth check failed:', error);
+        window.location.href = '/login.html';
+        return false;
+      }
+    }
+
+    // Load monitoring data
+    async function loadMonitoringData() {
+      try {
+        const response = await fetch('/api/admin/monitoring-sessions');
+        if (response.ok) {
+          monitoringData = await response.json();
+          filteredData = [...monitoringData];
+          updateStatistics();
+          renderMonitoringTable();
+          loadCropFilters();
+        } else {
+          throw new Error('Failed to load monitoring data');
+        }
+      } catch (error) {
+        console.error('Error loading monitoring data:', error);
+        document.getElementById('monitoringTableContent').innerHTML = 
+          '<div class="no-data">Error loading monitoring data. Please try again.</div>';
+      }
+    }
+
+    // Update statistics
+    function updateStatistics() {
+      const totalSessions = monitoringData.length;
+      const activeSessions = monitoringData.filter(s => s.status === 'active').length;
+      const completedSessions = monitoringData.filter(s => s.status === 'completed').length;
+      const uniqueUsers = new Set(monitoringData.map(s => s.user_id)).size;
+
+      document.getElementById('totalSessions').textContent = totalSessions;
+      document.getElementById('activeSessions').textContent = activeSessions;
+      document.getElementById('completedSessions').textContent = completedSessions;
+      document.getElementById('totalUsers').textContent = uniqueUsers;
+    }
+
+    // Load crop filters
+    function loadCropFilters() {
+      const cropFilter = document.getElementById('cropFilter');
+      const uniqueCrops = [...new Set(monitoringData.map(s => s.crop_name))];
+      
+      uniqueCrops.forEach(crop => {
+        const option = document.createElement('option');
+        option.value = crop;
+        option.textContent = crop;
+        cropFilter.appendChild(option);
+      });
+    }
+
+    // Render monitoring table
+    function renderMonitoringTable() {
+      const container = document.getElementById('monitoringTableContent');
+      
+      if (filteredData.length === 0) {
+        container.innerHTML = '<div class="no-data">No monitoring sessions found.</div>';
+        return;
+      }
+
+      container.innerHTML = filteredData.map(session => `
+        <div class="monitoring-row">
+          <div class="user-info">
+            <div class="user-avatar">${session.username.charAt(0).toUpperCase()}</div>
+            <div>
+              <div>${session.username}</div>
+              <small style="color: #666;">${session.land_size} acres</small>
+            </div>
+          </div>
+          <div class="crop-info">
+            <div>${session.crop_name}</div>
+            <small style="color: #666;">${session.soil_type}</small>
+          </div>
+          <div>
+            ${new Date(session.start_date).toLocaleDateString()}
+          </div>
+          <div>
+            <div class="progress-bar">
+              <div class="progress-fill" style="width: ${(session.current_week / session.total_weeks) * 100}%"></div>
+            </div>
+            <small>${Math.round((session.current_week / session.total_weeks) * 100)}%</small>
+          </div>
+          <div>
+            Week ${session.current_week}/${session.total_weeks}
+          </div>
+          <div>
+            <span class="status-badge status-${session.status}">${session.status}</span>
+          </div>
+          <div class="action-buttons">
+            <button class="btn btn-sm btn-primary" onclick="viewSessionDetails(${session.id})">
+              👁️ View
+            </button>
+            <button class="btn btn-sm btn-success" onclick="updateSessionStatus(${session.id}, '${session.status}')">
+              ✏️ Edit
+            </button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // Filter data
+    function filterData() {
+      const statusFilter = document.getElementById('statusFilter').value;
+      const cropFilter = document.getElementById('cropFilter').value;
+      const userFilter = document.getElementById('userFilter').value.toLowerCase();
+
+      filteredData = monitoringData.filter(session => {
+        const statusMatch = !statusFilter || session.status === statusFilter;
+        const cropMatch = !cropFilter || session.crop_name === cropFilter;
+        const userMatch = !userFilter || session.username.toLowerCase().includes(userFilter);
+        
+        return statusMatch && cropMatch && userMatch;
+      });
+
+      renderMonitoringTable();
+    }
+
+    // View session details
+    async function viewSessionDetails(sessionId) {
+      try {
+        const response = await fetch(`/api/admin/session-details/${sessionId}`);
+        if (response.ok) {
+          const sessionData = await response.json();
+          displaySessionModal(sessionData);
+        } else {
+          alert('Error loading session details');
+        }
+      } catch (error) {
+        console.error('Error loading session details:', error);
+        alert('Error loading session details');
+      }
+    }
+
+    // Display session modal
+    function displaySessionModal(sessionData) {
+      const modalBody = document.getElementById('sessionModalBody');
+      
+      modalBody.innerHTML = `
+        <div class="session-info">
+          <h3>👤 User: ${sessionData.username}</h3>
+          <p><strong>Crop:</strong> ${sessionData.crop_name}</p>
+          <p><strong>Land Size:</strong> ${sessionData.land_size} acres</p>
+          <p><strong>Soil Type:</strong> ${sessionData.soil_type}</p>
+          <p><strong>Started:</strong> ${new Date(sessionData.start_date).toLocaleString()}</p>
+          <p><strong>Current Week:</strong> ${sessionData.current_week}/${sessionData.total_weeks}</p>
+          <p><strong>Status:</strong> <span class="status-badge status-${sessionData.status}">${sessionData.status}</span></p>
+        </div>
+        
+        <div class="progress-section" style="margin-top: 2rem;">
+          <h4>📊 Progress Overview</h4>
+          <div class="progress-bar" style="height: 20px; margin: 1rem 0;">
+            <div class="progress-fill" style="width: ${(sessionData.current_week / sessionData.total_weeks) * 100}%"></div>
+          </div>
+          <p>${Math.round((sessionData.current_week / sessionData.total_weeks) * 100)}% Complete</p>
+        </div>
+        
+        <div class="tasks-section" style="margin-top: 2rem;">
+          <h4>✅ Completed Tasks</h4>
+          <div class="task-list">
+            ${sessionData.completed_tasks && sessionData.completed_tasks.length > 0 ? 
+              sessionData.completed_tasks.map(task => `
+                <div class="task-item task-completed">
+                  <strong>${task.task_name}</strong>
+                  <br>
+                  <small>Week ${task.week_number} • ${task.task_type} • ${new Date(task.completed_at).toLocaleDateString()}</small>
+                  ${task.notes ? `<br><em>${task.notes}</em>` : ''}
+                </div>
+              `).join('') : 
+              '<p>No completed tasks yet.</p>'
+            }
+          </div>
+        </div>
+      `;
+      
+      document.getElementById('sessionModal').style.display = 'block';
+    }
+
+    // Close session modal
+    function closeSessionModal() {
+      document.getElementById('sessionModal').style.display = 'none';
+    }
+
+    // Update session status
+    function updateSessionStatus(sessionId, currentStatus) {
+      const newStatus = prompt(`Current status: ${currentStatus}\nEnter new status (active, completed, paused, cancelled):`, currentStatus);
+      if (newStatus && newStatus !== currentStatus) {
+        // Here you would call an API to update the status
+        alert(`Status update for session ${sessionId} to ${newStatus} would be implemented here.`);
+      }
+    }
+
+    // Logout function
+    async function logoutAndRefresh() {
+      await fetch('/api/logout', { method: 'POST' });
+      window.location.href = '/login.html';
+    }
+
+    // Event listeners
+    document.getElementById('statusFilter').addEventListener('change', filterData);
+    document.getElementById('cropFilter').addEventListener('change', filterData);
+    document.getElementById('userFilter').addEventListener('input', filterData);
+    document.getElementById('refreshData').addEventListener('click', loadMonitoringData);
+
+    // Initialize the dashboard
+    async function initializeDashboard() {
+      const isAuthenticated = await ensureAuth();
+      if (isAuthenticated) {
+        await loadMonitoringData();
+      }
+    }
+
+    // Start the dashboard
+    document.addEventListener('DOMContentLoaded', initializeDashboard);
+  </script>
+</body>
+</html>

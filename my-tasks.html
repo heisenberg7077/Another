@@ -1,0 +1,1251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="/style.css">
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🌱 My Crop Tasks - Precision Agriculture</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='30' fill='%234a7c59'/%3E%3Cpath d='M20 36c6-8 12-10 24-8-6 6-10 14-22 16 8-4 10-10 10-16-4 2-8 4-12 8z' fill='%23fff'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .tasks-dashboard {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+    
+    .dashboard-header {
+      background: linear-gradient(135deg, #4a7c59 0%, #28a745 100%);
+      color: white;
+      padding: 2rem;
+      border-radius: 15px;
+      margin-bottom: 2rem;
+      text-align: center;
+    }
+    
+    .welcome-section {
+      background: white;
+      padding: 1.5rem;
+      border-radius: 12px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      margin-bottom: 2rem;
+      text-align: center;
+    }
+    
+    .user-info {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+    
+    .user-avatar {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: #4a7c59;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      font-weight: bold;
+    }
+    
+    .user-details h2 {
+      margin: 0;
+      color: #4a7c59;
+    }
+    
+    .user-details p {
+      margin: 0.25rem 0;
+      color: #666;
+    }
+    
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+    
+    .stat-card {
+      background: white;
+      padding: 1.5rem;
+      border-radius: 12px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      text-align: center;
+      border-left: 4px solid #4a7c59;
+    }
+    
+    .stat-number {
+      font-size: 2rem;
+      font-weight: bold;
+      color: #4a7c59;
+      margin-bottom: 0.5rem;
+    }
+    
+    .stat-label {
+      color: #666;
+      font-size: 0.9rem;
+    }
+    
+    .active-crops-section {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      margin-bottom: 2rem;
+    }
+    
+    .section-header {
+      background: #f8f9fa;
+      padding: 1rem 1.5rem;
+      border-radius: 12px 12px 0 0;
+      border-bottom: 2px solid #e9ecef;
+    }
+    
+    .section-header h3 {
+      margin: 0;
+      color: #4a7c59;
+      font-size: 1.3rem;
+    }
+    
+    .section-content {
+      padding: 1.5rem;
+    }
+    
+    .crop-card {
+      background: #f8f9fa;
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 1rem;
+      border: 2px solid #e9ecef;
+      transition: all 0.3s ease;
+    }
+    
+    .crop-card:hover {
+      border-color: #4a7c59;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    }
+    
+    .crop-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+    
+    .crop-title {
+      font-size: 1.3rem;
+      font-weight: bold;
+      color: #4a7c59;
+    }
+    
+    .crop-status {
+      padding: 0.25rem 0.75rem;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+    
+    .status-active {
+      background: rgba(40, 167, 69, 0.1);
+      color: #28a745;
+    }
+    
+    .status-completed {
+      background: rgba(23, 162, 184, 0.1);
+      color: #17a2b8;
+    }
+    
+    .crop-details {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+    
+    .detail-item {
+      text-align: center;
+    }
+    
+    .detail-label {
+      font-size: 0.8rem;
+      color: #666;
+      margin-bottom: 0.25rem;
+    }
+    
+    .detail-value {
+      font-weight: bold;
+      color: #2d1e2f;
+    }
+    
+    .progress-section {
+      margin-bottom: 1rem;
+    }
+    
+    .progress-bar {
+      width: 100%;
+      height: 12px;
+      background: #e9ecef;
+      border-radius: 6px;
+      overflow: hidden;
+      margin-bottom: 0.5rem;
+    }
+    
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #4a7c59 0%, #28a745 100%);
+      transition: width 0.3s ease;
+    }
+    
+    .progress-text {
+      text-align: center;
+      font-size: 0.9rem;
+      color: #666;
+    }
+    
+    .crop-actions {
+      display: flex;
+      gap: 0.5rem;
+      justify-content: center;
+    }
+    
+    .btn {
+      padding: 0.5rem 1rem;
+      border: none;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-decoration: none;
+      display: inline-block;
+      text-align: center;
+    }
+    
+    .btn-primary {
+      background: #4a7c59;
+      color: white;
+    }
+    
+    .btn-primary:hover {
+      background: #3a6b4a;
+      transform: translateY(-1px);
+    }
+    
+    .btn-success {
+      background: #28a745;
+      color: white;
+    }
+    
+    .btn-success:hover {
+      background: #218838;
+      transform: translateY(-1px);
+    }
+    
+    .btn-outline-primary {
+      background: transparent;
+      color: #4a7c59;
+      border: 2px solid #4a7c59;
+    }
+    
+    .btn-outline-primary:hover {
+      background: #4a7c59;
+      color: white;
+    }
+    
+    .weekly-tasks-section {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    .task-item {
+      background: #f8f9fa;
+      border-radius: 8px;
+      padding: 1rem;
+      margin-bottom: 0.5rem;
+      border-left: 4px solid #4a7c59;
+      transition: all 0.3s ease;
+    }
+    
+    .task-item.completed {
+      background: #d4edda;
+      border-left-color: #28a745;
+    }
+    
+    .task-item.completed .task-title {
+      text-decoration: line-through;
+      color: #666;
+    }
+    
+    .task-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.5rem;
+    }
+    
+    .task-title {
+      font-weight: bold;
+      color: #2d1e2f;
+    }
+    
+    .task-type {
+      padding: 0.2rem 0.5rem;
+      border-radius: 12px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+    
+    .type-fertilizer {
+      background: rgba(40, 167, 69, 0.1);
+      color: #28a745;
+    }
+    
+    .type-pesticide {
+      background: rgba(220, 53, 69, 0.1);
+      color: #dc3545;
+    }
+    
+    .task-details {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 0.5rem;
+      font-size: 0.8rem;
+      color: #666;
+    }
+    
+    .task-actions {
+      margin-top: 0.5rem;
+      text-align: right;
+    }
+    
+    .btn-sm {
+      padding: 0.25rem 0.5rem;
+      font-size: 0.8rem;
+    }
+    
+    .no-data {
+      text-align: center;
+      padding: 3rem;
+      color: #666;
+      background: #f8f9fa;
+      border-radius: 12px;
+      border: 2px dashed #dee2e6;
+    }
+    
+    .loading {
+      text-align: center;
+      padding: 2rem;
+      color: #666;
+    }
+    
+    .week-selector {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1rem;
+      padding: 1rem;
+      background: #f8f9fa;
+      border-radius: 8px;
+    }
+    
+    .week-selector select {
+      padding: 0.5rem;
+      border: 2px solid #e9ecef;
+      border-radius: 6px;
+      background: white;
+    }
+    
+    .week-info {
+      font-size: 0.9rem;
+      color: #666;
+    }
+    
+    /* Crop Details Modal */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+    }
+    
+    .modal-content {
+      background-color: #fefefe;
+      margin: 2% auto;
+      padding: 0;
+      border-radius: 15px;
+      width: 95%;
+      max-width: 1000px;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    
+    .modal-header {
+      background: linear-gradient(135deg, #4a7c59 0%, #28a745 100%);
+      color: white;
+      padding: 1.5rem 2rem;
+      border-radius: 15px 15px 0 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .modal-body {
+      padding: 2rem;
+    }
+    
+    .close {
+      color: white;
+      font-size: 2rem;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    
+    .close:hover {
+      opacity: 0.7;
+    }
+    
+    .crop-details-section {
+      margin-bottom: 2rem;
+    }
+    
+    .crop-details-section h3 {
+      color: #4a7c59;
+      margin-bottom: 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 2px solid #e9ecef;
+    }
+    
+    .crop-info-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+    
+    .info-item {
+      background: #f8f9fa;
+      padding: 1rem;
+      border-radius: 8px;
+      border-left: 4px solid #4a7c59;
+    }
+    
+    .info-label {
+      font-weight: bold;
+      color: #4a7c59;
+      margin-bottom: 0.5rem;
+    }
+    
+    .info-value {
+      color: #2d1e2f;
+    }
+    
+    .guide-section {
+      background: #f8f9fa;
+      padding: 1.5rem;
+      border-radius: 8px;
+      margin-bottom: 1rem;
+    }
+    
+    .guide-section h4 {
+      color: #4a7c59;
+      margin-bottom: 0.5rem;
+    }
+    
+    .stages-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+    
+    .stage-card {
+      background: white;
+      border: 2px solid #e9ecef;
+      border-radius: 8px;
+      padding: 1rem;
+      transition: all 0.3s ease;
+    }
+    
+    .stage-card:hover {
+      border-color: #4a7c59;
+      transform: translateY(-2px);
+    }
+    
+    .stage-title {
+      font-weight: bold;
+      color: #4a7c59;
+      margin-bottom: 0.5rem;
+    }
+    
+    .stage-weeks {
+      font-size: 0.9rem;
+      color: #666;
+      margin-bottom: 0.5rem;
+    }
+    
+    .stage-difficulty {
+      display: inline-block;
+      padding: 0.25rem 0.5rem;
+      border-radius: 12px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      margin-bottom: 0.5rem;
+    }
+    
+    .difficulty-easy {
+      background: rgba(40, 167, 69, 0.1);
+      color: #28a745;
+    }
+    
+    .difficulty-medium {
+      background: rgba(255, 193, 7, 0.1);
+      color: #ffc107;
+    }
+    
+    .difficulty-hard {
+      background: rgba(220, 53, 69, 0.1);
+      color: #dc3545;
+    }
+    
+    .tasks-timeline {
+      background: #f8f9fa;
+      border-radius: 8px;
+      padding: 1rem;
+    }
+    
+    .week-tasks {
+      margin-bottom: 1rem;
+    }
+    
+    .week-header {
+      background: #4a7c59;
+      color: white;
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      font-weight: bold;
+      margin-bottom: 0.5rem;
+    }
+    
+    .task-list {
+      padding-left: 1rem;
+    }
+    
+    .task-item-small {
+      background: white;
+      border: 1px solid #e9ecef;
+      border-radius: 6px;
+      padding: 0.5rem;
+      margin-bottom: 0.25rem;
+      font-size: 0.9rem;
+    }
+    
+    .task-priority {
+      display: inline-block;
+      padding: 0.2rem 0.4rem;
+      border-radius: 8px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      margin-right: 0.5rem;
+    }
+    
+    .priority-critical {
+      background: rgba(220, 53, 69, 0.1);
+      color: #dc3545;
+    }
+    
+    .priority-high {
+      background: rgba(220, 53, 69, 0.1);
+      color: #dc3545;
+    }
+    
+    .priority-medium {
+      background: rgba(255, 193, 7, 0.1);
+      color: #ffc107;
+    }
+    
+    .priority-low {
+      background: rgba(40, 167, 69, 0.1);
+      color: #28a745;
+    }
+    
+    .loading {
+      text-align: center;
+      padding: 2rem;
+      color: #666;
+    }
+    
+    .error {
+      text-align: center;
+      padding: 2rem;
+      color: #dc3545;
+      background: #f8d7da;
+      border-radius: 8px;
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header class="header">
+    <nav class="nav">
+      <a href="/index.html" class="logo">🌱 My Crop Tasks</a>
+      <ul class="nav-links">
+        <li><a href="/index.html">🏠 Home</a></li>
+        <li><a href="#" onclick="logoutAndRefresh()">Logout</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <div class="tasks-dashboard">
+    <!-- Dashboard Header -->
+    <div class="dashboard-header">
+      <h1>🌱 My Crop Tasks</h1>
+      <p>Track your crop growing progress and manage weekly tasks</p>
+    </div>
+
+    <!-- Welcome Section -->
+    <div class="welcome-section">
+      <div class="user-info">
+        <div class="user-avatar" id="userAvatar">U</div>
+        <div class="user-details">
+          <h2 id="userName">Welcome, User!</h2>
+          <p id="userStats">Loading your progress...</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Statistics -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-number" id="totalCrops">-</div>
+        <div class="stat-label">Active Crops</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number" id="completedTasks">-</div>
+        <div class="stat-label">Tasks Completed</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card">
+          <div class="stat-number" id="currentWeek">-</div>
+          <div class="stat-label">Current Week</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number" id="pendingTasks">-</div>
+        <div class="stat-label">Pending Tasks</div>
+      </div>
+    </div>
+
+    <!-- Active Crops Section -->
+    <div class="active-crops-section">
+      <div class="section-header">
+        <h3>🌾 My Active Crops</h3>
+      </div>
+      <div class="section-content" id="activeCropsContent">
+        <div class="loading">Loading your active crops...</div>
+      </div>
+    </div>
+
+    <!-- Weekly Tasks Section -->
+    <div class="weekly-tasks-section">
+      <div class="section-header">
+        <h3>📋 This Week's Tasks</h3>
+      </div>
+      <div class="section-content">
+        <div class="week-selector">
+          <label for="weekSelect">Select Week:</label>
+          <select id="weekSelect">
+            <option value="">Choose a crop first</option>
+          </select>
+          <div class="week-info" id="weekInfo">No crop selected</div>
+        </div>
+        <div id="weeklyTasksContent">
+          <div class="no-data">Select a crop and week to view tasks</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Crop Details Modal -->
+  <div id="cropDetailsModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="cropDetailsTitle">Crop Details</h2>
+        <span class="close" onclick="closeCropDetailsModal()">&times;</span>
+      </div>
+      <div class="modal-body" id="cropDetailsContent">
+        <div class="loading">Loading crop details...</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let currentUser = null;
+    let activeCrops = [];
+    let selectedCrop = null;
+
+    // Check authentication
+    async function ensureAuth() {
+      try {
+        const response = await fetch('/api/me');
+        const me = await response.json();
+        if (!me.authenticated) {
+          alert('Please login to access your tasks.');
+          window.location.href = '/login.html';
+          return false;
+        }
+        currentUser = me;
+        return true;
+      } catch (error) {
+        console.error('Auth check failed:', error);
+        window.location.href = '/login.html';
+        return false;
+      }
+    }
+
+    // Load user data and active crops
+    async function loadUserData() {
+      try {
+        // Load active crops
+        const cropsResponse = await fetch('/api/active-crops');
+        if (cropsResponse.ok) {
+          const data = await cropsResponse.json();
+          activeCrops = data.active_crops;
+          displayActiveCrops();
+          updateStatistics();
+          populateWeekSelector();
+        } else {
+          throw new Error('Failed to load active crops');
+        }
+      } catch (error) {
+        console.error('Error loading user data:', error);
+        document.getElementById('activeCropsContent').innerHTML = 
+          '<div class="no-data">Error loading your crops. Please try again.</div>';
+      }
+    }
+
+    // Display active crops
+    function displayActiveCrops() {
+      const container = document.getElementById('activeCropsContent');
+      
+      if (activeCrops.length === 0) {
+        container.innerHTML = `
+          <div class="no-data">
+            <h4>No Active Crops</h4>
+            <p>You don't have any active crop monitoring sessions yet.</p>
+            <p style="font-size: 0.9rem; color: #666; margin-top: 1rem;">
+              Go to <strong>Land & Resource Planning</strong> to select a crop and start your journey.
+            </p>
+            <div style="display: flex; gap: 1rem; justify-content: center; margin-top: 1rem;">
+              <a href="/land-resource-planning.html" class="btn btn-primary">🗺️ Land & Resource Planning</a>
+              <a href="/index.html" class="btn btn-outline-primary">🏠 Home</a>
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = activeCrops.map(crop => `
+        <div class="crop-card" data-crop-id="${crop.id}">
+          <div class="crop-header">
+            <div class="crop-title">${crop.crop_name}</div>
+            <div class="crop-status status-${crop.status}">${crop.status}</div>
+          </div>
+          
+          <div class="crop-details">
+            <div class="detail-item">
+              <div class="detail-label">Land Size</div>
+              <div class="detail-value">${crop.land_size} acres</div>
+            </div>
+            <div class="detail-item">
+              <div class="detail-label">Soil Type</div>
+              <div class="detail-value">${crop.soil_type}</div>
+            </div>
+            <div class="detail-item">
+              <div class="detail-label">Started</div>
+              <div class="detail-value">${new Date(crop.start_date).toLocaleDateString()}</div>
+            </div>
+            <div class="detail-item">
+              <div class="detail-label">Current Week</div>
+              <div class="detail-value">${crop.current_week}/${crop.total_weeks}</div>
+            </div>
+          </div>
+          
+          <div class="progress-section">
+            <div class="progress-bar">
+              <div class="progress-fill" style="width: ${(crop.current_week / crop.total_weeks) * 100}%"></div>
+            </div>
+            <div class="progress-text">${Math.round((crop.current_week / crop.total_weeks) * 100)}% Complete</div>
+          </div>
+          
+          <div class="crop-actions">
+            <button class="btn btn-primary" onclick="selectCrop(${crop.id})">
+              📋 View Tasks
+            </button>
+            <button class="btn btn-outline-primary" onclick="viewCropDetails(${crop.crop_id})">
+              ℹ️ Details
+            </button>
+            <a href="/crop-weekly-guidance.html?crop_id=${crop.crop_id}&session_id=${crop.id}&week=${crop.current_week}" class="btn btn-success">
+              🌱 Weekly Guidance
+            </a>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // Update statistics
+    function updateStatistics() {
+      const totalCrops = activeCrops.length;
+      const completedTasks = activeCrops.reduce((sum, crop) => sum + (crop.completed_tasks ? crop.completed_tasks.length : 0), 0);
+      const currentWeek = activeCrops.length > 0 ? Math.max(...activeCrops.map(c => c.current_week)) : 0;
+      const pendingTasks = activeCrops.reduce((sum, crop) => {
+        // Estimate pending tasks (this would need to be calculated based on actual weekly tasks)
+        return sum + (crop.total_weeks - crop.current_week) * 2; // Rough estimate
+      }, 0);
+
+      document.getElementById('totalCrops').textContent = totalCrops;
+      document.getElementById('completedTasks').textContent = completedTasks;
+      document.getElementById('currentWeek').textContent = currentWeek;
+      document.getElementById('pendingTasks').textContent = pendingTasks;
+    }
+
+    // Populate week selector
+    function populateWeekSelector() {
+      const weekSelect = document.getElementById('weekSelect');
+      weekSelect.innerHTML = '<option value="">Choose a crop first</option>';
+      
+      activeCrops.forEach(crop => {
+        const option = document.createElement('option');
+        option.value = crop.id;
+        option.textContent = `${crop.crop_name} (Week ${crop.current_week})`;
+        weekSelect.appendChild(option);
+      });
+    }
+
+    // Select crop for task viewing
+    function selectCrop(cropId) {
+      selectedCrop = activeCrops.find(c => c.id === cropId);
+      document.getElementById('weekSelect').value = cropId;
+      loadWeeklyTasks(cropId);
+    }
+
+    // Load weekly tasks
+    async function loadWeeklyTasks(cropId) {
+      try {
+        const crop = activeCrops.find(c => c.id === cropId);
+        if (!crop) return;
+
+        // Get weekly tasks for the crop
+        const [fertilizersRes, pesticidesRes] = await Promise.all([
+          fetch(`/api/crops/${crop.crop_id}/fertilizers`),
+          fetch(`/api/crops/${crop.crop_id}/pesticides`)
+        ]);
+
+        const fertilizers = await fertilizersRes.json();
+        const pesticides = await pesticidesRes.json();
+
+        // Filter tasks for current week
+        const currentWeek = crop.current_week;
+        const weekTasks = [
+          ...fertilizers.filter(f => f.week.includes(`Week ${currentWeek}`)).map(f => ({
+            ...f,
+            type: 'fertilizer',
+            task: `Apply ${f.name} - ${f.quantity}`
+          })),
+          ...pesticides.filter(p => p.week.includes(`Week ${currentWeek}`)).map(p => ({
+            ...p,
+            type: 'pesticide',
+            task: `Apply ${p.name} - ${p.application}`
+          }))
+        ];
+
+        displayWeeklyTasks(crop, weekTasks);
+      } catch (error) {
+        console.error('Error loading weekly tasks:', error);
+        document.getElementById('weeklyTasksContent').innerHTML = 
+          '<div class="no-data">Error loading tasks. Please try again.</div>';
+      }
+    }
+
+    // Display weekly tasks
+    function displayWeeklyTasks(crop, tasks) {
+      const container = document.getElementById('weeklyTasksContent');
+      const weekInfo = document.getElementById('weekInfo');
+      
+      weekInfo.textContent = `${crop.crop_name} - Week ${crop.current_week}`;
+      
+      if (tasks.length === 0) {
+        container.innerHTML = `
+          <div class="no-data">
+            <h4>No Tasks This Week</h4>
+            <p>No specific tasks for Week ${crop.current_week} of ${crop.crop_name}</p>
+            <p>Continue with general maintenance and monitoring.</p>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = tasks.map(task => {
+        const isCompleted = crop.completed_tasks && crop.completed_tasks.some(ct => 
+          ct.task_name === task.task && ct.week_number === crop.current_week
+        );
+        
+        return `
+          <div class="task-item ${isCompleted ? 'completed' : ''}">
+            <div class="task-header">
+              <div class="task-title">${task.task}</div>
+              <div class="task-type type-${task.type}">${task.type}</div>
+            </div>
+            <div class="task-details">
+              <div><strong>Price:</strong> ${task.price}</div>
+              <div><strong>Week:</strong> ${task.week}</div>
+              ${task.gap_days ? `<div><strong>Next:</strong> ${task.gap_days} days</div>` : ''}
+            </div>
+            <div class="task-actions">
+              <button class="btn btn-sm ${isCompleted ? 'btn-success' : 'btn-primary'}" 
+                      onclick="toggleTaskCompletion(${crop.id}, ${task.id}, ${!isCompleted})">
+                ${isCompleted ? '✓ Completed' : 'Mark Complete'}
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // Toggle task completion
+    async function toggleTaskCompletion(sessionId, taskId, completed) {
+      try {
+        const crop = activeCrops.find(c => c.id === sessionId);
+        if (!crop) return;
+
+        const taskElement = document.querySelector(`[onclick*="toggleTaskCompletion(${sessionId}, ${taskId}"]`);
+        const taskInfo = taskElement.closest('.task-item');
+        const taskName = taskInfo.querySelector('.task-title').textContent;
+        const typeEl = taskInfo.querySelector('.task-type');
+        const taskType = (typeEl && typeEl.textContent) ? String(typeEl.textContent).toLowerCase() : 'other';
+        
+        const response = await fetch(`/api/crop-progress/${sessionId}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            task_id: taskId, 
+            task_name: taskName,
+            task_type: taskType,
+            week_number: crop.current_week,
+            completed: completed 
+          })
+        });
+
+        if (response.ok) {
+          // Reload data
+          await loadUserData();
+          if (selectedCrop) {
+            loadWeeklyTasks(selectedCrop.id);
+          }
+        } else {
+          throw new Error('Failed to update task completion');
+        }
+      } catch (error) {
+        console.error('Error updating task completion:', error);
+        alert('Error updating task completion');
+      }
+    }
+
+    // View crop details
+    async function viewCropDetails(cropId) {
+      try {
+        // Show modal and loading state
+        document.getElementById('cropDetailsModal').style.display = 'block';
+        document.getElementById('cropDetailsContent').innerHTML = '<div class="loading">Loading crop details...</div>';
+        
+        // Fetch crop details
+        const response = await fetch(`/api/crops/${cropId}/details`);
+        if (!response.ok) {
+          throw new Error('Failed to load crop details');
+        }
+        
+        const data = await response.json();
+        displayCropDetails(data);
+        
+      } catch (error) {
+        console.error('Error loading crop details:', error);
+        document.getElementById('cropDetailsContent').innerHTML = 
+          '<div class="error">Error loading crop details. Please try again.</div>';
+      }
+    }
+
+    // Display crop details in modal
+    function displayCropDetails(data) {
+      const { crop, guide, stages, weekly_tasks, fertilizers, pesticides, videos } = data;
+      
+      document.getElementById('cropDetailsTitle').textContent = `${crop.name} - Detailed Information`;
+      
+      const content = `
+        <!-- Basic Crop Information -->
+        <div class="crop-details-section">
+          <h3>🌾 Basic Information</h3>
+          <div class="crop-info-grid">
+            <div class="info-item">
+              <div class="info-label">Crop Name</div>
+              <div class="info-value">${crop.name}</div>
+            </div>
+            <div class="info-item">
+              <div class="info-label">Category</div>
+              <div class="info-value">${crop.crop_category}</div>
+            </div>
+            <div class="info-item">
+              <div class="info-label">Season</div>
+              <div class="info-value">${crop.season}</div>
+            </div>
+            <div class="info-item">
+              <div class="info-label">EC Range</div>
+              <div class="info-value">${crop.ec_range}</div>
+            </div>
+            <div class="info-item">
+              <div class="info-label">Land Size Range</div>
+              <div class="info-value">${crop.land_size_min} - ${crop.land_size_max} acres</div>
+            </div>
+            <div class="info-item">
+              <div class="info-label">Suitable Soil Types</div>
+              <div class="info-value">${crop.soil_types.join(', ')}</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Growing Guide -->
+        ${guide ? `
+          <div class="crop-details-section">
+            <h3>📚 Growing Guide</h3>
+            <div class="guide-section">
+              <h4>Overview</h4>
+              <p>${guide.overview || 'No overview available'}</p>
+            </div>
+            <div class="guide-section">
+              <h4>Climate Requirements</h4>
+              <p>${guide.climate || 'No climate information available'}</p>
+            </div>
+            <div class="guide-section">
+              <h4>Soil Requirements</h4>
+              <p>${guide.soil || 'No soil information available'}</p>
+            </div>
+            <div class="guide-section">
+              <h4>Land Preparation</h4>
+              <p>${guide.land_preparation || 'No land preparation information available'}</p>
+            </div>
+            <div class="guide-section">
+              <h4>Sowing Method</h4>
+              <p>${guide.sowing || 'No sowing information available'}</p>
+            </div>
+            <div class="guide-section">
+              <h4>Irrigation</h4>
+              <p>${guide.irrigation || 'No irrigation information available'}</p>
+            </div>
+            <div class="guide-section">
+              <h4>Nutrient Management</h4>
+              <p>${guide.nutrient_management || 'No nutrient management information available'}</p>
+            </div>
+            <div class="guide-section">
+              <h4>Weed Management</h4>
+              <p>${guide.weed_management || 'No weed management information available'}</p>
+            </div>
+            <div class="guide-section">
+              <h4>Pests & Diseases</h4>
+              <p>${guide.pests_diseases || 'No pest and disease information available'}</p>
+            </div>
+            <div class="guide-section">
+              <h4>Harvesting</h4>
+              <p>${guide.harvesting || 'No harvesting information available'}</p>
+            </div>
+            <div class="guide-section">
+              <h4>Expected Yield</h4>
+              <p>${guide.yield_info || 'No yield information available'}</p>
+            </div>
+          </div>
+        ` : ''}
+
+        <!-- Growth Stages -->
+        ${stages && stages.length > 0 ? `
+          <div class="crop-details-section">
+            <h3>🌱 Growth Stages</h3>
+            <div class="stages-grid">
+              ${stages.map(stage => `
+                <div class="stage-card">
+                  <div class="stage-title">${stage.title}</div>
+                  <div class="stage-weeks">Weeks ${stage.start_week} - ${stage.end_week}</div>
+                  <div class="stage-difficulty difficulty-${stage.difficulty_level.toLowerCase()}">
+                    ${stage.difficulty_level}
+                  </div>
+                  <div style="font-size: 0.9rem; color: #666; margin-bottom: 0.5rem;">
+                    ${stage.time_required || 'Duration not specified'}
+                  </div>
+                  <div style="font-size: 0.9rem;">
+                    ${stage.tasks || 'No specific tasks listed'}
+                  </div>
+                  ${stage.equipment_needed ? `
+                    <div style="font-size: 0.8rem; color: #666; margin-top: 0.5rem;">
+                      <strong>Equipment:</strong> ${stage.equipment_needed}
+                    </div>
+                  ` : ''}
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        ` : ''}
+
+        <!-- Weekly Tasks Timeline -->
+        ${weekly_tasks && Object.keys(weekly_tasks).length > 0 ? `
+          <div class="crop-details-section">
+            <h3>📋 Weekly Tasks Timeline</h3>
+            <div class="tasks-timeline">
+              ${Object.keys(weekly_tasks).sort((a, b) => parseInt(a) - parseInt(b)).map(week => `
+                <div class="week-tasks">
+                  <div class="week-header">Week ${week}</div>
+                  <div class="task-list">
+                    ${weekly_tasks[week].map(task => `
+                      <div class="task-item-small">
+                        <span class="task-priority priority-${task.priority.toLowerCase()}">${task.priority}</span>
+                        <strong>${task.title}</strong>
+                        <span style="color: #666;">(${task.type})</span>
+                        ${task.duration ? `<span style="color: #666;"> - ${task.duration}</span>` : ''}
+                      </div>
+                    `).join('')}
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        ` : ''}
+
+        <!-- Fertilizers -->
+        ${fertilizers && fertilizers.length > 0 ? `
+          <div class="crop-details-section">
+            <h3>🌿 Fertilizers</h3>
+            <div class="guide-section">
+              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                ${fertilizers.map(fertilizer => `
+                  <div class="info-item">
+                    <div class="info-label">${fertilizer.name}</div>
+                    <div class="info-value">
+                      <div>Week: ${fertilizer.week}</div>
+                      <div>Quantity: ${fertilizer.quantity}</div>
+                      <div>Price: ${fertilizer.price}</div>
+                      ${fertilizer.gap_days ? `<div>Gap: ${fertilizer.gap_days} days</div>` : ''}
+                    </div>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          </div>
+        ` : ''}
+
+        <!-- Pesticides -->
+        ${pesticides && pesticides.length > 0 ? `
+          <div class="crop-details-section">
+            <h3>🛡️ Pesticides</h3>
+            <div class="guide-section">
+              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                ${pesticides.map(pesticide => `
+                  <div class="info-item">
+                    <div class="info-label">${pesticide.name}</div>
+                    <div class="info-value">
+                      <div>Week: ${pesticide.week}</div>
+                      <div>Application: ${pesticide.application}</div>
+                      <div>Quantity: ${pesticide.quantity}</div>
+                      <div>Price: ${pesticide.price}</div>
+                    </div>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          </div>
+        ` : ''}
+
+        <!-- Educational Videos -->
+        ${videos && videos.length > 0 ? `
+          <div class="crop-details-section">
+            <h3>🎥 Educational Videos</h3>
+            <div class="guide-section">
+              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem;">
+                ${videos.map(video => `
+                  <div class="info-item">
+                    <div class="info-label">${video.title}</div>
+                    <div class="info-value">
+                      <div>Type: ${video.type}</div>
+                      ${video.duration_minutes ? `<div>Duration: ${video.duration_minutes} min</div>` : ''}
+                      ${video.week_number ? `<div>Week: ${video.week_number}</div>` : ''}
+                      ${video.description ? `<div style="font-size: 0.9rem; margin-top: 0.5rem;">${video.description}</div>` : ''}
+                      ${video.is_featured ? '<div style="color: #ffc107; font-weight: bold;">⭐ Featured</div>' : ''}
+                    </div>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          </div>
+        ` : ''}
+      `;
+      
+      document.getElementById('cropDetailsContent').innerHTML = content;
+    }
+
+    // Close crop details modal
+    function closeCropDetailsModal() {
+      document.getElementById('cropDetailsModal').style.display = 'none';
+    }
+
+    // Week selector change
+    document.getElementById('weekSelect').addEventListener('change', function() {
+      const cropId = this.value;
+      if (cropId) {
+        selectCrop(parseInt(cropId));
+      } else {
+        document.getElementById('weeklyTasksContent').innerHTML = 
+          '<div class="no-data">Select a crop and week to view tasks</div>';
+        document.getElementById('weekInfo').textContent = 'No crop selected';
+      }
+    });
+
+    // Logout function
+    async function logoutAndRefresh() {
+      await fetch('/api/logout', { method: 'POST' });
+      window.location.href = '/login.html';
+    }
+
+    // Initialize the dashboard
+    async function initializeDashboard() {
+      const isAuthenticated = await ensureAuth();
+      if (isAuthenticated) {
+        // Update user info
+        document.getElementById('userName').textContent = `Welcome, ${currentUser.username}!`;
+        document.getElementById('userAvatar').textContent = currentUser.username.charAt(0).toUpperCase();
+        
+        await loadUserData();
+      }
+    }
+
+    // Close modal when clicking outside
+    window.addEventListener('click', function(event) {
+      const modal = document.getElementById('cropDetailsModal');
+      if (event.target === modal) {
+        closeCropDetailsModal();
+      }
+    });
+
+    // Start the dashboard
+    document.addEventListener('DOMContentLoaded', initializeDashboard);
+  </script>
+</body>
+</html>

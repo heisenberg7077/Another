@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>👤 User Management - Agricultural System</title>
+  <link rel="stylesheet" href="/style.css">
+
+</head>
+<body>
+  <!-- Header -->
+  <header class="header">
+    <nav class="nav">
+      <a href="/admin-dashboard.html" class="logo">👤 User Management</a>
+      <ul class="nav-links">
+        <li><a href="/admin-dashboard.html">🏠 Dashboard</a></li>
+        <li><a href="#" onclick="logoutAndRefresh()">Logout</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <div class="admin-container">
+    <!-- Admin Header -->
+    <div class="admin-header">
+      <h1>👤 User Management & Analytics</h1>
+      <p>Manage users, track activity, and analyze user engagement</p>
+    </div>
+
+    <!-- Breadcrumbs -->
+    <nav class="breadcrumbs" aria-label="Breadcrumb">
+      <a href="/admin-dashboard.html">Admin</a>
+      <span class="divider">/</span>
+      <span>Users</span>
+    </nav>
+
+    <!-- Admin Navigation -->
+    <div class="admin-nav">
+      <button class="nav-btn active" onclick="showSection('overview')">📊 Overview</button>
+      <button class="nav-btn" onclick="showSection('users')">👥 Users</button>
+      <button class="nav-btn" onclick="showSection('activity')">📈 Activity</button>
+      <button class="nav-btn" onclick="showSection('sessions')">🌱 Sessions</button>
+      <button class="nav-btn" onclick="showSection('analytics')">📊 Analytics</button>
+    </div>
+
+    <!-- Overview Section -->
+    <div id="overview" class="content-section active">
+      <div class="section-header">
+        <h2 class="section-title">📊 User Overview</h2>
+      </div>
+      
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-number" id="totalUsers">-</div>
+          <div class="stat-label">Total Users</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number" id="activeUsers">-</div>
+          <div class="stat-label">Active Users</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number" id="totalSessions">-</div>
+          <div class="stat-label">Total Sessions</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number" id="completedTasks">-</div>
+          <div class="stat-label">Completed Tasks</div>
+        </div>
+      </div>
+      
+      <div id="overviewContent">
+        <div class="loading">Loading overview data...</div>
+      </div>
+    </div>
+
+    <!-- Users Section -->
+    <div id="users" class="content-section">
+      <div class="section-header">
+        <h2 class="section-title">👥 User Management</h2>
+        <button class="btn btn-primary" onclick="showAddUserModal()">Add New User</button>
+      </div>
+      
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Search Users</label>
+          <input type="text" id="userSearch" class="form-control" placeholder="Search by username...">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Filter by Role</label>
+          <select id="roleFilter" class="form-control">
+            <option value="">All Roles</option>
+            <option value="admin">Admin</option>
+            <option value="user">User</option>
+          </select>
+        </div>
+      </div>
+      
+      <div id="usersContent">
+        <div class="loading">Loading users...</div>
+      </div>
+    </div>
+
+    <!-- Activity Section -->
+    <div id="activity" class="content-section">
+      <div class="section-header">
+        <h2 class="section-title">📈 User Activity</h2>
+      </div>
+      
+      <div id="activityContent">
+        <div class="loading">Loading activity data...</div>
+      </div>
+    </div>
+
+    <!-- Sessions Section -->
+    <div id="sessions" class="content-section">
+      <div class="section-header">
+        <h2 class="section-title">🌱 Crop Monitoring Sessions</h2>
+      </div>
+      
+      <div id="sessionsContent">
+        <div class="loading">Loading sessions...</div>
+      </div>
+    </div>
+
+    <!-- Analytics Section -->
+    <div id="analytics" class="content-section">
+      <div class="section-header">
+        <h2 class="section-title">📊 User Analytics</h2>
+      </div>
+      
+      <div id="analyticsContent">
+        <div class="loading">Loading analytics...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add User Modal -->
+  <div id="addUserModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">Add New User</h3>
+        <span class="modal-close" onclick="closeAddUserModal()">&times;</span>
+      </div>
+      <form id="addUserForm">
+        <div class="form-group">
+          <label class="form-label">Username</label>
+          <input type="text" id="userUsername" class="form-control" required>
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <input type="password" id="userPassword" class="form-control" required>
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label">Confirm Password</label>
+          <input type="password" id="userConfirmPassword" class="form-control" required>
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label">Role</label>
+          <select id="userRole" class="form-control" required>
+            <option value="user">User</option>
+            <option value="admin">Admin</option>
+          </select>
+        </div>
+        
+        <div class="form-group">
+          <button type="submit" class="btn btn-primary">Add User</button>
+          <button type="button" class="btn btn-warning" onclick="closeAddUserModal()">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    let currentUser = null;
+    let allUsers = [];
+    let allSessions = [];
+    let allActivity = [];
+
+    // Check authentication
+    async function ensureAuth() {
+      try {
+        const response = await fetch('/api/me');
+        const me = await response.json();
+        if (!me.authenticated) {
+          alert('Please login to access admin panel.');
+          window.location.href = '/login.html';
+          return false;
+        }
+        if (!me.is_admin) {
+          alert('Admin access required.');
+          window.location.href = '/index.html';
+          return false;
+        }
+        currentUser = me;
+        return true;
+      } catch (error) {
+        console.error('Auth check failed:', error);
+        window.location.href = '/login.html';
+        return false;
+      }
+    }
+
+    // Show section
+    function showSection(sectionId) {
+      // Hide all sections
+      document.querySelectorAll('.content-section').forEach(section => {
+        section.classList.remove('active');
+      });
+      
+      // Remove active class from all nav buttons
+      document.querySelectorAll('.nav-btn').forEach(btn => {
+        btn.classList.remove('active');
+      });
+      
+      // Show selected section
+      document.getElementById(sectionId).classList.add('active');
+      event.target.classList.add('active');
+      
+      // Load section data
+      loadSectionData(sectionId);
+    }
+
+    // Load section data
+    async function loadSectionData(sectionId) {
+      switch(sectionId) {
+        case 'overview':
+          await loadOverview();
+          break;
+        case 'users':
+          await loadUsers();
+          break;
+        case 'activity':
+          await loadActivity();
+          break;
+        case 'sessions':
+          await loadSessions();
+          break;
+        case 'analytics':
+          await loadAnalytics();
+          break;
+      }
+    }
+
+    // Load overview data
+    async function loadOverview() {
+      try {
+        const [usersRes, sessionsRes] = await Promise.all([
+          fetch('/api/admin/users'),
+          fetch('/api/admin/monitoring-sessions')
+        ]);
+        
+        allUsers = await usersRes.json();
+        allSessions = await sessionsRes.json();
+        
+        // Update stats
+        document.getElementById('totalUsers').textContent = allUsers.length;
+        document.getElementById('activeUsers').textContent = allSessions.filter(s => s.status === 'active').length;
+        document.getElementById('totalSessions').textContent = allSessions.length;
+        document.getElementById('completedTasks').textContent = '0'; // Will be calculated from progress tracking
+        
+        // Load recent activity
+        loadRecentActivity();
+        
+      } catch (error) {
+        console.error('Error loading overview:', error);
+        document.getElementById('overviewContent').innerHTML = '<div class="error">Error loading overview data</div>';
+      }
+    }
+
+    // Load recent activity
+    function loadRecentActivity() {
+      const container = document.getElementById('overviewContent');
+      const recentSessions = allSessions.slice(0, 5);
+      
+      container.innerHTML = `
+        <div class="activity-timeline">
+          <h3>Recent User Activity</h3>
+          ${recentSessions.map(session => `
+            <div class="activity-item">
+              <div class="activity-icon">🌱</div>
+              <div class="activity-content">
+                <div class="activity-title">${session.username} started monitoring ${session.crop_name}</div>
+                <div class="activity-time">${new Date(session.created_at).toLocaleString()}</div>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      `;
+    }
+
+    // Load users
+    async function loadUsers() {
+      try {
+        const response = await fetch('/api/admin/users');
+        const users = await response.json();
+        
+        allUsers = users;
+        displayUsers(users);
+        
+      } catch (error) {
+        console.error('Error loading users:', error);
+        document.getElementById('usersContent').innerHTML = '<div class="error">Error loading users</div>';
+      }
+    }
+
+    // Display users
+    function displayUsers(users) {
+      const container = document.getElementById('usersContent');
+      container.innerHTML = `
+        <div class="user-grid">
+          ${users.map(user => `
+            <div class="user-card">
+              <div class="user-header">
+                <div class="user-avatar">${user.username.charAt(0).toUpperCase()}</div>
+                <div class="user-info">
+                  <div class="user-name">${user.username} ${user.is_admin ? '<span class="badge">Admin</span>' : ''}</div>
+                  <div class="user-role"><span class="status-dot ${allSessions.some(s => s.user_id === user.id && s.status === 'active') ? 'ok' : 'warn'}"></span> ${user.is_admin ? 'Admin' : 'User'}</div>
+                </div>
+              </div>
+              
+              <div class="user-stats">
+                <div class="stat-item">
+                  <div class="stat-number">${allSessions.filter(s => s.user_id === user.id).length}</div>
+                  <div class="stat-label">Sessions</div>
+                </div>
+                <div class="stat-item">
+                  <div class="stat-number">${allSessions.filter(s => s.user_id === user.id && s.status === 'active').length}</div>
+                  <div class="stat-label">Active</div>
+                </div>
+              </div>
+              
+              <div class="user-actions">
+                <button class="btn btn-primary btn-sm" onclick="editUser(${user.id})">Edit</button>
+                <button class="btn btn-warning btn-sm" onclick="viewUserActivity(${user.id})">Activity</button>
+                <button class="btn btn-danger btn-sm" onclick="deleteUser(${user.id})">Delete</button>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      `;
+    }
+
+    // Load activity
+    async function loadActivity() {
+      try {
+        const response = await fetch('/api/admin/monitoring-sessions');
+        const sessions = await response.json();
+        
+        allActivity = sessions;
+        displayActivity(sessions);
+        
+      } catch (error) {
+        console.error('Error loading activity:', error);
+        document.getElementById('activityContent').innerHTML = '<div class="error">Error loading activity data</div>';
+      }
+    }
+
+    // Display activity
+    function displayActivity(activity) {
+      const container = document.getElementById('activityContent');
+      container.innerHTML = `
+        <div class="activity-timeline">
+          <h3>User Activity Timeline</h3>
+          ${activity.map(item => `
+            <div class="activity-item">
+              <div class="activity-icon">🌱</div>
+              <div class="activity-content">
+                <div class="activity-title">${item.username} - ${item.crop_name} (${item.status})</div>
+                <div class="activity-time">${new Date(item.created_at).toLocaleString()}</div>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      `;
+    }
+
+    // Load sessions
+    async function loadSessions() {
+      try {
+        const response = await fetch('/api/admin/monitoring-sessions');
+        const sessions = await response.json();
+        
+        allSessions = sessions;
+        displaySessions(sessions);
+        
+      } catch (error) {
+        console.error('Error loading sessions:', error);
+        document.getElementById('sessionsContent').innerHTML = '<div class="error">Error loading sessions</div>';
+      }
+    }
+
+    // Display sessions
+    function displaySessions(sessions) {
+      const container = document.getElementById('sessionsContent');
+      container.innerHTML = `
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-number">${sessions.length}</div>
+            <div class="stat-label">Total Sessions</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-number">${sessions.filter(s => s.status === 'active').length}</div>
+            <div class="stat-label">Active Sessions</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-number">${sessions.filter(s => s.status === 'completed').length}</div>
+            <div class="stat-label">Completed Sessions</div>
+          </div>
+        </div>
+        
+        <div class="user-grid">
+          ${sessions.map(session => `
+            <div class="user-card">
+              <div class="user-header">
+                <div class="user-avatar">🌱</div>
+                <div class="user-info">
+                  <div class="user-name">${session.username}</div>
+                  <div class="user-role">${session.crop_name}</div>
+                </div>
+              </div>
+              
+              <div class="user-stats">
+                <div class="stat-item">
+                  <div class="stat-number">Week ${session.current_week}</div>
+                  <div class="stat-label">Current Week</div>
+                </div>
+                <div class="stat-item">
+                  <div class="stat-number">${session.status}</div>
+                  <div class="stat-label">Status</div>
+                </div>
+              </div>
+              
+              <div class="user-actions">
+                <button class="btn btn-primary btn-sm" onclick="viewSessionDetails(${session.id})">View Details</button>
+                <button class="btn btn-warning btn-sm" onclick="editSession(${session.id})">Edit</button>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      `;
+    }
+
+    // Load analytics
+    async function loadAnalytics() {
+      const container = document.getElementById('analyticsContent');
+      container.innerHTML = `
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-number">${allUsers.length}</div>
+            <div class="stat-label">Total Users</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-number">${allSessions.length}</div>
+            <div class="stat-label">Total Sessions</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-number">${allSessions.filter(s => s.status === 'active').length}</div>
+            <div class="stat-label">Active Sessions</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-number">${allSessions.filter(s => s.status === 'completed').length}</div>
+            <div class="stat-label">Completed Sessions</div>
+          </div>
+        </div>
+        
+        <div class="quick-actions">
+          <div class="action-card">
+            <div class="action-title">📊 User Engagement</div>
+            <div class="action-description">Analyze user engagement patterns and activity</div>
+            <button class="btn btn-primary" onclick="generateEngagementReport()">Generate Report</button>
+          </div>
+          
+          <div class="action-card">
+            <div class="action-title">📈 Session Analytics</div>
+            <div class="action-description">Detailed analysis of crop monitoring sessions</div>
+            <button class="btn btn-success" onclick="generateSessionReport()">Generate Report</button>
+          </div>
+          
+          <div class="action-card">
+            <div class="action-title">📋 Export Data</div>
+            <div class="action-description">Export user and session data for analysis</div>
+            <button class="btn btn-warning" onclick="exportUserData()">Export Data</button>
+          </div>
+        </div>
+      `;
+    }
+
+    // Show add user modal
+    function showAddUserModal() {
+      document.getElementById('addUserModal').style.display = 'block';
+    }
+
+    // Close add user modal
+    function closeAddUserModal() {
+      document.getElementById('addUserModal').style.display = 'none';
+      document.getElementById('addUserForm').reset();
+    }
+
+    // Add user form submission
+    document.getElementById('addUserForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      
+      const username = document.getElementById('userUsername').value;
+      const password = document.getElementById('userPassword').value;
+      const confirmPassword = document.getElementById('userConfirmPassword').value;
+      const role = document.getElementById('userRole').value;
+      
+      if (password !== confirmPassword) {
+        showMessage('Passwords do not match', 'error');
+        return;
+      }
+      
+      try {
+        const response = await fetch('/api/admin/users', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            username: username,
+            password: password,
+            role: role
+          })
+        });
+        
+        if (response.ok) {
+          showMessage('User added successfully!', 'success');
+          closeAddUserModal();
+          loadUsers();
+        } else {
+          throw new Error('Failed to add user');
+        }
+      } catch (error) {
+        console.error('Error adding user:', error);
+        showMessage('Error adding user. Please try again.', 'error');
+      }
+    });
+
+    // Placeholder functions for future implementation
+    function editUser(userId) {
+      showMessage('Edit user functionality - Coming Soon!', 'info');
+    }
+
+    function deleteUser(userId) {
+      if (confirm('Are you sure you want to delete this user?')) {
+        showMessage('Delete user functionality - Coming Soon!', 'info');
+      }
+    }
+
+    function viewUserActivity(userId) {
+      showMessage('View user activity functionality - Coming Soon!', 'info');
+    }
+
+    function viewSessionDetails(sessionId) {
+      showMessage('View session details functionality - Coming Soon!', 'info');
+    }
+
+    function editSession(sessionId) {
+      showMessage('Edit session functionality - Coming Soon!', 'info');
+    }
+
+    function generateEngagementReport() {
+      showMessage('Generate engagement report functionality - Coming Soon!', 'info');
+    }
+
+    function generateSessionReport() {
+      showMessage('Generate session report functionality - Coming Soon!', 'info');
+    }
+
+    function exportUserData() {
+      showMessage('Export user data functionality - Coming Soon!', 'info');
+    }
+
+    // Show message
+    function showMessage(message, type) {
+      const messageDiv = document.createElement('div');
+      messageDiv.className = type;
+      messageDiv.textContent = message;
+      messageDiv.style.position = 'fixed';
+      messageDiv.style.top = '20px';
+      messageDiv.style.right = '20px';
+      messageDiv.style.zIndex = '9999';
+      messageDiv.style.padding = '1rem';
+      messageDiv.style.borderRadius = '8px';
+      messageDiv.style.maxWidth = '300px';
+      
+      document.body.appendChild(messageDiv);
+      
+      setTimeout(() => {
+        document.body.removeChild(messageDiv);
+      }, 3000);
+    }
+
+    // Logout function
+    async function logoutAndRefresh() {
+      await fetch('/api/logout', { method: 'POST' });
+      window.location.href = '/login.html';
+    }
+
+    // Initialize the application
+    document.addEventListener('DOMContentLoaded', async function() {
+      const isAuthenticated = await ensureAuth();
+      if (isAuthenticated) {
+        await loadOverview();
+      }
+    });
+  </script>
+</body>
+</html>
+
+

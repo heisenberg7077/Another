@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🌱 Weekly Crop Guidance - Precision Agriculture</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Header -->
+  <header class="header">
+    <nav class="nav">
+      <a href="/index.html" class="logo">🌱 Weekly Crop Guidance</a>
+      <ul class="nav-links">
+        <li><a href="/index.html">🏠 Home</a></li>
+        <li><a href="/my-tasks.html">📋 My Tasks</a></li>
+        <li><a href="#" onclick="logout()">Logout</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <div class="guidance-container">
+    <!-- Page Header -->
+    <div class="page-header">
+      <h1>🌱 Weekly Crop Guidance</h1>
+      <p>Complete week-by-week guide for your crop cultivation journey</p>
+    </div>
+
+    <!-- Crop Info Banner -->
+    <div class="crop-info-banner" id="cropInfoBanner">
+      <div>
+        <div class="crop-name" id="cropName">Loading...</div>
+        <p id="cropCategory" style="color: #666; margin: 0.5rem 0 0 0;">Loading category...</p>
+      </div>
+      <div class="crop-details" id="cropDetails">
+        <!-- Dynamic crop details will be inserted here -->
+      </div>
+    </div>
+
+    <!-- Week Navigation -->
+    <div class="week-navigation">
+      <div class="week-selector-controls">
+        <button class="week-btn" id="prevWeek" onclick="changeWeek(-1)">← Previous</button>
+        <div class="current-week-display" id="currentWeekDisplay">Week 1</div>
+        <button class="week-btn" id="nextWeek" onclick="changeWeek(1)">Next →</button>
+      </div>
+      <div class="week-timeline" id="weekTimeline">
+        <!-- Dynamic week timeline will be inserted here -->
+      </div>
+    </div>
+
+    <!-- Main Content Grid -->
+    <div class="content-grid">
+      <!-- Main Content -->
+      <div class="main-content">
+        <!-- Current Stage -->
+        <div class="section-card" id="stageSection">
+          <div class="section-card-header">
+            <h2 class="section-title">🌱 Current Growth Stage</h2>
+          </div>
+          <div class="section-card-body" id="stageContent">
+            <div class="loading">Loading stage information...</div>
+          </div>
+        </div>
+
+        <!-- Weekly Tasks -->
+        <div class="section-card" id="tasksSection">
+          <div class="section-card-header">
+            <h2 class="section-title">📋 Week's Tasks & Activities</h2>
+          </div>
+          <div class="section-card-body" id="tasksContent">
+          </div>
+        </div>
+
+        <!-- Fertilizers & Pesticides -->
+        <div class="section-card" id="inputsSection">
+          <div class="section-card-header">
+            <h2 class="section-title">💊 Fertilizers & Pesticides</h2>
+          </div>
+          <div class="section-card-body" id="inputsContent">
+            <div class="loading">Loading inputs...</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sidebar -->
+      <div class="sidebar">
+        <!-- Videos -->
+        <div class="section-card">
+          <div class="section-card-header">
+            <h3 class="section-title">🎥 Video Tutorials</h3>
+          </div>
+          <div class="section-card-body">
+            <div class="video-section" id="videoSection">
+              <div class="loading">Loading videos...</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="quick-actions">
+          <h3 class="section-title" style="margin-bottom: 1rem;">⚡ Quick Actions</h3>
+          <div class="quick-action-btns">
+            <button class="quick-action-btn" onclick="window.location.href='/my-tasks.html'">
+              📋 View My Tasks
+            </button>
+            <button class="quick-action-btn" onclick="window.print()">
+              🖨️ Print This Week
+            </button>
+            <button class="quick-action-btn" onclick="window.location.href='/index.html'">
+              🏠 Back to Home
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Video Modal -->
+  <div class="modal" id="videoModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="modalTitle">Video Tutorial</h3>
+        <button class="modal-close" onclick="closeVideoModal()">×</button>
+      </div>
+      <div class="modal-body">
+        <iframe id="videoPlayer" class="video-player" frameborder="0" allowfullscreen></iframe>
+        <div id="videoDescription"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let currentCropId = null;
+    let currentWeek = 1;
+    let totalWeeks = 12;
+    let cropData = null;
+    let sessionId = null;
+
+    // Initialize page
+    async function initializePage() {
+      // Get crop and session from URL params
+      const params = new URLSearchParams(window.location.search);
+      currentCropId = params.get('crop_id');
+      sessionId = params.get('session_id');
+      currentWeek = parseInt(params.get('week') || '1');
+
+      if (!currentCropId) {
+        alert('No crop selected. Redirecting to home.');
+        window.location.href = '/index.html';
+        return;
+      }
+
+      await loadCropData();
+      await loadWeekData();
+    }
+
+    // Load crop basic data
+    async function loadCropData() {
+      try {
+        const response = await fetch(`/api/crops/${currentCropId}`);
+        cropData = await response.json();
+        // Prefer total_weeks from weekly-guidance API if available
+        try {
+          const wg = await fetch(`/api/crops/${currentCropId}/weekly-guidance/${currentWeek}`).then(r => r.json());
+          if (wg && typeof wg.total_weeks === 'number') totalWeeks = wg.total_weeks;
+          else {
+            const tw = await fetch(`/api/crops/${currentCropId}/total-weeks`).then(r => r.json());
+            if (tw && typeof tw.total_weeks === 'number') totalWeeks = tw.total_weeks;
+          }
+        } catch (e) { /* fallback keeps default 12 */ }
+        
+        document.getElementById('cropName').textContent = cropData.name;
+        document.getElementById('cropCategory').textContent = cropData.season || 'All Seasons';
+        
+        // Update crop details
+        const detailsHtml = `
+          <div class="detail-badge">
+            <div class="detail-label">Season</div>
+            <div class="detail-value">${cropData.season || 'N/A'}</div>
+          </div>
+          <div class="detail-badge">
+            <div class="detail-label">EC Range</div>
+            <div class="detail-value">${cropData.ec || 'N/A'}</div>
+          </div>
+        `;
+        document.getElementById('cropDetails').innerHTML = detailsHtml;
+
+        // Generate week timeline
+        generateWeekTimeline();
+      } catch (error) {
+        console.error('Error loading crop data:', error);
+      }
+    }
+
+    // Load data for specific week
+    async function loadWeekData() {
+      document.getElementById('currentWeekDisplay').textContent = `Week ${currentWeek}`;
+      
+      try {
+        const response = await fetch(`/api/crops/${currentCropId}/weekly-guidance/${currentWeek}`);
+        const data = await response.json();
+        
+        displayStageInfo(data.stages);
+        displayTasks(data.weekly_tasks);
+        displayInputs(data.fertilizers, data.pesticides);
+        displayVideos(data.videos);
+        
+        updateNavigationButtons();
+      } catch (error) {
+        console.error('Error loading week data:', error);
+        document.getElementById('stageContent').innerHTML = '<div class="no-data">Error loading data</div>';
+      }
+    }
+
+    // Display stage information
+    function displayStageInfo(stages) {
+      const container = document.getElementById('stageContent');
+      
+      if (!stages || stages.length === 0) {
+        container.innerHTML = '<div class="no-data">No stage information for this week</div>';
+        return;
+      }
+      
+      const stage = stages[0];
+      container.innerHTML = `
+        <div class="stage-info">
+          <div class="stage-title">${stage.title}</div>
+          <div class="stage-meta">
+            <span>📅 Week ${stage.start_week} - ${stage.end_week}</span>
+            ${stage.difficulty_level ? `<span>📊 Difficulty: ${stage.difficulty_level}</span>` : ''}
+            ${stage.time_required ? `<span>⏱️ ${stage.time_required}</span>` : ''}
+          </div>
+          ${stage.detailed_description ? `<p style="margin-top: 1rem; line-height: 1.6;">${stage.detailed_description}</p>` : ''}
+          ${stage.equipment_needed ? `
+            <div style="margin-top: 1rem;">
+              <strong>🛠️ Equipment Needed:</strong>
+              <p style="margin: 0.5rem 0;">${stage.equipment_needed}</p>
+            </div>
+          ` : ''}
+          <div style="margin-top: 1rem;">
+            <strong>📝 Key Tasks:</strong>
+            <p style="margin: 0.5rem 0;">${stage.tasks}</p>
+          </div>
+        </div>
+      `;
+    }
+
+    // Display weekly tasks
+    function displayTasks(tasks) {
+      const container = document.getElementById('tasksContent');
+      
+      if (!tasks || tasks.length === 0) {
+        container.innerHTML = '<div class="no-data">No specific tasks for this week. Continue with general crop maintenance.</div>';
+        return;
+      }
+      
+      container.innerHTML = '<div class="task-list">' + tasks.map(task => `
+        <div class="task-card" id="task-${task.id}">
+          <div class="task-header">
+            <div class="task-title-section">
+              <div class="task-title">${task.task_title}</div>
+              <div class="task-meta">
+                <span class="meta-badge priority-${task.priority.toLowerCase()}">${task.priority}</span>
+                <span class="meta-badge type-${task.task_type}">${task.task_type}</span>
+                ${task.estimated_duration ? `<span class="meta-badge" style="background: #e9ecef; color: #2d1e2f;">⏱️ ${task.estimated_duration}</span>` : ''}
+              </div>
+            </div>
+          </div>
+          
+          <div class="task-description">${task.task_description}</div>
+          
+          ${task.equipment_needed || task.materials_needed ? `
+            <div class="task-details-grid">
+              ${task.equipment_needed ? `
+                <div class="task-detail-item">
+                  <div class="task-detail-label">🛠️ Equipment</div>
+                  <div class="task-detail-value">${task.equipment_needed}</div>
+                </div>
+              ` : ''}
+              ${task.materials_needed ? `
+                <div class="task-detail-item">
+                  <div class="task-detail-label">📦 Materials</div>
+                  <div class="task-detail-value">${task.materials_needed}</div>
+                </div>
+              ` : ''}
+              ${task.weather_conditions ? `
+                <div class="task-detail-item">
+                  <div class="task-detail-label">🌤️ Weather</div>
+                  <div class="task-detail-value">${task.weather_conditions}</div>
+                </div>
+              ` : ''}
+            </div>
+          ` : ''}
+          
+          <div class="task-actions">
+            <button class="btn btn-primary btn-sm" onclick="toggleDetails(${task.id})">
+              📖 View Details
+            </button>
+            ${task.video_url ? `
+              <button class="btn btn-success btn-sm" onclick="playVideo('${task.video_url}', '${task.task_title}')">
+                🎥 Watch Video
+              </button>
+            ` : ''}
+          </div>
+          
+          <div class="expandable-content" id="details-${task.id}">
+            ${task.step_by_step_instructions ? `
+              <div style="margin-bottom: 1rem;">
+                <h4 style="margin-bottom: 0.5rem; color: #4a7c59;">📋 Step-by-Step Instructions:</h4>
+                <ol class="step-by-step">
+                  ${task.step_by_step_instructions.split('\n').filter(s => s.trim()).map(step => `<li>${step.replace(/^\d+\.\s*/, '')}</li>`).join('')}
+                </ol>
+              </div>
+            ` : ''}
+            
+            ${task.tips_and_notes ? `
+              <div class="tips-box">
+                <h4>💡 Tips & Notes</h4>
+                <p style="margin: 0;">${task.tips_and_notes}</p>
+              </div>
+            ` : ''}
+            
+            ${task.safety_precautions ? `
+              <div class="safety-box">
+                <h4>⚠️ Safety Precautions</h4>
+                <p style="margin: 0;">${task.safety_precautions}</p>
+              </div>
+            ` : ''}
+            
+            ${task.expected_outcome ? `
+              <div style="margin-top: 1rem; padding: 1rem; background: #d4edda; border-left: 4px solid #28a745; border-radius: 4px;">
+                <h4 style="margin: 0 0 0.5rem 0; color: #155724; font-size: 0.9rem;">✅ Expected Outcome</h4>
+                <p style="margin: 0;">${task.expected_outcome}</p>
+              </div>
+            ` : ''}
+          </div>
+        </div>
+      `).join('') + '</div>';
+    }
+
+    // Display fertilizers and pesticides
+    function displayInputs(fertilizers, pesticides) {
+      const container = document.getElementById('inputsContent');
+      
+      if ((!fertilizers || fertilizers.length === 0) && (!pesticides || pesticides.length === 0)) {
+        container.innerHTML = '<div class="no-data">No fertilizers or pesticides scheduled for this week</div>';
+        return;
+      }
+      
+      let html = '';
+      
+      if (fertilizers && fertilizers.length > 0) {
+        html += `
+          <h3 style="color: #28a745; margin-bottom: 1rem;">🌱 Fertilizers</h3>
+          <div class="task-list">
+            ${fertilizers.map(f => `
+              <div class="task-card" style="border-left-color: #28a745;">
+                <div class="task-title">${f.name}</div>
+                <div class="task-details-grid">
+                  <div class="task-detail-item">
+                    <div class="task-detail-label">Quantity</div>
+                    <div class="task-detail-value">${f.quantity}</div>
+                  </div>
+                  <div class="task-detail-item">
+                    <div class="task-detail-label">Price</div>
+                    <div class="task-detail-value">${f.price}</div>
+                  </div>
+                  ${f.gap_days ? `
+                    <div class="task-detail-item">
+                      <div class="task-detail-label">Next Application</div>
+                      <div class="task-detail-value">${f.gap_days} days</div>
+                    </div>
+                  ` : ''}
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        `;
+      }
+      
+      if (pesticides && pesticides.length > 0) {
+        html += `
+          <h3 style="color: #dc3545; margin: 2rem 0 1rem 0;">🛡️ Pesticides</h3>
+          <div class="task-list">
+            ${pesticides.map(p => `
+              <div class="task-card" style="border-left-color: #dc3545;">
+                <div class="task-title">${p.name}</div>
+                <div class="task-details-grid">
+                  <div class="task-detail-item">
+                    <div class="task-detail-label">Application</div>
+                    <div class="task-detail-value">${p.application}</div>
+                  </div>
+                  <div class="task-detail-item">
+                    <div class="task-detail-label">Quantity</div>
+                    <div class="task-detail-value">${p.quantity}</div>
+                  </div>
+                  <div class="task-detail-item">
+                    <div class="task-detail-label">Price</div>
+                    <div class="task-detail-value">${p.price}</div>
+                  </div>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        `;
+      }
+      
+      container.innerHTML = html;
+    }
+
+    // Display videos
+    function displayVideos(videos) {
+      const container = document.getElementById('videoSection');
+      
+      if (!videos || videos.length === 0) {
+        container.innerHTML = '<div class="no-data" style="padding: 2rem;">No videos available for this week</div>';
+        return;
+      }
+      
+      container.innerHTML = videos.map(v => `
+        <div class="video-card" onclick="playVideo('${v.video_url}', '${v.video_title}', '${v.description || ''}')">
+          <img src="${v.thumbnail_url || '/api/placeholder/400/200'}" alt="${v.video_title}" class="video-thumbnail" onerror="this.src='/api/placeholder/400/200'">
+          <div class="video-info">
+            <div class="video-title">${v.video_title}</div>
+            <div class="video-meta">
+              <span>${v.duration_minutes ? v.duration_minutes + ' min' : 'Duration N/A'}</span>
+              <span class="video-badge">${v.video_type}</span>
+            </div>
+            ${v.is_featured ? '<span class="video-badge" style="background: #ffc107; margin-top: 0.5rem;">⭐ Featured</span>' : ''}
+          </div>
+        </div>
+      `).join('');
+    }
+
+    
+
+    // Generate week timeline
+    function generateWeekTimeline() {
+      const timeline = document.getElementById('weekTimeline');
+      let html = '';
+      
+      for (let i = 1; i <= totalWeeks; i++) {
+        const isActive = i === currentWeek;
+        const isCompleted = i < currentWeek;
+        const classes = `timeline-week ${isActive ? 'active' : ''} ${isCompleted ? 'completed' : ''}`;
+        
+        html += `
+          <div class="${classes}" onclick="goToWeek(${i})">
+            <div class="week-number">W${i}</div>
+            <div class="week-status">${isCompleted ? '✓' : isActive ? '●' : ''}</div>
+          </div>
+        `;
+      }
+      
+      timeline.innerHTML = html;
+    }
+
+    // Navigation functions
+    function changeWeek(delta) {
+      const newWeek = currentWeek + delta;
+      if (newWeek >= 1 && newWeek <= totalWeeks) {
+        currentWeek = newWeek;
+        updateURL();
+        loadWeekData();
+      }
+    }
+
+    function goToWeek(week) {
+      currentWeek = week;
+      updateURL();
+      loadWeekData();
+    }
+
+    function updateNavigationButtons() {
+      document.getElementById('prevWeek').disabled = currentWeek === 1;
+      document.getElementById('nextWeek').disabled = currentWeek === totalWeeks;
+    }
+
+    function updateURL() {
+      const params = new URLSearchParams(window.location.search);
+      params.set('week', currentWeek);
+      window.history.replaceState({}, '', `${window.location.pathname}?${params.toString()}`);
+    }
+
+    // Toggle task details
+    function toggleDetails(taskId) {
+      const detailsDiv = document.getElementById(`details-${taskId}`);
+      const btn = event.target;
+      
+      if (detailsDiv.classList.contains('expanded')) {
+        detailsDiv.classList.remove('expanded');
+        btn.textContent = '📖 View Details';
+      } else {
+        detailsDiv.classList.add('expanded');
+        btn.textContent = '📕 Hide Details';
+      }
+    }
+
+    // Play video
+    function playVideo(url, title, description = '') {
+      const modal = document.getElementById('videoModal');
+      const player = document.getElementById('videoPlayer');
+      const modalTitle = document.getElementById('modalTitle');
+      const videoDesc = document.getElementById('videoDescription');
+      
+      // Convert YouTube URL to embed format
+      let embedUrl = url;
+      if (url.includes('youtube.com') || url.includes('youtu.be')) {
+        const videoId = url.includes('youtube.com') 
+          ? url.split('v=')[1]?.split('&')[0]
+          : url.split('youtu.be/')[1]?.split('?')[0];
+        embedUrl = `https://www.youtube.com/embed/${videoId}`;
+      }
+      
+      player.src = embedUrl;
+      modalTitle.textContent = title;
+      videoDesc.innerHTML = description ? `<p style="margin-top: 1rem; color: #666;">${description}</p>` : '';
+      modal.classList.add('active');
+    }
+
+    function closeVideoModal() {
+      const modal = document.getElementById('videoModal');
+      const player = document.getElementById('videoPlayer');
+      player.src = '';
+      modal.classList.remove('active');
+    }
+
+    // Logout function
+    async function logout() {
+      await fetch('/api/logout', { method: 'POST' });
+      window.location.href = '/login.html';
+    }
+
+    // Initialize on page load
+    document.addEventListener('DOMContentLoaded', initializePage);
+
+    // Close modal on background click
+    document.getElementById('videoModal').addEventListener('click', function(e) {
+      if (e.target === this) {
+        closeVideoModal();
+      }
+    });
+  </script>
+</body>
+</html>

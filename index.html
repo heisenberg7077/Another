@@ -1,0 +1,1832 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Precision Agriculture Assistant</title>
+  <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+  <!-- To use your Gemini API key in the frontend, set it here if needed (not recommended for production): -->
+  <!-- <meta name="gemini-api-key" content="YOUR_GEMINI_API_KEY"> -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <!-- Header -->
+  <header class="header">
+    <nav class="nav">
+      <a href="#" class="logo">🌾 Precision Agriculture Assistant</a>
+      <button id="mobileMenuBtn" class="mobile-menu-btn" aria-label="Open menu" style="display:none;">
+        <span class="bar"></span>
+      </button>
+      <ul class="nav-links">
+        <li><a href="#crops">Crops</a></li>
+      </ul>
+      <ul class="nav-links">
+        <li id="navDatabase" style="display:none;"><a href="/admin-dashboard.html">Admin Dashboard</a></li>
+        <li id="navLandSelection" style="display:none;"><a href="/land-resource-planning.html">🗺️ Land & Resource Planning</a></li>
+        <li id="navMonitoring" style="display:none;"><a href="/monitoring.html">📊 Monitoring</a></li>
+        <li id="navLogin"><a href="/login.html">Login</a></li>
+        <li id="navProfile" style="display:none;">
+          <a href="#" id="profileAnchor" style="display:flex; align-items:center; gap:8px;">
+            <span id="profileAvatar" style="display:inline-flex; width:28px; height:28px; border-radius:50%; background:#4a7c59; color:#fff; align-items:center; justify-content:center; font-weight:700;">U</span>
+            <span id="profileName">User</span>
+          </a>
+        </li>
+        <li id="navLogout" style="display:none;"><a href="#" onclick="logoutAndRefresh()">Logout</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <!-- Mobile Sidebar (drawer) -->
+  <div id="mobileSidebar" class="mobile-sidebar" aria-hidden="true">
+    <div class="mobile-sidebar-header">
+      <div id="mobileProfile" class="mobile-profile" style="display:none;">
+        <span id="mobileProfileAvatar" class="avatar">U</span>
+        <span id="mobileProfileName">User</span>
+      </div>
+      <button id="mobileSidebarClose" class="mobile-sidebar-close" aria-label="Close">✖</button>
+    </div>
+    <nav class="mobile-sidebar-nav">
+      <a id="msDatabase" href="/admin-dashboard.html" style="display:none;">Admin Dashboard</a>
+      <a id="msLandSelection" href="/land-resource-planning.html" style="display:none;">🗺️ Land & Resource Planning</a>
+      <a id="msMonitoring" href="/monitoring.html" style="display:none;">📊 Monitoring</a>
+      <a id="msMyTasks" href="/my-tasks.html" style="display:none;">📋 My Tasks</a>
+      <a id="msWeeklyGuidance" href="/weekly-guidance.html" style="display:none;">🌱 Weekly Guidance</a>
+      <a id="msLogin" href="/login.html" style="display:none;">Login</a>
+      <a id="msLogout" href="#" style="display:none;">Logout</a>
+    </nav>
+  </div>
+  <div id="mobileOverlay" class="mobile-overlay" style="display:none;"></div>
+
+  <!-- Main Content -->
+  <div class="container">
+    <!-- Hero Section -->
+    <div class="hero">
+      <h1>🌱 Precision Agriculture Assistant</h1>
+      <p>Get expert guidance for crop management, disease detection, and farming best practices</p>
+      
+      <!-- Weather Widget -->
+      <div class="weather-widget" id="weatherWidget">
+        <div class="weather-header">
+          <h3>🌤️ Current Weather</h3>
+          <button id="refreshWeather" class="btn btn-sm btn-outline-primary">🔄</button>
+        </div>
+        <div class="weather-content" id="weatherContent">
+          <div class="weather-loading">
+            <div class="loading-spinner"></div>
+            <p>Detecting your location...</p>
+            <small>Getting weather data for your area</small>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Content Area -->
+    <div class="main-content">
+      <!-- MODULE 1: WEATHER (Already at top in hero section) -->
+      
+      <!-- Quick Actions Section -->
+      <section class="section" id="quick-actions-module">
+        <h2 class="section-title">🚀 Quick Actions</h2>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+          <a href="/land-resource-planning.html" class="action-card" style="text-decoration: none; color: inherit;">
+            <div style="background: linear-gradient(135deg, #4a7c59, #28a745); color: white; padding: 2rem; border-radius: 12px; text-align: center; transition: transform 0.3s ease, box-shadow 0.3s ease;" onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 8px 24px rgba(0,0,0,0.15)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 16px rgba(0,0,0,0.08)'">
+              <div style="font-size: 3rem; margin-bottom: 1rem;">🗺️</div>
+              <h3 style="margin: 0 0 0.5rem 0;">Land & Resource Planning</h3>
+              <p style="margin: 0; opacity: 0.9; font-size: 0.9rem;">Get crop suggestions and comprehensive land analysis</p>
+            </div>
+          </a>
+          
+          <a href="/crops.html" class="action-card" style="text-decoration: none; color: inherit;">
+            <div style="background: linear-gradient(135deg, #667eea, #764ba2); color: white; padding: 2rem; border-radius: 12px; text-align: center; transition: transform 0.3s ease, box-shadow 0.3s ease;" onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 8px 24px rgba(0,0,0,0.15)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 16px rgba(0,0,0,0.08)'">
+              <div style="font-size: 3rem; margin-bottom: 1rem;">🌱</div>
+              <h3 style="margin: 0 0 0.5rem 0;">Browse All Crops</h3>
+              <p style="margin: 0; opacity: 0.9; font-size: 0.9rem;">Explore detailed crop information and guides</p>
+            </div>
+          </a>
+          
+          <a href="/my-tasks.html" class="action-card" style="text-decoration: none; color: inherit;">
+            <div style="background: linear-gradient(135deg, #f093fb, #f5576c); color: white; padding: 2rem; border-radius: 12px; text-align: center; transition: transform 0.3s ease, box-shadow 0.3s ease;" onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 8px 24px rgba(0,0,0,0.15)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 16px rgba(0,0,0,0.08)'">
+              <div style="font-size: 3rem; margin-bottom: 1rem;">📋</div>
+              <h3 style="margin: 0 0 0.5rem 0;">My Tasks</h3>
+              <p style="margin: 0; opacity: 0.9; font-size: 0.9rem;">View and manage your farming tasks</p>
+            </div>
+          </a>
+        </div>
+      </section>
+
+      <!-- MODULE 2: CROP SELECTION WITH COST CHART -->
+      <section class="section" id="crop-selection-module">
+        <h2 class="section-title">🌾 Crop Information & Cost Analysis</h2>
+
+
+        <!-- Comprehensive Cost Chart Table -->
+        <div id="costChartSection" class="cost-chart-section" style="display: none; margin-bottom: 2rem;">
+          <h3>💰 Comprehensive Cost Analysis</h3>
+          <div id="costChartContent" class="cost-chart-content"></div>
+        </div>
+
+        <!-- Detailed Crop Plan Modal -->
+        <div id="cropPlanModal" class="modal" style="display: none;">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h2>🌾 Complete Crop Plan</h2>
+              <span class="close" onclick="closeCropPlanModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+              <div id="cropPlanDetails"></div>
+              <div class="plan-actions">
+                <button id="startCropBtn" class="btn btn-success btn-lg" onclick="startCropMonitoring()">
+                  🚀 Start This Crop Journey
+                </button>
+                <a href="/weekly-guidance.html" class="btn btn-outline-primary btn-lg" style="margin-left: 1rem;">
+                  🌱 View Detailed Weekly Guidance
+                </a>
+                <a href="/weekly-guidance-enhanced.html" class="btn btn-success btn-lg" style="margin-left: 1rem;">
+                  🚀 Enhanced Progress Tracking
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label for="crop">Select Crop:</label>
+          <select id="crop" class="form-control"></select>
+        </div>
+
+        <div class="form-group" id="weekControls" style="display: none;">
+          <label for="weekRange">Select Week: <span id="weekLabel">1</span></label>
+          <input type="range" id="weekRange" class="form-control" min="1" max="20" value="1" step="1">
+        </div>
+
+        <div id="weekTasks" class="task-list" style="display: none;">
+          <h3>📅 Weekly Tasks</h3>
+          <ul></ul>
+        </div>
+
+        <h2 id="resultTitle" class="text-center">Crop: -</h2>
+        
+        <div class="crop-selection">
+          <div class="crop-card">
+            <h3>📋 Overview</h3>
+            <p id="overview" class="muted">–</p>
+            <div class="crop-info">
+              <span class="pill" id="climate">Climate: –</span>
+              <span class="pill" id="soil">Soil: –</span>
+            </div>
+          </div>
+          
+          <div class="crop-card">
+            <h3>🌱 Preparation & Sowing</h3>
+            <p><b>Land prep:</b> <span id="landPrep">–</span></p>
+            <p><b>Sowing/Transplant:</b> <span id="sowing">–</span></p>
+            <p><b>Irrigation:</b> <span id="irrigation">–</span></p>
+          </div>
+          
+          <div class="crop-card">
+            <h3>⚙️ Management</h3>
+            <p><b>Nutrients:</b> <span id="nutrients">–</span></p>
+            <p><b>Weeds:</b> <span id="weeds">–</span></p>
+            <p><b>Pests/Diseases:</b> <span id="pests">–</span></p>
+            <p><b>Harvesting:</b> <span id="harvest">–</span></p>
+            <p><b>Yield:</b> <span id="yield">–</span></p>
+          </div>
+        </div>
+
+
+        <!-- Week-by-week process and video support will be shown here dynamically from the database when a crop is started. -->
+
+        <div class="task-list">
+          <h3>🌿 Fertilizers</h3>
+          <ul id="fertList"></ul>
+        </div>
+
+        <div class="task-list">
+          <h3>🛡️ Pesticides</h3>
+          <ul id="pestList"></ul>
+        </div>
+
+      
+
+        <div class="task-list">
+          <h3>📅 Growing Timeline</h3>
+          <div id="timeline"></div>
+        </div>
+      </section>
+
+    </div>
+  </div>
+
+  <!-- Notifications -->
+  <div class="notifications-container" id="notificationsContainer">
+    <!-- Notifications will be populated by JavaScript -->
+  </div>
+
+  <!-- Chatbot -->
+  <div class="chatbot-container">
+    <button class="chatbot-btn" id="chatbot-btn">💬</button>
+    
+    <div class="chatbot-window" id="chatbot-window">
+      <div class="chatbot-header">
+        <span>🌾 Crop Assistant</span>
+        <button class="chatbot-close" id="chatbot-close">✖</button>
+      </div>
+      <div class="chatbot-messages" id="chatbot-messages">
+        <div class="bot-msg">
+          👋 Hello! I'm your Precision Agriculture Assistant. I can help you with:
+          <br/>• Crop selection advice
+          <br/>• Farming best practices
+          <br/>• Seasonal recommendations
+          <br/>• Pest management tips
+          <br/><br/>How can I help you today?
+        </div>
+      </div>
+      <div class="chatbot-input">
+        <input type="text" id="chatbotInput" placeholder="Ask me about farming..." />
+        <!-- Image upload disabled -->
+        <input type="file" id="chatbotImageUpload" accept="image/*" style="display: none;" />
+        <button id="chatbotImageBtn" title="Upload Image" disabled>📷</button>
+        <button id="chatbotSendBtn">Send</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function isMobileScreen() { return window.innerWidth <= 768; }
+
+    function setMobileSidebarVisibility(show) {
+      const sidebar = document.getElementById('mobileSidebar');
+      const overlay = document.getElementById('mobileOverlay');
+      if (show) {
+        sidebar.setAttribute('aria-hidden', 'false');
+        sidebar.style.transform = 'translateX(0)';
+        overlay.style.display = 'block';
+        requestAnimationFrame(() => overlay.style.opacity = '1');
+      } else {
+        sidebar.setAttribute('aria-hidden', 'true');
+        sidebar.style.transform = 'translateX(-100%)';
+        overlay.style.opacity = '0';
+        setTimeout(() => { overlay.style.display = 'none'; }, 180);
+      }
+    }
+
+    async function refreshAuthUi() {
+      try {
+        const res = await fetch('/api/me');
+        const me = await res.json();
+        const isAuth = !!me.authenticated;
+        
+        // Store user data globally for use in other functions
+        if (isAuth) {
+          window.currentUser = {
+            id: (me.user_id || me.id),
+            username: me.username,
+            is_admin: me.is_admin
+          };
+          console.log('User authenticated:', window.currentUser);
+        } else {
+          window.currentUser = null;
+          console.log('User not authenticated');
+        }
+        
+        const onMobile = isMobileScreen();
+
+        // Desktop header behavior (show links when authenticated)
+        document.getElementById('navDatabase').style.display = (!onMobile && isAuth && me.is_admin) ? 'inline-block' : (!onMobile ? 'none' : 'none');
+        document.getElementById('navLandSelection').style.display = (!onMobile && isAuth) ? 'inline-block' : (!onMobile ? 'none' : 'none');
+        document.getElementById('navMonitoring').style.display = (!onMobile && isAuth && me.is_admin) ? 'inline-block' : (!onMobile ? 'none' : 'none');
+        document.getElementById('navMyTasks').style.display = (!onMobile && isAuth) ? 'inline-block' : (!onMobile ? 'none' : 'none');
+        document.getElementById('navWeeklyGuidance').style.display = (!onMobile && isAuth) ? 'inline-block' : (!onMobile ? 'none' : 'none');
+
+        // Login/Logout/Profile in header
+        document.getElementById('navLogin').style.display = isAuth ? 'none' : 'inline-block';
+        document.getElementById('navLogout').style.display = (!onMobile && isAuth) ? 'inline-block' : 'none';
+        document.getElementById('navProfile').style.display = isAuth ? 'inline-block' : 'none';
+
+        // Mobile: show hamburger only when authenticated
+        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+        mobileMenuBtn.style.display = (onMobile && isAuth) ? 'inline-flex' : 'none';
+
+        // Populate mobile sidebar visibility/links
+        document.getElementById('msDatabase').style.display = (isAuth && me.is_admin) ? 'block' : 'none';
+        document.getElementById('msLandSelection').style.display = isAuth ? 'block' : 'none';
+        document.getElementById('msMonitoring').style.display = (isAuth && me.is_admin) ? 'block' : 'none';
+        document.getElementById('msMyTasks').style.display = isAuth ? 'block' : 'none';
+        document.getElementById('msWeeklyGuidance').style.display = isAuth ? 'block' : 'none';
+        document.getElementById('msLogin').style.display = isAuth ? 'none' : 'block';
+        document.getElementById('msLogout').style.display = isAuth ? 'block' : 'none';
+        document.getElementById('mobileProfile').style.display = isAuth ? 'flex' : 'none';
+        if (isAuth) {
+          const name = (me.username || 'User');
+          const initials = name.trim().slice(0,1).toUpperCase();
+          document.getElementById('profileName').textContent = name + (me.is_admin ? ' (Admin)' : '');
+          document.getElementById('profileAvatar').textContent = initials || 'U';
+          document.getElementById('mobileProfileName').textContent = name + (me.is_admin ? ' (Admin)' : '');
+          document.getElementById('mobileProfileAvatar').textContent = initials || 'U';
+        }
+
+        // If logged out, ensure sidebar is closed
+        if (!isAuth) setMobileSidebarVisibility(false);
+      } catch {}
+    }
+    async function logoutAndRefresh() {
+      setMobileSidebarVisibility(false);
+      await fetch('/api/logout', { method:'POST' });
+      location.reload();
+    }
+    // Theme handling
+    function applyTheme(theme){
+      document.documentElement.setAttribute('data-theme', theme);
+      const btn = document.getElementById('themeToggle');
+      if (btn) btn.textContent = theme === 'dark' ? '🌙' : '🌞';
+    }
+    function initTheme(){
+      const saved = localStorage.getItem('theme') || 'light';
+      applyTheme(saved);
+      const btn = document.getElementById('themeToggle');
+      if (btn){
+        btn.addEventListener('click', () => {
+          const next = (localStorage.getItem('theme') || 'light') === 'light' ? 'dark' : 'light';
+          localStorage.setItem('theme', next);
+          applyTheme(next);
+        });
+      }
+    }
+    const cropSel = document.getElementById("crop");
+    const weekRange = document.getElementById("weekRange");
+    const weekLabel = document.getElementById("weekLabel");
+    const weatherContent = document.getElementById("weatherContent");
+    const refreshWeatherBtn = document.getElementById("refreshWeather");
+    
+    // Elements that may not exist on this page (moved to land-resource-planning.html)
+    const landSizeInput = document.getElementById("landSize");
+    const soilTypeSelect = document.getElementById("soilType");
+    const getSuggestionsBtn = document.getElementById("getSuggestions");
+    const getLandAnalysisBtn = document.getElementById("getLandAnalysis");
+    const getSoilAnalysisBtn = document.getElementById("getSoilAnalysis");
+    const cropSuggestionsDiv = document.getElementById("cropSuggestions");
+    const suggestionsList = document.getElementById("suggestionsList");
+    
+    let currentDate = new Date();
+
+    async function loadWeather() {
+      try {
+        // Show loading state
+        weatherContent.innerHTML = `
+          <div class="weather-loading">
+            <div class="loading-spinner"></div>
+            <p>Detecting your location...</p>
+            <small>Getting weather data for your area</small>
+          </div>
+        `;
+        
+        // Get weather data for Coimbatore
+        const response = await fetch('/api/weather');
+        const data = await response.json();
+
+        // Support both new and legacy response shapes
+        const success = (data.success === true) || (typeof data.temperature_c !== 'undefined');
+        const temperature = (typeof data.temperature !== 'undefined') ? data.temperature : (data.temperature_c || null);
+        const description = data.description || data.condition || 'Weather';
+        const windSpeed = (typeof data.wind_speed !== 'undefined') ? data.wind_speed : (data.wind_kph || null);
+        const location = data.location || 'Your Area';
+        const advice = data.advice || '';
+
+        if (success) {
+          weatherContent.innerHTML = `
+            <div class="weather-info">
+              <div class="weather-main">
+                <span class="weather-temp">${temperature}°C</span>
+                <span class="weather-desc">${description}</span>
+              </div>
+              <div class="weather-details">
+                <div class="weather-item">
+                  <span class="weather-label">Wind:</span>
+                  <span class="weather-value">${windSpeed} km/h</span>
+                </div>
+                <div class="weather-item">
+                  <span class="weather-label">Location:</span>
+                  <span class="weather-value">${location}</span>
+                </div>
+              </div>
+              <div class="weather-advice" id="weatherAdvice">
+                ${advice}
+              </div>
+            </div>
+          `;
+        } else {
+          throw new Error(data.error || 'Failed to load weather data');
+        }
+      } catch (error) {
+        console.error("Error loading weather:", error);
+        weatherContent.innerHTML = `
+          <div class="weather-error">
+            <p>❌ Unable to load weather data</p>
+            <p>Please check your internet connection</p>
+            <button onclick="loadWeather()" class="btn btn-sm">Retry</button>
+          </div>
+        `;
+      }
+    }
+
+    function getWeatherAdvice(weatherCode, temperature) {
+      if (weatherCode >= 61 && weatherCode <= 82) {
+        return "🌧️ <strong>Rainy conditions:</strong> Avoid field work. Good for irrigation planning.";
+      } else if (weatherCode >= 95 && weatherCode <= 99) {
+        return "⛈️ <strong>Storm warning:</strong> Secure equipment and protect crops from wind damage.";
+      } else if (temperature > 35) {
+        return "🌡️ <strong>Hot weather:</strong> Increase irrigation frequency. Consider shade for sensitive crops.";
+      } else if (temperature < 15) {
+        return "❄️ <strong>Cool weather:</strong> Good for root development. Reduce irrigation frequency.";
+      } else {
+        return "🌤️ <strong>Good conditions:</strong> Ideal for field work and crop management activities.";
+      }
+    }
+
+    async function loadSoilTypes() {
+      // Skip if soil type select doesn't exist (moved to land-resource-planning.html)
+      if (!soilTypeSelect) {
+        console.log('Soil type select not found on this page');
+        return;
+      }
+      
+      try {
+        console.log('Loading soil types...');
+        const res = await fetch("/api/soil-types");
+        console.log('Soil types response:', res);
+        const soilTypes = await res.json();
+        console.log('Soil types data:', soilTypes);
+        soilTypeSelect.innerHTML = '<option value="">Select soil type</option>';
+        soilTypes.forEach(s => {
+          const opt = document.createElement("option");
+          opt.value = s.name;
+          opt.textContent = s.name;
+          soilTypeSelect.appendChild(opt);
+        });
+        console.log('Soil types loaded successfully');
+      } catch (error) {
+        console.error("Error loading soil types:", error);
+      }
+    }
+
+    async function getCropSuggestions() {
+      // Skip if elements don't exist (moved to land-resource-planning.html)
+      if (!soilTypeSelect || !getSuggestionsBtn) {
+        console.log('Crop suggestions elements not found on this page');
+        return;
+      }
+      
+      const soilType = soilTypeSelect.value;
+      
+      console.log('Crop suggestions - Soil type:', soilType);
+      
+      if (!soilType) {
+        alert("Please select a soil type");
+        return;
+      }
+      
+      try {
+        getSuggestionsBtn.textContent = "🔄 Getting suggestions...";
+        getSuggestionsBtn.disabled = true;
+        
+        const requestData = { 
+          soil_type: soilType 
+        };
+        console.log('Sending crop suggestion request:', requestData);
+        
+        const res = await fetch("/api/crop-suggestions", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(requestData)
+        });
+        
+        if (!res.ok) {
+          const errorData = await res.json();
+          console.error('API Error:', errorData);
+          alert("Error: " + (errorData.error || `HTTP ${res.status}`));
+          return;
+        }
+        
+        const data = await res.json();
+        
+        if (data.error) {
+          alert("Error: " + data.error);
+          return;
+        }
+        
+        displayCropSuggestions(data);
+        
+      } catch (error) {
+        console.error("Error getting suggestions:", error);
+        alert("Error getting crop suggestions. Please try again.");
+      } finally {
+        getSuggestionsBtn.textContent = "🌱 Get Crop Suggestions";
+        getSuggestionsBtn.disabled = false;
+      }
+    }
+
+    function displayCropSuggestions(data) {
+      cropSuggestionsDiv.style.display = "block";
+      suggestionsList.innerHTML = "";
+      
+      if (data.suggested_crops.length === 0) {
+        const landSizeText = data.land_size ? `land size (${data.land_size} acres) and ` : '';
+        suggestionsList.innerHTML = `
+          <div style="text-align: center; padding: 2rem; color: #666;">
+            <p>No crops found for your ${landSizeText}soil type (${data.soil_type}).</p>
+            <p>Try adjusting your land size or consider different soil types.</p>
+          </div>
+        `;
+        return;
+      }
+      
+      // Group crops by category
+      const categories = {};
+      data.suggested_crops.forEach(crop => {
+        const category = crop.crop_category || 'Other';
+        if (!categories[category]) {
+          categories[category] = [];
+        }
+        categories[category].push(crop);
+      });
+      
+      Object.keys(categories).forEach(category => {
+        const categoryDiv = document.createElement("div");
+        categoryDiv.className = "category-section";
+        categoryDiv.innerHTML = `
+          <h4 style="color: #4a7c59; margin-bottom: 1rem; border-bottom: 2px solid #4a7c59; padding-bottom: 0.5rem;">
+            ${category} (${categories[category].length} crops)
+          </h4>
+          <div class="crop-cards-grid">
+            ${categories[category].map(crop => `
+              <div class="suggestion-card">
+                <div class="crop-header">
+                  <h5>${crop.name}</h5>
+                  <span class="crop-category">${crop.crop_category || 'N/A'}</span>
+                </div>
+                <div class="crop-details">
+                  <p><strong>Season:</strong> ${crop.season || 'N/A'}</p>
+                  <p><strong>Land Size:</strong> ${crop.land_size_min ? crop.land_size_min + ' - ' + crop.land_size_max + ' acres' : 'Any size'}</p>
+                  <p><strong>EC Range:</strong> ${crop.ec_range || 'N/A'}</p>
+                  <p><strong>Soil Types:</strong> ${crop.soil_types || 'N/A'}</p>
+                  ${crop.suitability_score ? `<p><strong>Suitability:</strong> <span style="color: ${crop.suitability_score >= 80 ? '#28a745' : crop.suitability_score >= 60 ? '#ffc107' : '#dc3545'}; font-weight: bold;">${crop.suitability_score}%</span></p>` : ''}
+                </div>
+                <div class="crop-actions">
+                  <button class="btn btn-sm btn-outline-primary" onclick="selectSuggestedCrop(${crop.id})">
+                    📋 Select Crop
+                  </button>
+                  <button class="btn btn-sm btn-success" onclick="viewCropPlan(${crop.id}, '${crop.name}')">
+                    📊 View Plan
+                  </button>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        `;
+        suggestionsList.appendChild(categoryDiv);
+      });
+    }
+
+    function selectSuggestedCrop(cropId) {
+      cropSel.value = cropId;
+      loadCropDetails(cropId);
+      // Scroll to crop details
+      document.getElementById('resultTitle').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    async function viewCropPlan(cropId, cropName) {
+      try {
+        // Get detailed crop information including fertilizers and pesticides
+        const [cropRes, fertilizersRes, pesticidesRes] = await Promise.all([
+          fetch(`/api/crops/${cropId}`),
+          fetch(`/api/crops/${cropId}/fertilizers`),
+          fetch(`/api/crops/${cropId}/pesticides`)
+        ]);
+
+        const cropData = await cropRes.json();
+        const fertilizers = await fertilizersRes.json();
+        const pesticides = await pesticidesRes.json();
+
+        // Calculate total costs
+        const totalFertilizerCost = fertilizers.reduce((sum, f) => sum + (parseFloat(f.price.replace('₹', '').replace(',', '')) || 0), 0);
+        const totalPesticideCost = pesticides.reduce((sum, p) => sum + (parseFloat(p.price.replace('₹', '').replace(',', '')) || 0), 0);
+        const totalCost = totalFertilizerCost + totalPesticideCost;
+
+        // Display crop plan in modal
+        document.getElementById('cropPlanDetails').innerHTML = `
+          <div class="crop-plan-header">
+            <h3>🌾 ${cropName} - Complete Growing Plan</h3>
+            <div class="plan-summary">
+              <div class="summary-item">
+                <span class="label">Total Duration:</span>
+                <span class="value">16-20 weeks</span>
+              </div>
+              <div class="summary-item">
+                <span class="label">Estimated Cost:</span>
+                <span class="value">₹${totalCost.toLocaleString()}</span>
+              </div>
+              <div class="summary-item">
+                <span class="label">Land Size:</span>
+                <span class="value">${landSizeInput.value} acres</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="plan-sections">
+            <div class="plan-section">
+              <h4>🌱 Crop Overview</h4>
+              <p><strong>Season:</strong> ${cropData.season || 'N/A'}</p>
+              <p><strong>Climate:</strong> ${cropData.climate || 'N/A'}</p>
+              <p><strong>Soil Requirements:</strong> ${cropData.soil || 'N/A'}</p>
+              <p><strong>Expected Yield:</strong> ${cropData.yield_info || 'N/A'}</p>
+            </div>
+
+            <div class="plan-section">
+              <h4>🌿 Fertilizer Schedule</h4>
+              ${fertilizers.length > 0 ? `
+                <div class="schedule-list">
+                  ${fertilizers.map(f => `
+                    <div class="schedule-item">
+                      <span class="week">${f.week}</span>
+                      <span class="item-name">${f.name}</span>
+                      <span class="quantity">${f.quantity}</span>
+                      <span class="price">${f.price}</span>
+                    </div>
+                  `).join('')}
+                </div>
+              ` : '<p>No specific fertilizer schedule available.</p>'}
+            </div>
+
+            <div class="plan-section">
+              <h4>🐛 Pest & Disease Management</h4>
+              ${pesticides.length > 0 ? `
+                <div class="schedule-list">
+                  ${pesticides.map(p => `
+                    <div class="schedule-item">
+                      <span class="week">${p.week}</span>
+                      <span class="item-name">${p.name}</span>
+                      <span class="application">${p.application}</span>
+                      <span class="price">${p.price}</span>
+                    </div>
+                  `).join('')}
+                </div>
+              ` : '<p>No specific pesticide schedule available.</p>'}
+            </div>
+
+            <div class="plan-section">
+              <h4>📅 Growing Timeline</h4>
+              <div class="timeline">
+                <div class="timeline-item">
+                  <span class="timeline-week">Weeks 1-2</span>
+                  <span class="timeline-task">Land preparation and sowing</span>
+                </div>
+                <div class="timeline-item">
+                  <span class="timeline-week">Weeks 3-8</span>
+                  <span class="timeline-task">Early growth and first fertilization</span>
+                </div>
+                <div class="timeline-item">
+                  <span class="timeline-week">Weeks 9-14</span>
+                  <span class="timeline-task">Active growth and pest management</span>
+                </div>
+                <div class="timeline-item">
+                  <span class="timeline-week">Weeks 15-20</span>
+                  <span class="timeline-task">Maturation and harvesting</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+
+        // Store selected crop data for starting monitoring
+        window.selectedCropData = {
+          id: cropId,
+          name: cropName,
+          landSize: landSizeInput.value,
+          soilType: soilTypeSelect.value,
+          totalCost: totalCost
+        };
+
+        // Show modal
+        document.getElementById('cropPlanModal').style.display = 'block';
+      } catch (error) {
+        console.error('Error loading crop plan:', error);
+        alert('Error loading crop plan. Please try again.');
+      }
+    }
+
+    function closeCropPlanModal() {
+      document.getElementById('cropPlanModal').style.display = 'none';
+    }
+
+    async function startCropMonitoring() {
+      console.log('Starting crop monitoring...');
+      console.log('Current user:', window.currentUser);
+      
+      // If user state is not loaded, try to refresh it
+      if (!window.currentUser) {
+        console.log('User state not loaded, refreshing authentication...');
+        await refreshAuthUi();
+        
+        // Check again after refresh
+        if (!window.currentUser) {
+          console.log('User not logged in, redirecting to login page');
+          alert('Please login to start crop monitoring. You will be redirected to the login page.');
+          window.location.href = '/login.html';
+          return;
+        }
+      }
+
+      // Start the crop monitoring process
+      const cropData = window.selectedCropData;
+      if (!cropData) {
+        alert('No crop selected. Please select a crop first.');
+        return;
+      }
+
+      console.log('Creating crop monitoring session for:', cropData);
+      // Create crop monitoring session
+      createCropMonitoringSession(cropData);
+    }
+
+    async function createCropMonitoringSession(cropData) {
+      try {
+        const response = await fetch('/api/start-crop-monitoring', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            crop_id: cropData.id,
+            crop_name: cropData.name,
+            land_size: cropData.landSize,
+            soil_type: cropData.soilType,
+            user_id: window.currentUser.id,
+            start_date: new Date().toISOString()
+          })
+        });
+
+        if (response.ok) {
+          alert(`🎉 Successfully started monitoring ${cropData.name}! You can now track your progress in the calendar.`);
+          closeCropPlanModal();
+          // Refresh the page to show monitoring features
+          location.reload();
+        } else {
+          throw new Error('Failed to start crop monitoring');
+        }
+      } catch (error) {
+        console.error('Error starting crop monitoring:', error);
+        alert('Error starting crop monitoring. Please try again.');
+      }
+    }
+
+
+    async function loadCrops() {
+      try {
+        const res = await fetch("/api/crops");
+        if (!res.ok) {
+          throw new Error(`HTTP error! status: ${res.status}`);
+        }
+        const crops = await res.json();
+        cropSel.innerHTML = "";
+        crops.forEach(c => {
+          const opt = document.createElement("option");
+          opt.value = c.id;
+          opt.textContent = c.name;
+          cropSel.appendChild(opt);
+        });
+        if (crops.length > 0) loadCropDetails(crops[0].id);
+      } catch (error) {
+        console.error("Error loading crops:", error);
+        cropSel.innerHTML = '<option value="">Error loading crops</option>';
+      }
+    }
+
+    // Process videos removed from homepage
+
+    async function loadCropDetails(cropId) {
+      const res = await fetch(`/api/crops/${cropId}`);
+      const crop = await res.json();
+
+      document.getElementById("resultTitle").innerText = "Crop: " + crop.name;
+
+      // Show week controls when a crop is selected
+      document.getElementById("weekControls").style.display = "block";
+
+      // Overview & guide
+      const g = crop.guide || {};
+      document.getElementById("overview").innerText = g.overview || "—";
+      document.getElementById("climate").innerText = "Climate: " + (g.climate || "—");
+      document.getElementById("soil").innerText = "Soil: " + (g.soil || "—");
+      document.getElementById("landPrep").innerText = g.landPreparation || "—";
+      document.getElementById("sowing").innerText = g.sowing || "—";
+      document.getElementById("irrigation").innerText = g.irrigation || "—";
+      document.getElementById("nutrients").innerText = g.nutrientManagement || "—";
+      document.getElementById("weeds").innerText = g.weedManagement || "—";
+      document.getElementById("pests").innerText = g.pestsDiseases || "—";
+      document.getElementById("harvest").innerText = g.harvesting || "—";
+      document.getElementById("yield").innerText = g.yieldInfo || "—";
+
+      // Fertilizers
+      const fertList = document.getElementById("fertList");
+      fertList.innerHTML = "";
+      (crop.fertilizers || []).forEach(f => {
+        const li = document.createElement("li");
+        li.innerHTML = `<strong>${f.week || "-"}</strong>: ${f.name} - ${f.quantity} @ ${f.price}`;
+        fertList.appendChild(li);
+      });
+
+      // Pesticides
+      const pestList = document.getElementById("pestList");
+      pestList.innerHTML = "";
+      (crop.pesticides || []).forEach(p => {
+        const li = document.createElement("li");
+        li.innerHTML = `<strong>${p.week || "-"}</strong>: ${p.name} (${p.usage}) - ${p.quantity} @ ${p.price}`;
+        pestList.appendChild(li);
+      });
+
+      // Timeline
+      const tl = document.getElementById("timeline");
+      tl.innerHTML = "";
+      (crop.stages || []).forEach(s => {
+        const div = document.createElement("div");
+        div.className = "tl-item";
+        const tasks = (s.tasks || "").split('\n').map(t => `<li>${t.replace(/^-+\s*/, '')}</li>`).join('');
+        div.innerHTML = `<h4>W${s.startWeek}–W${s.endWeek}: ${s.title}</h4><ul>${tasks}</ul>`;
+        tl.appendChild(div);
+      });
+
+      // Display comprehensive cost chart if land size is entered
+      if (landSizeInput) {
+        const landSize = landSizeInput.value;
+        if (landSize && landSize > 0) {
+          displayCropCostChart(crop, landSize);
+        }
+      }
+
+      // Refresh week tasks (current slider value)
+      await loadWeekTasks(cropId, parseInt(weekRange.value, 10));
+    }
+
+    // Comprehensive Cost Chart Function
+    function displayCropCostChart(crop, landSize) {
+      const costChartSection = document.getElementById("costChartSection");
+      const costChartContent = document.getElementById("costChartContent");
+      
+      // Calculate costs based on land size
+      let totalFertilizerCost = 0;
+      let totalPesticideCost = 0;
+      let totalIrrigationCost = 0;
+      let totalLaborCost = 0;
+      let totalSeedCost = 0;
+      
+      // Parse fertilizer costs
+      const fertilizerDetails = [];
+      (crop.fertilizers || []).forEach(f => {
+        const priceMatch = f.price.match(/₹([\d,]+)/);
+        if (priceMatch) {
+          const unitPrice = parseInt(priceMatch[1].replace(',', ''));
+          const quantityMatch = f.quantity.match(/(\d+)/);
+          const quantity = quantityMatch ? parseInt(quantityMatch[1]) : 0;
+          const cost = unitPrice * landSize;
+          totalFertilizerCost += cost;
+          fertilizerDetails.push({
+            week: f.week,
+            name: f.name,
+            quantity: f.quantity,
+            unitPrice: unitPrice,
+            totalCost: cost
+          });
+        }
+      });
+      
+      // Parse pesticide costs
+      const pesticideDetails = [];
+      (crop.pesticides || []).forEach(p => {
+        const priceMatch = p.price.match(/₹([\d,]+)/);
+        if (priceMatch) {
+          const unitPrice = parseInt(priceMatch[1].replace(',', ''));
+          const cost = unitPrice * landSize;
+          totalPesticideCost += cost;
+          pesticideDetails.push({
+            week: p.week,
+            name: p.name,
+            application: p.application || p.usage || 'Spray',
+            unitPrice: unitPrice,
+            totalCost: cost
+          });
+        }
+      });
+      
+      // Estimate other costs
+      totalIrrigationCost = landSize * 3000; // Estimated ₹3000 per acre
+      totalLaborCost = landSize * 8000; // Estimated ₹8000 per acre
+      totalSeedCost = landSize * 2000; // Estimated ₹2000 per acre
+      
+      const totalCost = totalFertilizerCost + totalPesticideCost + totalIrrigationCost + totalLaborCost + totalSeedCost;
+      
+      // Display the cost chart
+      costChartContent.innerHTML = `
+        <div class="cost-overview" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 2rem; border-radius: 12px; margin-bottom: 2rem;">
+          <h3 style="margin: 0 0 1rem 0; font-size: 1.5rem;">💰 Total Cost Estimate for ${crop.name}</h3>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem;">
+            <div style="text-align: center;">
+              <div style="font-size: 2rem; font-weight: bold;">₹${totalCost.toLocaleString()}</div>
+              <div style="font-size: 0.9rem; opacity: 0.9;">Total Cost</div>
+            </div>
+            <div style="text-align: center;">
+              <div style="font-size: 2rem; font-weight: bold;">${landSize} acres</div>
+              <div style="font-size: 0.9rem; opacity: 0.9;">Land Size</div>
+            </div>
+            <div style="text-align: center;">
+              <div style="font-size: 2rem; font-weight: bold;">₹${Math.round(totalCost / landSize).toLocaleString()}</div>
+              <div style="font-size: 0.9rem; opacity: 0.9;">Cost per Acre</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Cost Breakdown Table -->
+        <div class="cost-table-container" style="overflow-x: auto;">
+          <h4 style="margin-bottom: 1rem; color: #333;">📊 Detailed Cost Breakdown</h4>
+          <table class="cost-table" style="width: 100%; border-collapse: collapse; background: white; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+            <thead>
+              <tr style="background: #4a7c59; color: white;">
+                <th style="padding: 1rem; text-align: left; border: 1px solid #ddd;">Category</th>
+                <th style="padding: 1rem; text-align: right; border: 1px solid #ddd;">Cost per Acre</th>
+                <th style="padding: 1rem; text-align: right; border: 1px solid #ddd;">Total Cost (${landSize} acres)</th>
+                <th style="padding: 1rem; text-align: center; border: 1px solid #ddd;">% of Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td style="padding: 1rem; border: 1px solid #ddd; font-weight: bold;">🌱 Seeds/Seedlings</td>
+                <td style="padding: 1rem; text-align: right; border: 1px solid #ddd;">₹2,000</td>
+                <td style="padding: 1rem; text-align: right; border: 1px solid #ddd;">₹${totalSeedCost.toLocaleString()}</td>
+                <td style="padding: 1rem; text-align: center; border: 1px solid #ddd;">${Math.round((totalSeedCost / totalCost) * 100)}%</td>
+              </tr>
+              <tr style="background: #f8f9fa;">
+                <td style="padding: 1rem; border: 1px solid #ddd; font-weight: bold;">🌿 Fertilizers</td>
+                <td style="padding: 1rem; text-align: right; border: 1px solid #ddd;">₹${Math.round(totalFertilizerCost / landSize).toLocaleString()}</td>
+                <td style="padding: 1rem; text-align: right; border: 1px solid #ddd;">₹${totalFertilizerCost.toLocaleString()}</td>
+                <td style="padding: 1rem; text-align: center; border: 1px solid #ddd;">${Math.round((totalFertilizerCost / totalCost) * 100)}%</td>
+              </tr>
+              <tr>
+                <td style="padding: 1rem; border: 1px solid #ddd; font-weight: bold;">🛡️ Pesticides</td>
+                <td style="padding: 1rem; text-align: right; border: 1px solid #ddd;">₹${Math.round(totalPesticideCost / landSize).toLocaleString()}</td>
+                <td style="padding: 1rem; text-align: right; border: 1px solid #ddd;">₹${totalPesticideCost.toLocaleString()}</td>
+                <td style="padding: 1rem; text-align: center; border: 1px solid #ddd;">${Math.round((totalPesticideCost / totalCost) * 100)}%</td>
+              </tr>
+              <tr style="background: #f8f9fa;">
+                <td style="padding: 1rem; border: 1px solid #ddd; font-weight: bold;">💧 Irrigation</td>
+                <td style="padding: 1rem; text-align: right; border: 1px solid #ddd;">₹3,000</td>
+                <td style="padding: 1rem; text-align: right; border: 1px solid #ddd;">₹${totalIrrigationCost.toLocaleString()}</td>
+                <td style="padding: 1rem; text-align: center; border: 1px solid #ddd;">${Math.round((totalIrrigationCost / totalCost) * 100)}%</td>
+              </tr>
+              <tr>
+                <td style="padding: 1rem; border: 1px solid #ddd; font-weight: bold;">👨‍🌾 Labor</td>
+                <td style="padding: 1rem; text-align: right; border: 1px solid #ddd;">₹8,000</td>
+                <td style="padding: 1rem; text-align: right; border: 1px solid #ddd;">₹${totalLaborCost.toLocaleString()}</td>
+                <td style="padding: 1rem; text-align: center; border: 1px solid #ddd;">${Math.round((totalLaborCost / totalCost) * 100)}%</td>
+              </tr>
+              <tr style="background: #4a7c59; color: white; font-weight: bold; font-size: 1.1rem;">
+                <td style="padding: 1rem; border: 1px solid #ddd;">💰 TOTAL</td>
+                <td style="padding: 1rem; text-align: right; border: 1px solid #ddd;">₹${Math.round(totalCost / landSize).toLocaleString()}</td>
+                <td style="padding: 1rem; text-align: right; border: 1px solid #ddd;">₹${totalCost.toLocaleString()}</td>
+                <td style="padding: 1rem; text-align: center; border: 1px solid #ddd;">100%</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Fertilizer Schedule Table -->
+        ${fertilizerDetails.length > 0 ? `
+          <div class="fertilizer-schedule" style="margin-top: 2rem;">
+            <h4 style="margin-bottom: 1rem; color: #333;">🌿 Fertilizer Schedule & Costs</h4>
+            <table class="cost-table" style="width: 100%; border-collapse: collapse; background: white; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+              <thead>
+                <tr style="background: #28a745; color: white;">
+                  <th style="padding: 1rem; text-align: left; border: 1px solid #ddd;">Week</th>
+                  <th style="padding: 1rem; text-align: left; border: 1px solid #ddd;">Fertilizer Name</th>
+                  <th style="padding: 1rem; text-align: center; border: 1px solid #ddd;">Quantity per Acre</th>
+                  <th style="padding: 1rem; text-align: right; border: 1px solid #ddd;">Unit Price</th>
+                  <th style="padding: 1rem; text-align: right; border: 1px solid #ddd;">Total Cost</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${fertilizerDetails.map((f, idx) => `
+                  <tr style="${idx % 2 === 0 ? 'background: #f8f9fa;' : ''}">
+                    <td style="padding: 1rem; border: 1px solid #ddd; font-weight: bold;">${f.week}</td>
+                    <td style="padding: 1rem; border: 1px solid #ddd;">${f.name}</td>
+                    <td style="padding: 1rem; text-align: center; border: 1px solid #ddd;">${f.quantity}</td>
+                    <td style="padding: 1rem; text-align: right; border: 1px solid #ddd;">₹${f.unitPrice.toLocaleString()}</td>
+                    <td style="padding: 1rem; text-align: right; border: 1px solid #ddd; font-weight: bold; color: #28a745;">₹${f.totalCost.toLocaleString()}</td>
+                  </tr>
+                `).join('')}
+                <tr style="background: #28a745; color: white; font-weight: bold;">
+                  <td colspan="4" style="padding: 1rem; border: 1px solid #ddd; text-align: right;">TOTAL FERTILIZER COST:</td>
+                  <td style="padding: 1rem; text-align: right; border: 1px solid #ddd;">₹${totalFertilizerCost.toLocaleString()}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        ` : ''}
+
+        <!-- Pesticide Schedule Table -->
+        ${pesticideDetails.length > 0 ? `
+          <div class="pesticide-schedule" style="margin-top: 2rem;">
+            <h4 style="margin-bottom: 1rem; color: #333;">🛡️ Pesticide Schedule & Costs</h4>
+            <table class="cost-table" style="width: 100%; border-collapse: collapse; background: white; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+              <thead>
+                <tr style="background: #dc3545; color: white;">
+                  <th style="padding: 1rem; text-align: left; border: 1px solid #ddd;">Week</th>
+                  <th style="padding: 1rem; text-align: left; border: 1px solid #ddd;">Pesticide Name</th>
+                  <th style="padding: 1rem; text-align: center; border: 1px solid #ddd;">Application Method</th>
+                  <th style="padding: 1rem; text-align: right; border: 1px solid #ddd;">Unit Price</th>
+                  <th style="padding: 1rem; text-align: right; border: 1px solid #ddd;">Total Cost</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${pesticideDetails.map((p, idx) => `
+                  <tr style="${idx % 2 === 0 ? 'background: #f8f9fa;' : ''}">
+                    <td style="padding: 1rem; border: 1px solid #ddd; font-weight: bold;">${p.week}</td>
+                    <td style="padding: 1rem; border: 1px solid #ddd;">${p.name}</td>
+                    <td style="padding: 1rem; text-align: center; border: 1px solid #ddd;">${p.application}</td>
+                    <td style="padding: 1rem; text-align: right; border: 1px solid #ddd;">₹${p.unitPrice.toLocaleString()}</td>
+                    <td style="padding: 1rem; text-align: right; border: 1px solid #ddd; font-weight: bold; color: #dc3545;">₹${p.totalCost.toLocaleString()}</td>
+                  </tr>
+                `).join('')}
+                <tr style="background: #dc3545; color: white; font-weight: bold;">
+                  <td colspan="4" style="padding: 1rem; border: 1px solid #ddd; text-align: right;">TOTAL PESTICIDE COST:</td>
+                  <td style="padding: 1rem; text-align: right; border: 1px solid #ddd;">₹${totalPesticideCost.toLocaleString()}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        ` : ''}
+
+        <!-- Profit Estimate -->
+        <div class="profit-estimate" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); color: white; padding: 2rem; border-radius: 12px; margin-top: 2rem;">
+          <h4 style="margin: 0 0 1rem 0;">📈 Expected Returns</h4>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem;">
+            <div>
+              <div style="font-size: 0.9rem; opacity: 0.9; margin-bottom: 0.5rem;">Expected Yield</div>
+              <div style="font-size: 1.5rem; font-weight: bold;">${crop.guide?.yieldInfo || 'N/A'}</div>
+            </div>
+            <div>
+              <div style="font-size: 0.9rem; opacity: 0.9; margin-bottom: 0.5rem;">Total Investment</div>
+              <div style="font-size: 1.5rem; font-weight: bold;">₹${totalCost.toLocaleString()}</div>
+            </div>
+            <div>
+              <div style="font-size: 0.9rem; opacity: 0.9; margin-bottom: 0.5rem;">Investment per Acre</div>
+              <div style="font-size: 1.5rem; font-weight: bold;">₹${Math.round(totalCost / landSize).toLocaleString()}</div>
+            </div>
+          </div>
+          <div style="margin-top: 1rem; padding: 1rem; background: rgba(255,255,255,0.2); border-radius: 8px; font-size: 0.95rem;">
+            <strong>💡 Note:</strong> These are estimated costs. Actual costs may vary based on market prices, location, and farming practices. Consult with local agricultural experts for more accurate estimates.
+          </div>
+        </div>
+      `;
+      
+      costChartSection.style.display = "block";
+      costChartSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    async function loadWeekTasks(cropId, week) {
+      weekLabel.innerText = week;
+      const res = await fetch(`/api/crops/${cropId}/week/${week}`);
+      const stages = await res.json();
+      const wrap = document.getElementById("weekTasks");
+      const ul = wrap.querySelector("ul");
+      ul.innerHTML = "";
+      
+      // Show the week tasks container
+      wrap.style.display = "block";
+      
+      if (!stages.length) {
+        ul.innerHTML = "<li>No specific tasks for this week. Maintain general care.</li>";
+        return;
+      }
+      stages.forEach(s => {
+        const items = (s.tasks || "").split('\n').map(t => `<li>${t.replace(/^-+\s*/, '')}</li>`).join('');
+        const li = document.createElement("li");
+        li.innerHTML = `<strong>Weeks ${s.startWeek}–${s.endWeek} • ${s.title}</strong><ul>${items}</ul>`;
+        ul.appendChild(li);
+      });
+    }
+
+    // Calendar functionality removed as per requirements
+    
+    // Land Requirements Calculator
+    // Note: getLandAnalysisBtn and getSoilAnalysisBtn are already declared at the top
+    const calculateLandRequirementsBtn = document.getElementById("calculateLandRequirements");
+    const landRequirementsDiv = document.getElementById("landRequirements");
+    const requirementsContent = document.getElementById("requirementsContent");
+    const irrigationTypeSelect = document.getElementById("irrigationType");
+    const soilPhInput = document.getElementById("soilPh");
+
+    async function calculateLandRequirements() {
+      const landSize = landSizeInput.value;
+      const irrigationType = irrigationTypeSelect.value;
+      
+      if (!landSize) {
+        alert("Please enter land size");
+        return;
+      }
+      
+      try {
+        calculateLandRequirementsBtn.textContent = "🔄 Calculating...";
+        calculateLandRequirementsBtn.disabled = true;
+        
+        const res = await fetch("/api/land-calculations", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ 
+            land_size: landSize, 
+            soil_type: 'loamy', // Default soil type for land size calculations
+            irrigation_type: irrigationType
+          })
+        });
+        
+        const data = await res.json();
+        
+        if (data.error) {
+          alert("Error: " + data.error);
+          return;
+        }
+        
+        displayLandRequirements(data);
+        
+      } catch (error) {
+        console.error("Error calculating requirements:", error);
+        alert("Error calculating land requirements. Please try again.");
+      } finally {
+        calculateLandRequirementsBtn.textContent = "💰 Calculate Requirements & Costs";
+        calculateLandRequirementsBtn.disabled = false;
+      }
+    }
+
+    function displayLandRequirements(data) {
+      landRequirementsDiv.style.display = "block";
+      requirementsContent.innerHTML = "";
+
+      // Fertilizer Requirements Card
+      const fertilizerCard = document.createElement("div");
+      fertilizerCard.className = "requirement-card fertilizer";
+      fertilizerCard.innerHTML = `
+        <div class="requirement-header">
+          <span class="requirement-icon">🌱</span>
+          <h4 class="requirement-title">Fertilizer Requirements</h4>
+        </div>
+        ${Object.entries(data.fertilizer_recommendations).map(([name, details]) => `
+          <div class="requirement-item">
+            <span class="requirement-label">${name.toUpperCase()}</span>
+            <span class="requirement-value amount">${details.amount} ${details.unit}</span>
+          </div>
+          <div class="requirement-item">
+            <span class="requirement-label">Cost (₹${details.cost_per_unit}/${details.unit})</span>
+            <span class="requirement-value cost">₹${details.cost}</span>
+          </div>
+        `).join('')}
+      `;
+      requirementsContent.appendChild(fertilizerCard);
+
+      // Pesticide Requirements Card
+      const pesticideCard = document.createElement("div");
+      pesticideCard.className = "requirement-card pesticide";
+      pesticideCard.innerHTML = `
+        <div class="requirement-header">
+          <span class="requirement-icon">🛡️</span>
+          <h4 class="requirement-title">Pesticide Requirements</h4>
+        </div>
+        ${Object.entries(data.pesticide_recommendations).map(([name, details]) => `
+          <div class="requirement-item">
+            <span class="requirement-label">${name.replace('_', ' ').toUpperCase()}</span>
+            <span class="requirement-value amount">${details.amount} ${details.unit}</span>
+          </div>
+          <div class="requirement-item">
+            <span class="requirement-label">Cost (₹${details.cost_per_unit}/${details.unit})</span>
+            <span class="requirement-value cost">₹${details.cost}</span>
+          </div>
+        `).join('')}
+      `;
+      requirementsContent.appendChild(pesticideCard);
+
+      // Irrigation Requirements Card
+      const irrigationCard = document.createElement("div");
+      irrigationCard.className = "requirement-card irrigation";
+      irrigationCard.innerHTML = `
+        <div class="requirement-header">
+          <span class="requirement-icon">💧</span>
+          <h4 class="requirement-title">Irrigation Requirements</h4>
+        </div>
+        <div class="requirement-item">
+          <span class="requirement-label">Water per irrigation</span>
+          <span class="requirement-value amount">${data.irrigation_recommendations.water_per_irrigation} liters</span>
+        </div>
+        <div class="requirement-item">
+          <span class="requirement-label">Frequency per week</span>
+          <span class="requirement-value amount">${data.irrigation_recommendations.frequency_per_week} times</span>
+        </div>
+        <div class="requirement-item">
+          <span class="requirement-label">Monthly water requirement</span>
+          <span class="requirement-value amount">${data.irrigation_recommendations.monthly_water} liters</span>
+        </div>
+        <div class="requirement-item">
+          <span class="requirement-label">Monthly irrigation cost</span>
+          <span class="requirement-value cost">₹${data.irrigation_recommendations.monthly_cost}</span>
+        </div>
+      `;
+      requirementsContent.appendChild(irrigationCard);
+
+      // Total Cost Summary Card
+      const totalCostCard = document.createElement("div");
+      totalCostCard.className = "total-cost-card";
+      totalCostCard.innerHTML = `
+        <div class="total-cost-title">Total Monthly Investment</div>
+        <div class="total-cost-amount">₹${data.cost_estimates.total_cost}</div>
+        <div class="total-cost-per-acre">₹${data.cost_estimates.cost_per_acre} per acre</div>
+      `;
+      requirementsContent.appendChild(totalCostCard);
+
+      // Detailed Cost Breakdown Card
+      const costBreakdownCard = document.createElement("div");
+      costBreakdownCard.className = "requirement-card costs";
+      costBreakdownCard.innerHTML = `
+        <div class="requirement-header">
+          <span class="requirement-icon">💰</span>
+          <h4 class="requirement-title">Cost Breakdown</h4>
+        </div>
+        <div class="requirement-item">
+          <span class="requirement-label">Fertilizer Cost</span>
+          <span class="requirement-value cost">₹${data.cost_estimates.fertilizer_cost}</span>
+        </div>
+        <div class="requirement-item">
+          <span class="requirement-label">Pesticide Cost</span>
+          <span class="requirement-value cost">₹${data.cost_estimates.pesticide_cost}</span>
+        </div>
+        <div class="requirement-item">
+          <span class="requirement-label">Irrigation Cost</span>
+          <span class="requirement-value cost">₹${data.cost_estimates.irrigation_cost}</span>
+        </div>
+        <div class="requirement-item" style="border-top: 2px solid #ffc107; font-weight: bold;">
+          <span class="requirement-label">Total Monthly Cost</span>
+          <span class="requirement-value cost">₹${data.cost_estimates.total_cost}</span>
+        </div>
+      `;
+      requirementsContent.appendChild(costBreakdownCard);
+    }
+
+    // Land Analysis Function
+    async function getLandAnalysis() {
+      // Skip if elements don't exist (moved to land-resource-planning.html)
+      if (!landSizeInput || !getLandAnalysisBtn) {
+        console.log('Land analysis elements not found on this page');
+        return;
+      }
+      
+      const landSize = landSizeInput.value;
+      
+      if (!landSize) {
+        alert("Please enter land size");
+        return;
+      }
+      
+      try {
+        getLandAnalysisBtn.textContent = "🔄 Analyzing...";
+        getLandAnalysisBtn.disabled = true;
+        
+        // Show land analysis information
+        const analysisContent = `
+          <div style="background: #e3f2fd; padding: 1.5rem; border-radius: 8px; margin-top: 1rem;">
+            <h4 style="color: #1976d2; margin-bottom: 1rem;">📊 Land Size Analysis for ${landSize} acres</h4>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+              <div style="background: white; padding: 1rem; border-radius: 6px; text-align: center;">
+                <div style="font-size: 1.5rem; font-weight: bold; color: #4caf50;">${(landSize * 4046.86).toFixed(0)}</div>
+                <div style="color: #666; font-size: 0.9rem;">Square Meters</div>
+              </div>
+              <div style="background: white; padding: 1rem; border-radius: 6px; text-align: center;">
+                <div style="font-size: 1.5rem; font-weight: bold; color: #2196f3;">${(landSize * 0.404686).toFixed(2)}</div>
+                <div style="color: #666; font-size: 0.9rem;">Hectares</div>
+              </div>
+              <div style="background: white; padding: 1rem; border-radius: 6px; text-align: center;">
+                <div style="font-size: 1.5rem; font-weight: bold; color: #ff9800;">${Math.sqrt(landSize * 4046.86).toFixed(0)}m</div>
+                <div style="color: #666; font-size: 0.9rem;">Square Side Length</div>
+              </div>
+              <div style="background: white; padding: 1rem; border-radius: 6px; text-align: center;">
+                <div style="font-size: 1.5rem; font-weight: bold; color: #9c27b0;">${landSize >= 1 ? 'Large' : landSize >= 0.5 ? 'Medium' : 'Small'}</div>
+                <div style="color: #666; font-size: 0.9rem;">Farm Size Category</div>
+              </div>
+            </div>
+            <div style="margin-top: 1rem; padding: 1rem; background: #f5f5f5; border-radius: 6px;">
+              <h5 style="color: #333; margin-bottom: 0.5rem;">💡 Recommendations:</h5>
+              <ul style="margin: 0; padding-left: 1.5rem; color: #666;">
+                ${landSize < 1 ? '<li>Perfect for vegetable gardening and small-scale farming</li><li>Consider intensive farming techniques</li><li>Focus on high-value crops</li>' : 
+                  landSize < 5 ? '<li>Good for mixed farming operations</li><li>Can support both crops and livestock</li><li>Consider crop rotation strategies</li>' :
+                  '<li>Suitable for commercial farming</li><li>Can implement mechanized farming</li><li>Consider large-scale crop production</li>'}
+              </ul>
+            </div>
+          </div>
+        `;
+        
+        // Insert analysis after the land size section
+        const landSizeSection = document.querySelector('.land-size-section');
+        let existingAnalysis = document.getElementById('landAnalysis');
+        if (existingAnalysis) {
+          existingAnalysis.remove();
+        }
+        
+        const analysisDiv = document.createElement('div');
+        analysisDiv.id = 'landAnalysis';
+        analysisDiv.innerHTML = analysisContent;
+        landSizeSection.parentNode.insertBefore(analysisDiv, landSizeSection.nextSibling);
+        
+      } catch (error) {
+        console.error("Error analyzing land:", error);
+        alert("Error analyzing land size. Please try again.");
+      } finally {
+        getLandAnalysisBtn.textContent = "📊 Land Analysis";
+        getLandAnalysisBtn.disabled = false;
+      }
+    }
+
+    // Soil Analysis Function
+    async function getSoilAnalysis() {
+      // Skip if elements don't exist (moved to land-resource-planning.html)
+      if (!soilTypeSelect || !getSoilAnalysisBtn) {
+        console.log('Soil analysis elements not found on this page');
+        return;
+      }
+      
+      const soilType = soilTypeSelect.value;
+      const soilPh = soilPhInput.value;
+      
+      if (!soilType) {
+        alert("Please select soil type");
+        return;
+      }
+      
+      try {
+        getSoilAnalysisBtn.textContent = "🔄 Analyzing...";
+        getSoilAnalysisBtn.disabled = true;
+        
+        // Show soil analysis information
+        const analysisContent = `
+          <div style="background: #fff3e0; padding: 1.5rem; border-radius: 8px; margin-top: 1rem;">
+            <h4 style="color: #e65100; margin-bottom: 1rem;">🔬 Soil Analysis for ${soilType.charAt(0).toUpperCase() + soilType.slice(1)} Soil</h4>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem;">
+              <div style="background: white; padding: 1rem; border-radius: 6px;">
+                <h5 style="color: #333; margin-bottom: 0.5rem;">🌱 Soil Characteristics</h5>
+                <p style="margin: 0.25rem 0; color: #666;"><strong>Type:</strong> ${soilType.charAt(0).toUpperCase() + soilType.slice(1)}</p>
+                ${soilPh ? `<p style="margin: 0.25rem 0; color: #666;"><strong>pH Level:</strong> ${soilPh}</p>` : ''}
+                <p style="margin: 0.25rem 0; color: #666;"><strong>Drainage:</strong> ${getSoilDrainage(soilType)}</p>
+                <p style="margin: 0.25rem 0; color: #666;"><strong>Fertility:</strong> ${getSoilFertility(soilType)}</p>
+              </div>
+              <div style="background: white; padding: 1rem; border-radius: 6px;">
+                <h5 style="color: #333; margin-bottom: 0.5rem;">🌾 Suitable Crops</h5>
+                <p style="margin: 0.25rem 0; color: #666;">${getSuitableCrops(soilType)}</p>
+              </div>
+              <div style="background: white; padding: 1rem; border-radius: 6px;">
+                <h5 style="color: #333; margin-bottom: 0.5rem;">💧 Water Requirements</h5>
+                <p style="margin: 0.25rem 0; color: #666;"><strong>Retention:</strong> ${getWaterRetention(soilType)}</p>
+                <p style="margin: 0.25rem 0; color: #666;"><strong>Irrigation:</strong> ${getIrrigationNeeds(soilType)}</p>
+              </div>
+            </div>
+            <div style="margin-top: 1rem; padding: 1rem; background: #f5f5f5; border-radius: 6px;">
+              <h5 style="color: #333; margin-bottom: 0.5rem;">💡 Soil Improvement Tips:</h5>
+              <ul style="margin: 0; padding-left: 1.5rem; color: #666;">
+                ${getSoilImprovementTips(soilType)}
+              </ul>
+            </div>
+          </div>
+        `;
+        
+        // Insert analysis after the soil type section
+        const soilTypeSection = document.querySelector('.soil-type-section');
+        let existingAnalysis = document.getElementById('soilAnalysis');
+        if (existingAnalysis) {
+          existingAnalysis.remove();
+        }
+        
+        const analysisDiv = document.createElement('div');
+        analysisDiv.id = 'soilAnalysis';
+        analysisDiv.innerHTML = analysisContent;
+        soilTypeSection.parentNode.insertBefore(analysisDiv, soilTypeSection.nextSibling);
+        
+      } catch (error) {
+        console.error("Error analyzing soil:", error);
+        alert("Error analyzing soil type. Please try again.");
+      } finally {
+        getSoilAnalysisBtn.textContent = "🔬 Soil Analysis";
+        getSoilAnalysisBtn.disabled = false;
+      }
+    }
+
+    // Helper functions for soil analysis
+    function getSoilDrainage(soilType) {
+      const drainage = {
+        'clay': 'Poor drainage, waterlogged',
+        'sandy': 'Excellent drainage, dries quickly',
+        'loamy': 'Good drainage, well-balanced',
+        'silty': 'Moderate drainage',
+        'black_cotton': 'Poor drainage, cracks when dry',
+        'red_soil': 'Good drainage',
+        'alluvial': 'Excellent drainage',
+        'laterite': 'Poor drainage, hard when dry'
+      };
+      return drainage[soilType] || 'Moderate drainage';
+    }
+
+    function getSoilFertility(soilType) {
+      const fertility = {
+        'clay': 'High fertility, rich in nutrients',
+        'sandy': 'Low fertility, needs organic matter',
+        'loamy': 'High fertility, ideal for most crops',
+        'silty': 'High fertility, good for vegetables',
+        'black_cotton': 'Very high fertility, excellent for cotton',
+        'red_soil': 'Moderate fertility, needs lime',
+        'alluvial': 'Very high fertility, river deposits',
+        'laterite': 'Low fertility, needs improvement'
+      };
+      return fertility[soilType] || 'Moderate fertility';
+    }
+
+    function getSuitableCrops(soilType) {
+      const crops = {
+        'clay': 'Rice, wheat, sugarcane, cotton',
+        'sandy': 'Groundnut, millets, vegetables',
+        'loamy': 'Most crops, vegetables, fruits',
+        'silty': 'Vegetables, rice, wheat',
+        'black_cotton': 'Cotton, sugarcane, sorghum',
+        'red_soil': 'Millets, pulses, oilseeds',
+        'alluvial': 'Rice, wheat, sugarcane, vegetables',
+        'laterite': 'Cashew, coconut, rubber'
+      };
+      return crops[soilType] || 'Various crops suitable';
+    }
+
+    function getWaterRetention(soilType) {
+      const retention = {
+        'clay': 'High water retention',
+        'sandy': 'Low water retention',
+        'loamy': 'Good water retention',
+        'silty': 'High water retention',
+        'black_cotton': 'Very high water retention',
+        'red_soil': 'Moderate water retention',
+        'alluvial': 'Good water retention',
+        'laterite': 'Low water retention'
+      };
+      return retention[soilType] || 'Moderate water retention';
+    }
+
+    function getIrrigationNeeds(soilType) {
+      const needs = {
+        'clay': 'Less frequent irrigation needed',
+        'sandy': 'Frequent irrigation required',
+        'loamy': 'Moderate irrigation needs',
+        'silty': 'Less frequent irrigation',
+        'black_cotton': 'Less frequent irrigation',
+        'red_soil': 'Moderate irrigation needs',
+        'alluvial': 'Moderate irrigation needs',
+        'laterite': 'Frequent irrigation required'
+      };
+      return needs[soilType] || 'Moderate irrigation needs';
+    }
+
+    function getSoilImprovementTips(soilType) {
+      const tips = {
+        'clay': '<li>Add sand and organic matter to improve drainage</li><li>Use raised beds for better drainage</li><li>Add gypsum to break up clay</li>',
+        'sandy': '<li>Add organic matter and compost regularly</li><li>Use mulch to retain moisture</li><li>Add clay soil to improve water retention</li>',
+        'loamy': '<li>Maintain organic matter levels</li><li>Practice crop rotation</li><li>Add compost for sustained fertility</li>',
+        'silty': '<li>Add organic matter to prevent compaction</li><li>Use cover crops to improve structure</li><li>Practice no-till farming</li>',
+        'black_cotton': '<li>Add sand to improve drainage</li><li>Use deep tillage to break hardpan</li><li>Add organic matter regularly</li>',
+        'red_soil': '<li>Add lime to increase pH</li><li>Add organic matter and compost</li><li>Use green manures</li>',
+        'alluvial': '<li>Maintain fertility with organic matter</li><li>Practice crop rotation</li><li>Monitor nutrient levels</li>',
+        'laterite': '<li>Add organic matter and compost</li><li>Use green manures</li><li>Add lime to improve pH</li>'
+      };
+      return tips[soilType] || '<li>Add organic matter regularly</li><li>Practice crop rotation</li><li>Monitor soil health</li>';
+    }
+
+    // Event listeners (with null checks for elements that may not exist)
+    if (getSuggestionsBtn) {
+      getSuggestionsBtn.addEventListener("click", getCropSuggestions);
+    }
+    if (getLandAnalysisBtn) {
+      getLandAnalysisBtn.addEventListener("click", getLandAnalysis);
+    }
+    if (getSoilAnalysisBtn) {
+      getSoilAnalysisBtn.addEventListener("click", getSoilAnalysis);
+    }
+    if (refreshWeatherBtn) {
+      refreshWeatherBtn.addEventListener("click", loadWeather);
+    }
+    cropSel.addEventListener("change", e => loadCropDetails(e.target.value));
+    weekRange.addEventListener("input", e => {
+      weekLabel.innerText = e.target.value;
+    });
+    weekRange.addEventListener("change", e => {
+      const cropId = cropSel.value;
+      loadWeekTasks(cropId, parseInt(e.target.value, 10));
+    });
+
+    // Process video buttons removed
+
+    // Chatbot functionality
+    const chatbotBtn = document.getElementById("chatbot-btn");
+    const chatbotWin = document.getElementById("chatbot-window");
+    const chatbotClose = document.getElementById("chatbot-close");
+    const chatbotMessages = document.getElementById("chatbot-messages");
+    const chatbotSendBtn = document.getElementById("chatbotSendBtn");
+    const chatbotInput = document.getElementById("chatbotInput");
+    const chatbotImageBtn = document.getElementById("chatbotImageBtn");
+    const chatbotImageUpload = document.getElementById("chatbotImageUpload");
+
+    chatbotBtn.addEventListener("click", () => {
+      chatbotWin.classList.add('open');
+      chatbotWin.style.display = 'flex';
+    });
+    chatbotClose.addEventListener("click", () => {
+      chatbotWin.classList.remove('open');
+      chatbotWin.classList.add('closing');
+      setTimeout(() => { chatbotWin.style.display = 'none'; chatbotWin.classList.remove('closing'); }, 180);
+    });
+
+    // Image upload disabled
+    // chatbotImageBtn.addEventListener("click", () => chatbotImageUpload.click());
+    // chatbotImageUpload.addEventListener("change", handleImageUpload);
+
+    // function handleImageUpload(event) { /* disabled */ }
+
+    // Send message function
+    function typeText(targetEl, fullText, speed = 18) {
+      // Basic typing animation with newline support
+      const characters = fullText.replace(/\r/g, '').split('');
+      let i = 0;
+      targetEl.innerHTML = '';
+      const interval = setInterval(() => {
+        if (i >= characters.length) { clearInterval(interval); return; }
+        const ch = characters[i++];
+        if (ch === '\n') {
+          targetEl.innerHTML += '<br/>';
+        } else {
+          // Escape only minimal characters to avoid breaking HTML
+          const safeCh = ch === '<' ? '&lt;' : ch === '>' ? '&gt;' : ch === '&' ? '&amp;' : ch;
+          targetEl.innerHTML += safeCh;
+        }
+        targetEl.parentElement.scrollTop = targetEl.parentElement.scrollHeight;
+      }, speed);
+    }
+
+    function sendMessage() {
+      const message = chatbotInput.value.trim();
+      if (!message) return;
+
+      // Add user message
+      chatbotMessages.innerHTML += `<div class="user-msg">${message}</div>`;
+      chatbotInput.value = "";
+      chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
+
+      // Show loading message (spinner + subtle text)
+      const loadingId = `loading-${Date.now()}`;
+      chatbotMessages.innerHTML += `
+        <div class="bot-msg" id="${loadingId}">
+          <div class="chat-loading">
+            <div class="loading-spinner"></div>
+            <span>AgriBot is thinking…</span>
+          </div>
+        </div>`;
+      chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
+
+      // Send message to backend Gemini API
+      fetch("/api/chatbot", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message })
+      })
+      .then(res => res.json())
+      .then(data => {
+        const loadingElem = document.getElementById(loadingId);
+        if (loadingElem) loadingElem.remove();
+        if (data.error) {
+          chatbotMessages.innerHTML += `<div class="bot-msg">❌ Error: ${data.error}</div>`;
+        } else {
+          const botEl = document.createElement('div');
+          botEl.className = 'bot-msg';
+          const contentEl = document.createElement('div');
+          contentEl.className = 'bot-typing';
+          botEl.appendChild(contentEl);
+          chatbotMessages.appendChild(botEl);
+          const text = String(data.response || '').trim();
+          typeText(contentEl, text, 14);
+        }
+        chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
+      })
+      .catch(err => {
+        const loadingElem = document.getElementById(loadingId);
+        if (loadingElem) loadingElem.remove();
+        chatbotMessages.innerHTML += `<div class="bot-msg">❌ Error: Unable to get response from Gemini API.</div>`;
+        chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
+      });
+    }
+
+
+
+    // Bot response generator
+    function generateBotResponse(message) {
+      const lowerMessage = message.toLowerCase();
+      
+      // Crop selection advice
+      if (lowerMessage.includes('crop') && lowerMessage.includes('select')) {
+        return "🌱 For crop selection, consider these factors:<br/>• Climate and season<br/>• Soil type and pH<br/>• Water availability<br/>• Market demand<br/>• Your experience level<br/><br/>What's your current season and soil type?";
+      }
+      
+      // Seasonal advice
+      if (lowerMessage.includes('season') || lowerMessage.includes('when')) {
+        return "📅 Seasonal planting guide:<br/>• <strong>Spring:</strong> Tomatoes, peppers, corn<br/>• <strong>Summer:</strong> Beans, cucumbers, squash<br/>• <strong>Fall:</strong> Broccoli, cabbage, carrots<br/>• <strong>Winter:</strong> Garlic, onions, winter greens<br/><br/>What season are you planning for?";
+      }
+      
+      // Pest management
+      if (lowerMessage.includes('pest') || lowerMessage.includes('insect')) {
+        return "🛡️ Pest management tips:<br/>• Use companion planting (marigolds, basil)<br/>• Regular crop rotation<br/>• Natural predators (ladybugs, birds)<br/>• Organic sprays (neem oil, soap solution)<br/>• Monitor plants regularly<br/><br/>What specific pest are you dealing with?";
+      }
+      
+      // Watering advice
+      if (lowerMessage.includes('water') || lowerMessage.includes('irrigation')) {
+        return "💧 Watering best practices:<br/>• Water deeply but less frequently<br/>• Early morning watering is best<br/>• Avoid overhead watering in evening<br/>• Use mulch to retain moisture<br/>• Check soil moisture before watering<br/><br/>What's your current watering schedule?";
+      }
+      
+      // Fertilizer advice
+      if (lowerMessage.includes('fertilizer') || lowerMessage.includes('nutrient')) {
+        return "🌿 Fertilizer recommendations:<br/>• Test soil before applying<br/>• Use organic fertilizers when possible<br/>• Apply during growing season<br/>• Don't over-fertilize<br/>• Consider crop-specific needs<br/><br/>What crop are you fertilizing?";
+      }
+      
+      // General farming advice
+      if (lowerMessage.includes('help') || lowerMessage.includes('advice')) {
+        return "🌾 General farming tips:<br/>• Start with easy crops (lettuce, radishes)<br/>• Keep a garden journal<br/>• Practice crop rotation<br/>• Use quality seeds<br/>• Monitor weather forecasts<br/><br/>What specific area do you need help with?";
+      }
+      
+      // Default response
+      return "🤔 I'm here to help with your farming questions! Try asking about:<br/>• Crop selection<br/>• Seasonal planting<br/>• Pest management<br/>• Watering tips<br/>• Fertilizer advice<br/>• General farming practices";
+    }
+
+    // Event listeners
+    chatbotSendBtn.addEventListener("click", sendMessage);
+    chatbotInput.addEventListener("keypress", (e) => {
+      if (e.key === "Enter") sendMessage();
+    });
+
+
+
+    // Notification System
+    function showNotification(message, type = 'info', duration = 5000) {
+      const container = document.getElementById('notificationsContainer');
+      const notification = document.createElement('div');
+      notification.className = `notification notification-${type}`;
+      
+      const icon = type === 'success' ? '✅' : type === 'warning' ? '⚠️' : type === 'error' ? '❌' : 'ℹ️';
+      
+      notification.innerHTML = `
+        <div class="notification-content">
+          <span class="notification-icon">${icon}</span>
+          <span class="notification-message">${message}</span>
+          <button class="notification-close" onclick="closeNotification(this)">×</button>
+        </div>
+      `;
+      
+      container.appendChild(notification);
+      
+      // Auto-remove after duration
+      setTimeout(() => {
+        if (notification.parentNode) {
+          notification.style.opacity = '0';
+          setTimeout(() => {
+            if (notification.parentNode) {
+              notification.remove();
+            }
+          }, 300);
+        }
+      }, duration);
+    }
+
+    function closeNotification(button) {
+      const notification = button.closest('.notification');
+      notification.style.opacity = '0';
+      setTimeout(() => {
+        if (notification.parentNode) {
+          notification.remove();
+        }
+      }, 300);
+    }
+
+    // Check for weekly task reminders
+    async function checkTaskReminders() {
+      if (!window.currentUser) return;
+      
+      try {
+        const response = await fetch('/api/active-crops');
+        if (response.ok) {
+          const data = await response.json();
+          const activeCrops = data.active_crops;
+          
+          activeCrops.forEach(crop => {
+            // Check if there are pending tasks for this week
+            const currentWeek = crop.current_week;
+            if (currentWeek <= 20) { // Only for active growing period
+              // Show reminder for weekly tasks
+              showNotification(
+                `🌱 ${crop.crop_name} - Week ${currentWeek} tasks are due! Check your weekly tasks.`,
+                'warning',
+                8000
+              );
+            }
+          });
+        }
+      } catch (error) {
+        console.error('Error checking task reminders:', error);
+      }
+    }
+
+    // Check for weather alerts
+    async function checkWeatherAlerts() {
+      try {
+        const response = await fetch('/api/weather');
+        const data = await response.json();
+        
+        if (data.success) {
+          const weatherCode = data.weather_code;
+          const temperature = data.temperature;
+          
+          // Weather alerts based on conditions
+          if (weatherCode >= 95) { // Thunderstorm
+            showNotification(
+              '⛈️ Thunderstorm alert! Consider protecting your crops and postponing field work.',
+              'warning',
+              10000
+            );
+          } else if (weatherCode >= 80 && weatherCode <= 82) { // Rain showers
+            showNotification(
+              '🌧️ Rain expected! Good time for irrigation or consider rain protection.',
+              'info',
+              6000
+            );
+          } else if (temperature > 35) { // High temperature
+            showNotification(
+              '🌡️ High temperature alert! Ensure adequate irrigation for your crops.',
+              'warning',
+              8000
+            );
+          } else if (temperature < 10) { // Low temperature
+            showNotification(
+              '❄️ Low temperature alert! Consider frost protection for sensitive crops.',
+              'warning',
+              8000
+            );
+          }
+        }
+      } catch (error) {
+        console.error('Error checking weather alerts:', error);
+      }
+    }
+
+    // Initialize notifications and reminders
+    function initializeNotifications() {
+      // Check for task reminders every 30 minutes
+      setInterval(checkTaskReminders, 30 * 60 * 1000);
+      
+      // Check for weather alerts every hour
+      setInterval(checkWeatherAlerts, 60 * 60 * 1000);
+      
+      // Initial checks
+      setTimeout(checkTaskReminders, 2000);
+      setTimeout(checkWeatherAlerts, 5000);
+    }
+
+    // Initialize the application
+    async function initializeApp() {
+      // First load authentication state
+      await refreshAuthUi();
+      
+      // Small delay to ensure authentication state is fully loaded
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
+      // Then load other components
+      loadCrops();
+      loadSoilTypes();
+      loadWeather();
+      initializeNotifications();
+      initTheme();
+    }
+
+    // Start the application when DOM is loaded
+    // Mobile menu events
+    document.addEventListener('click', (e) => {
+      if (e.target && e.target.id === 'mobileMenuBtn') setMobileSidebarVisibility(true);
+      if (e.target && (e.target.id === 'mobileOverlay' || e.target.id === 'mobileSidebarClose')) setMobileSidebarVisibility(false);
+    });
+    document.getElementById('msLogout').addEventListener('click', (e) => { e.preventDefault(); logoutAndRefresh(); });
+    window.addEventListener('resize', () => { refreshAuthUi(); setMobileSidebarVisibility(false); });
+
+    document.addEventListener('DOMContentLoaded', initializeApp);
+  </script>
+</body>
+</html>

@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Browse All Crops - Precision Agriculture</title>
+  <link rel="stylesheet" href="/css/common.css">
+  <style>
+    .browse-container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+
+    .page-header {
+      text-align: center;
+      margin-bottom: 3rem;
+    }
+
+    .page-header h1 {
+      font-size: 2.5rem;
+      color: var(--primary-green);
+      margin-bottom: 0.5rem;
+    }
+
+    .page-header p {
+      color: var(--text-secondary);
+      font-size: 1.1rem;
+    }
+
+    .browse-layout {
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      gap: 2rem;
+      align-items: start;
+    }
+
+    @media (max-width: 968px) {
+      .browse-layout {
+        grid-template-columns: 1fr;
+      }
+
+      .filters-sidebar {
+        position: sticky;
+        top: 80px;
+        z-index: 10;
+      }
+    }
+
+    /* Filters Sidebar */
+    .filters-sidebar {
+      background: var(--card-bg);
+      border-radius: 12px;
+      padding: 1.5rem;
+      box-shadow: var(--shadow-sm);
+      position: sticky;
+      top: 100px;
+    }
+
+    .filters-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+    }
+
+    .filters-header h3 {
+      margin: 0;
+      font-size: 1.2rem;
+      color: var(--text-primary);
+    }
+
+    .clear-filters {
+      background: none;
+      border: none;
+      color: var(--primary-green);
+      cursor: pointer;
+      font-size: 0.9rem;
+      text-decoration: underline;
+    }
+
+    .filter-group {
+      margin-bottom: 1.5rem;
+    }
+
+    .filter-group label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      color: var(--text-primary);
+      font-size: 0.9rem;
+    }
+
+    .filter-group input,
+    .filter-group select {
+      width: 100%;
+      padding: 0.6rem;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      background: var(--input-bg);
+      color: var(--text-primary);
+      font-size: 0.95rem;
+    }
+
+    .filter-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-top: 0.5rem;
+    }
+
+    .filter-chip {
+      padding: 0.4rem 0.8rem;
+      background: var(--primary-green-light);
+      color: var(--primary-green);
+      border-radius: 20px;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      border: 1px solid transparent;
+    }
+
+    .filter-chip:hover {
+      background: var(--primary-green);
+      color: white;
+    }
+
+    .filter-chip.active {
+      background: var(--primary-green);
+      color: white;
+      border-color: var(--primary-green);
+    }
+
+    /* Crops Grid */
+    .crops-section {
+      min-height: 400px;
+    }
+
+    .search-bar {
+      margin-bottom: 2rem;
+    }
+
+    .search-bar input {
+      width: 100%;
+      padding: 1rem 1.5rem;
+      border: 2px solid var(--border-color);
+      border-radius: 12px;
+      font-size: 1rem;
+      background: var(--input-bg);
+      color: var(--text-primary);
+      transition: border-color 0.3s;
+    }
+
+    .search-bar input:focus {
+      outline: none;
+      border-color: var(--primary-green);
+    }
+
+    .results-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+    }
+
+    .results-count {
+      color: var(--text-secondary);
+      font-size: 0.95rem;
+    }
+
+    .sort-select {
+      padding: 0.5rem 1rem;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      background: var(--input-bg);
+      color: var(--text-primary);
+      cursor: pointer;
+    }
+
+    .crops-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .crop-card {
+      background: var(--card-bg);
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
+      transition: transform 0.3s, box-shadow 0.3s;
+      cursor: pointer;
+      border: 1px solid var(--border-color);
+    }
+
+    .crop-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-md);
+    }
+
+    .crop-image {
+      height: 180px;
+      background: linear-gradient(135deg, var(--primary-green-light), var(--primary-green));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 5rem;
+      position: relative;
+    }
+
+    .crop-badge {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      background: rgba(255, 255, 255, 0.95);
+      padding: 0.3rem 0.8rem;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--primary-green);
+    }
+
+    .crop-content {
+      padding: 1.5rem;
+    }
+
+    .crop-title {
+      font-size: 1.4rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+      color: var(--text-primary);
+    }
+
+    .crop-meta {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 1rem;
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      flex-wrap: wrap;
+    }
+
+    .crop-meta span {
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+    }
+
+    .crop-description {
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      line-height: 1.5;
+      margin-bottom: 1rem;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .crop-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-top: 1rem;
+      border-top: 1px solid var(--border-color);
+    }
+
+    .crop-stats {
+      display: flex;
+      gap: 1rem;
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+    }
+
+    .view-btn {
+      padding: 0.5rem 1.2rem;
+      background: var(--primary-green);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: background 0.3s;
+    }
+
+    .view-btn:hover {
+      background: var(--primary-green-dark);
+    }
+
+    .difficulty-badge {
+      padding: 0.3rem 0.8rem;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .difficulty-easy {
+      background: #d4edda;
+      color: #155724;
+    }
+
+    .difficulty-medium {
+      background: #fff3cd;
+      color: #856404;
+    }
+
+    .difficulty-hard {
+      background: #f8d7da;
+      color: #721c24;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 3rem;
+      color: var(--text-secondary);
+    }
+
+    .no-results {
+      text-align: center;
+      padding: 3rem;
+      color: var(--text-secondary);
+    }
+
+    .no-results h3 {
+      margin-bottom: 1rem;
+    }
+  </style>
+</head>
+<body>
+  <div id="navbar-container"></div>
+
+  <div class="browse-container">
+    <div class="page-header">
+      <h1>🌾 Browse All Crops</h1>
+      <p>Explore our comprehensive crop database with detailed information and guides</p>
+    </div>
+
+    <div class="browse-layout">
+      <!-- Filters Sidebar -->
+      <aside class="filters-sidebar">
+        <div class="filters-header">
+          <h3>🔍 Filters</h3>
+          <button class="clear-filters" onclick="clearFilters()">Clear All</button>
+        </div>
+
+        <div class="filter-group">
+          <label>Search</label>
+          <input type="text" id="searchInput" placeholder="Search crops..." oninput="applyFilters()">
+        </div>
+
+        <div class="filter-group">
+          <label>Category</label>
+          <div class="filter-chips" id="categoryFilters"></div>
+        </div>
+
+        <div class="filter-group">
+          <label>Difficulty</label>
+          <div class="filter-chips">
+            <div class="filter-chip" data-difficulty="Easy" onclick="toggleFilter('difficulty', 'Easy', this)">Easy</div>
+            <div class="filter-chip" data-difficulty="Medium" onclick="toggleFilter('difficulty', 'Medium', this)">Medium</div>
+            <div class="filter-chip" data-difficulty="Hard" onclick="toggleFilter('difficulty', 'Hard', this)">Hard</div>
+          </div>
+        </div>
+
+        <div class="filter-group">
+          <label>Season</label>
+          <select id="seasonFilter" onchange="applyFilters()">
+            <option value="">All Seasons</option>
+            <option value="Kharif">Kharif</option>
+            <option value="Rabi">Rabi</option>
+            <option value="Summer">Summer</option>
+            <option value="Year-round">Year-round</option>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label>Soil Type</label>
+          <select id="soilFilter" onchange="applyFilters()">
+            <option value="">All Soil Types</option>
+            <option value="Sandy Loam">Sandy Loam</option>
+            <option value="Clay Loam">Clay Loam</option>
+            <option value="Loamy Soil">Loamy Soil</option>
+            <option value="Black Soil">Black Soil</option>
+            <option value="Alluvial Soil">Alluvial Soil</option>
+            <option value="Red Soil">Red Soil</option>
+          </select>
+        </div>
+      </aside>
+
+      <!-- Crops Grid -->
+      <main class="crops-section">
+        <div class="search-bar">
+          <input type="text" placeholder="🔍 Quick search by crop name..." oninput="quickSearch(this.value)">
+        </div>
+
+        <div class="results-header">
+          <div class="results-count" id="resultsCount">Loading crops...</div>
+          <select class="sort-select" id="sortSelect" onchange="sortCrops()">
+            <option value="name">Sort by Name</option>
+            <option value="difficulty">Sort by Difficulty</option>
+            <option value="duration">Sort by Duration</option>
+            <option value="category">Sort by Category</option>
+          </select>
+        </div>
+
+        <div class="crops-grid" id="cropsGrid">
+          <div class="loading">Loading crops...</div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script src="/js/navbar.js"></script>
+  <script>
+    let allCrops = [];
+    let filteredCrops = [];
+    let activeFilters = {
+      search: '',
+      category: '',
+      difficulty: '',
+      season: '',
+      soil: ''
+    };
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', () => {
+      loadCrops();
+    });
+
+    async function loadCrops() {
+      try {
+        const response = await fetch('/api/crops');
+        allCrops = await response.json();
+        filteredCrops = [...allCrops];
+        
+        // Populate category filters
+        const categories = [...new Set(allCrops.map(c => c.crop_category))].filter(Boolean);
+        const categoryFilters = document.getElementById('categoryFilters');
+        categoryFilters.innerHTML = categories.map(cat => 
+          `<div class="filter-chip" data-category="${cat}" onclick="toggleFilter('category', '${cat}', this)">${cat}</div>`
+        ).join('');
+        
+        displayCrops();
+      } catch (error) {
+        console.error('Error loading crops:', error);
+        document.getElementById('cropsGrid').innerHTML = '<div class="no-results"><h3>Error loading crops</h3><p>Please try again later.</p></div>';
+      }
+    }
+
+    function toggleFilter(type, value, element) {
+      element.classList.toggle('active');
+      activeFilters[type] = element.classList.contains('active') ? value : '';
+      applyFilters();
+    }
+
+    function applyFilters() {
+      activeFilters.search = document.getElementById('searchInput').value.toLowerCase();
+      activeFilters.season = document.getElementById('seasonFilter').value;
+      activeFilters.soil = document.getElementById('soilFilter').value;
+
+      filteredCrops = allCrops.filter(crop => {
+        // Search filter
+        if (activeFilters.search && !crop.name.toLowerCase().includes(activeFilters.search) && 
+            !(crop.description || '').toLowerCase().includes(activeFilters.search)) {
+          return false;
+        }
+
+        // Category filter
+        if (activeFilters.category && crop.crop_category !== activeFilters.category) {
+          return false;
+        }
+
+        // Difficulty filter
+        if (activeFilters.difficulty && crop.difficulty !== activeFilters.difficulty) {
+          return false;
+        }
+
+        // Season filter
+        if (activeFilters.season && !(crop.season || '').includes(activeFilters.season)) {
+          return false;
+        }
+
+        // Soil filter
+        if (activeFilters.soil && !(crop.soil_types || '').includes(activeFilters.soil)) {
+          return false;
+        }
+
+        return true;
+      });
+
+      displayCrops();
+    }
+
+    function quickSearch(value) {
+      document.getElementById('searchInput').value = value;
+      applyFilters();
+    }
+
+    function clearFilters() {
+      activeFilters = { search: '', category: '', difficulty: '', season: '', soil: '' };
+      document.getElementById('searchInput').value = '';
+      document.getElementById('seasonFilter').value = '';
+      document.getElementById('soilFilter').value = '';
+      document.querySelectorAll('.filter-chip.active').forEach(chip => chip.classList.remove('active'));
+      filteredCrops = [...allCrops];
+      displayCrops();
+    }
+
+    function sortCrops() {
+      const sortBy = document.getElementById('sortSelect').value;
+      
+      filteredCrops.sort((a, b) => {
+        switch(sortBy) {
+          case 'name':
+            return a.name.localeCompare(b.name);
+          case 'difficulty':
+            const diffOrder = { 'Easy': 1, 'Medium': 2, 'Hard': 3 };
+            return (diffOrder[a.difficulty] || 2) - (diffOrder[b.difficulty] || 2);
+          case 'duration':
+            return (a.average_duration_weeks || 12) - (b.average_duration_weeks || 12);
+          case 'category':
+            return (a.crop_category || '').localeCompare(b.crop_category || '');
+          default:
+            return 0;
+        }
+      });
+      
+      displayCrops();
+    }
+
+    function displayCrops() {
+      const grid = document.getElementById('cropsGrid');
+      const count = document.getElementById('resultsCount');
+      
+      count.textContent = `${filteredCrops.length} crop${filteredCrops.length !== 1 ? 's' : ''} found`;
+
+      if (filteredCrops.length === 0) {
+        grid.innerHTML = `
+          <div class="no-results">
+            <h3>No crops found</h3>
+            <p>Try adjusting your filters or search terms</p>
+          </div>
+        `;
+        return;
+      }
+
+      grid.innerHTML = filteredCrops.map(crop => `
+        <div class="crop-card" onclick="viewCrop(${crop.id})">
+          <div class="crop-image">
+            ${crop.image_url || '🌱'}
+            <span class="crop-badge">${crop.crop_category || 'Crop'}</span>
+          </div>
+          <div class="crop-content">
+            <h3 class="crop-title">${crop.name}</h3>
+            <div class="crop-meta">
+              <span>⏱️ ${crop.average_duration_weeks || 12} weeks</span>
+              <span class="difficulty-badge difficulty-${(crop.difficulty || 'Medium').toLowerCase()}">${crop.difficulty || 'Medium'}</span>
+            </div>
+            <p class="crop-description">${crop.description || 'No description available.'}</p>
+            <div class="crop-footer">
+              <div class="crop-stats">
+                <span>📅 ${crop.season || 'N/A'}</span>
+              </div>
+              <button class="view-btn" onclick="event.stopPropagation(); viewCrop(${crop.id})">View Details</button>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function viewCrop(cropId) {
+      window.location.href = `/crop-detail.html?id=${cropId}`;
+    }
+  </script>
+</body>
+</html>

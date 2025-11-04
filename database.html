@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="/style.css">
+
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Database Operations</title>
+  <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+  <link rel="stylesheet" href="style.css">
+  <script>
+    async function ensureAuth() {
+      try {
+        const res = await fetch('/api/me');
+        const data = await res.json();
+        if (!data.authenticated) { window.location.href = '/login.html'; return; }
+        if (!data.is_admin) { window.location.href = '/'; return; }
+      } catch (e) {
+        window.location.href = '/login.html';
+      }
+    }
+
+    const TABLES = {
+      crops: {
+        title: 'Crops', endpoint: '/api/admin/crops', key: 'id',
+        columns: [
+          { key: 'id', label: 'ID', readonly: true },
+          { key: 'name', label: 'Name', required: true },
+          { key: 'season', label: 'Season' },
+          { key: 'ec', label: 'EC Range' },
+          { key: 'land_size_min', label: 'Min Land Size (acres)', type: 'number' },
+          { key: 'land_size_max', label: 'Max Land Size (acres)', type: 'number' },
+          { key: 'soil_types', label: 'Soil Types' },
+          { key: 'crop_category', label: 'Category' }
+        ]
+      },
+      fertilizers: {
+        title: 'Fertilizers', endpoint: '/api/admin/fertilizers', key: 'id',
+        columns: [
+          { key: 'id', label: 'ID', readonly: true },
+          { key: 'crop_id', label: 'Crop ID', required: true, type: 'number' },
+          { key: 'week', label: 'Week' },
+          { key: 'name', label: 'Name' },
+          { key: 'quantity', label: 'Quantity' },
+          { key: 'price', label: 'Price' },
+          { key: 'gap_days', label: 'Gap Days', type: 'number' }
+        ]
+      },
+      pesticides: {
+        title: 'Pesticides', endpoint: '/api/admin/pesticides', key: 'id',
+        columns: [
+          { key: 'id', label: 'ID', readonly: true },
+          { key: 'crop_id', label: 'Crop ID', required: true, type: 'number' },
+          { key: 'week', label: 'Week' },
+          { key: 'name', label: 'Name' },
+          { key: 'application', label: 'Application' },
+          { key: 'quantity', label: 'Quantity' },
+          { key: 'price', label: 'Price' }
+        ]
+      },
+      crop_guides: {
+        title: 'Crop Guides', endpoint: '/api/admin/crop_guides', key: 'id',
+        columns: [
+          { key: 'id', label: 'ID', readonly: true },
+          { key: 'crop_id', label: 'Crop ID', required: true, type: 'number' },
+          { key: 'overview', label: 'Overview' },
+          { key: 'climate', label: 'Climate' },
+          { key: 'soil', label: 'Soil' },
+          { key: 'land_preparation', label: 'Land Preparation' },
+          { key: 'sowing', label: 'Sowing' },
+          { key: 'irrigation', label: 'Irrigation' },
+          { key: 'nutrient_management', label: 'Nutrients' },
+          { key: 'weed_management', label: 'Weeds' },
+          { key: 'pests_diseases', label: 'Pests/Diseases' },
+          { key: 'harvesting', label: 'Harvesting' },
+          { key: 'yield_info', label: 'Yield' }
+        ]
+      },
+      crop_stages: {
+        title: 'Crop Stages', endpoint: '/api/admin/crop_stages', key: 'id',
+        columns: [
+          { key: 'id', label: 'ID', readonly: true },
+          { key: 'crop_id', label: 'Crop ID', required: true, type: 'number' },
+          { key: 'stage_number', label: 'Stage #', required: true, type: 'number' },
+          { key: 'title', label: 'Title', required: true },
+          { key: 'start_week', label: 'Start Week', type: 'number' },
+          { key: 'end_week', label: 'End Week', type: 'number' },
+          { key: 'tasks', label: 'Tasks' }
+        ]
+      },
+      users: {
+        title: 'Users', endpoint: '/api/admin/users', key: 'id',
+        columns: [
+          { key: 'id', label: 'ID', readonly: true },
+          { key: 'username', label: 'Username', required: true },
+          { key: 'password', label: 'Password' }
+        ]
+      },
+      soil_types: {
+        title: 'Soil Types', endpoint: '/api/admin/soil_types', key: 'id',
+        columns: [
+          { key: 'id', label: 'ID', readonly: true },
+          { key: 'name', label: 'Name', required: true },
+          { key: 'description', label: 'Description' },
+          { key: 'ph_range', label: 'pH Range' },
+          { key: 'drainage', label: 'Drainage' },
+          { key: 'water_retention', label: 'Water Retention' },
+          { key: 'fertility_level', label: 'Fertility Level' },
+          { key: 'suitable_crops', label: 'Suitable Crops' }
+        ]
+      }
+    };
+
+    let currentTable = 'crops';
+
+    function buildCreateForm() {
+      const cfg = TABLES[currentTable];
+      const form = document.getElementById('createForm');
+      form.innerHTML = '';
+      const grid = document.createElement('div');
+      grid.className = 'grid';
+      cfg.columns.forEach(col => {
+        if (col.readonly) return;
+        const wrap = document.createElement('div');
+        wrap.innerHTML = `
+          <label>${col.label}</label>
+          <input ${col.type === 'number' ? 'type="number"' : ''} id="new_${col.key}" class="form-control" ${col.required ? 'required' : ''} />
+        `;
+        grid.appendChild(wrap);
+      });
+      const actions = document.createElement('div');
+      actions.style.alignSelf = 'end';
+      actions.innerHTML = '<button class="btn btn-success" type="submit">Create</button>';
+      grid.appendChild(actions);
+      form.appendChild(grid);
+    }
+
+    function buildEditForm() {
+      const cfg = TABLES[currentTable];
+      const form = document.getElementById('editForm');
+      form.innerHTML = '';
+      const grid = document.createElement('div');
+      grid.className = 'grid';
+      const idHidden = document.createElement('input');
+      idHidden.type = 'hidden';
+      idHidden.id = 'editId';
+      form.appendChild(idHidden);
+      cfg.columns.forEach(col => {
+        if (col.readonly) return;
+        const wrap = document.createElement('div');
+        wrap.innerHTML = `
+          <label>${col.label}</label>
+          <input ${col.type === 'number' ? 'type="number"' : ''} id="edit_${col.key}" class="form-control" ${col.required ? 'required' : ''} />
+        `;
+        grid.appendChild(wrap);
+      });
+      const actions = document.createElement('div');
+      actions.style.alignSelf = 'end';
+      actions.innerHTML = '<button class="btn btn-primary" type="submit">Save</button>';
+      grid.appendChild(actions);
+      form.appendChild(grid);
+    }
+
+    function getPrimaryLabelKeyForTable(tableKey){
+      switch(tableKey){
+        case 'crops': return 'name';
+        case 'fertilizers': return 'name';
+        case 'pesticides': return 'name';
+        case 'crop_guides': return 'crop_id';
+        case 'crop_stages': return 'title';
+        case 'users': return 'username';
+        case 'soil_types': return 'name';
+        default: return TABLES[tableKey].columns.find(c=>!c.readonly)?.key || TABLES[tableKey].columns[0].key;
+      }
+    }
+
+    function buildTableHead() {
+      const cfg = TABLES[currentTable];
+      const thead = document.querySelector('#dataTable thead tr');
+      thead.innerHTML = '';
+      const primaryKey = getPrimaryLabelKeyForTable(currentTable);
+      cfg.columns.forEach(c => {
+        const th = document.createElement('th');
+        th.textContent = c.label;
+        if (c.key === primaryKey) th.classList.add('mobile-visible');
+        thead.appendChild(th);
+      });
+      const thA = document.createElement('th');
+      thA.textContent = 'Actions';
+      thead.appendChild(thA);
+    }
+
+    async function loadList() {
+      const cfg = TABLES[currentTable];
+      const tbody = document.querySelector('#dataTable tbody');
+      tbody.innerHTML = `<tr><td colspan="${cfg.columns.length + 1}">Loading...</td></tr>`;
+      const res = await fetch(cfg.endpoint);
+      if (res.status === 401) { return ensureAuth(); }
+      const rows = await res.json();
+      tbody.innerHTML = '';
+      const primaryKey = getPrimaryLabelKeyForTable(currentTable);
+      rows.forEach(row => {
+        const tr = document.createElement('tr');
+        tr.setAttribute('data-row', '');
+        tr.addEventListener('click', () => showRowDetails(row));
+        cfg.columns.forEach(col => {
+          const td = document.createElement('td');
+          td.textContent = (row[col.key] ?? '-')
+          if (col.key === primaryKey) td.classList.add('mobile-visible');
+          tr.appendChild(td);
+        });
+        const tdA = document.createElement('td');
+        tdA.className = 'actions';
+        const encRow = encodeURIComponent(JSON.stringify(row));
+        tdA.innerHTML = `
+          <button class="btn btn-secondary" onclick="event.stopPropagation(); startGenericEdit('${encRow}')">Edit</button>
+          <button class="btn btn-danger" onclick="event.stopPropagation(); deleteRow(${row[cfg.key]})">Delete</button>
+        `;
+        tr.appendChild(tdA);
+        tbody.appendChild(tr);
+      });
+    }
+
+    async function createRow(e) {
+      e.preventDefault();
+      const cfg = TABLES[currentTable];
+      const body = {};
+      cfg.columns.forEach(col => {
+        if (col.readonly) return;
+        const el = document.getElementById('new_' + col.key);
+        if (!el) return;
+        const val = el.value.trim();
+        body[col.key] = col.type === 'number' && val !== '' ? Number(val) : val;
+      });
+      const res = await fetch(cfg.endpoint, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
+      if (!res.ok) {
+        const data = await res.json().catch(()=>({error:'Failed'}));
+        return alert(data.error || 'Failed to create');
+      }
+      document.getElementById('createForm').reset();
+      loadList();
+    }
+
+    function startGenericEdit(encRow) {
+      const cfg = TABLES[currentTable];
+      const row = JSON.parse(decodeURIComponent(encRow));
+      document.getElementById('editId').value = row[cfg.key];
+      cfg.columns.forEach(col => {
+        if (col.readonly) return;
+        const el = document.getElementById('edit_' + col.key);
+        if (el) el.value = row[col.key] ?? '';
+      });
+      document.getElementById('editCard').style.display = 'block';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    async function saveRow(e) {
+      e.preventDefault();
+      const cfg = TABLES[currentTable];
+      const id = document.getElementById('editId').value;
+      const body = {};
+      cfg.columns.forEach(col => {
+        if (col.readonly) return;
+        const el = document.getElementById('edit_' + col.key);
+        if (!el) return;
+        const val = el.value.trim();
+        body[col.key] = col.type === 'number' && val !== '' ? Number(val) : val;
+      });
+      const res = await fetch(`${cfg.endpoint}/${id}`, { method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
+      if (!res.ok) {
+        const data = await res.json().catch(()=>({error:'Failed'}));
+        return alert(data.error || 'Failed to update');
+      }
+      document.getElementById('editCard').style.display = 'none';
+      loadList();
+    }
+
+    async function deleteRow(id) {
+      const cfg = TABLES[currentTable];
+      if (!confirm(`Delete ${cfg.title.slice(0,-1)} #${id}?`)) return;
+      const res = await fetch(`${cfg.endpoint}/${id}`, { method:'DELETE' });
+      if (!res.ok) {
+        const data = await res.json().catch(()=>({error:'Failed'}));
+        return alert(data.error || 'Failed to delete');
+      }
+      loadList();
+    }
+
+    function showRowDetails(row){
+      const cfg = TABLES[currentTable];
+      const modal = document.getElementById('rowModal');
+      const body = document.getElementById('rowModalBody');
+      const details = cfg.columns.map(c => {
+        const val = row[c.key];
+        return `<div class="list item"><strong>${c.label}:</strong> <span>${val === null || val === undefined || val === '' ? '-' : val}</span></div>`;
+      }).join('');
+      body.innerHTML = `
+        <div class="stack">
+          ${details}
+          <div class="inline-actions" style="margin-top: .75rem;">
+            <button class="btn btn-secondary" onclick="startGenericEdit('${encodeURIComponent(JSON.stringify(row))}'); closeRowModal();">Edit</button>
+            <button class="btn btn-danger" onclick="deleteRow(${row[cfg.key]}); closeRowModal();">Delete</button>
+          </div>
+        </div>
+      `;
+      modal.style.display = 'block';
+    }
+
+    function closeRowModal(){
+      const modal = document.getElementById('rowModal');
+      modal.style.display = 'none';
+    }
+
+    async function doLogout() {
+      await fetch('/api/logout', { method:'POST' });
+      window.location.href = '/login.html';
+    }
+
+    window.addEventListener('DOMContentLoaded', async () => {
+      await ensureAuth();
+      // Build profile
+      try {
+        const me = await (await fetch('/api/me')).json();
+        const name = me.username || 'User';
+        const initials = (name.trim().slice(0,1).toUpperCase()) || 'U';
+        document.getElementById('profileName').textContent = name + (me.is_admin ? ' (Admin)' : '');
+        document.getElementById('profileAvatar').textContent = initials;
+      } catch {}
+      // Build selector
+      const sel = document.getElementById('tableSelect');
+      sel.innerHTML = '';
+      Object.keys(TABLES).forEach(k => {
+        const opt = document.createElement('option');
+        opt.value = k;
+        opt.textContent = TABLES[k].title;
+        sel.appendChild(opt);
+      });
+      sel.value = currentTable;
+      buildCreateForm();
+      buildEditForm();
+      buildTableHead();
+      await loadList();
+    });
+
+    function changeTable(e) {
+      currentTable = e.target.value;
+      document.getElementById('sectionTitle').textContent = TABLES[currentTable].title;
+      buildCreateForm();
+      buildEditForm();
+      buildTableHead();
+      loadList();
+    }
+  </script>
+</head>
+<body>
+  <div class="container">
+    <div class="admin-bar">
+      <h2>📊 Database Operations</h2>
+      <div class="db-nav">
+        <a class="btn btn-ghost" href="/index.html">← Main Menu</a>
+      </div>
+      <div class="profile">
+        <span id="profileAvatar" class="avatar">U</span>
+        <span id="profileName">User</span>
+        <button class="btn btn-secondary" onclick="doLogout()">Logout</button>
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom:1rem; display:flex; gap:1rem; align-items:center;">
+      <label style="margin:0;">Select Table</label>
+      <select id="tableSelect" class="form-control" style="max-width:300px;" onchange="changeTable(event)"></select>
+    </div>
+
+    <div id="editCard" class="card" style="display:none; margin-bottom:1rem;">
+      <h3>Edit <span id="editTitle"></span></h3>
+      <form id="editForm" onsubmit="saveRow(event)"></form>
+    </div>
+
+    <div class="card" style="margin-bottom:1rem;">
+      <h3>Add New <span id="createTitle"></span></h3>
+      <form id="createForm" onsubmit="createRow(event)"></form>
+    </div>
+
+    <div class="card">
+      <h3 id="sectionTitle">Crops</h3>
+      <table id="dataTable" class="table">
+        <thead><tr></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Row Details Modal -->
+  <div id="rowModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>🔎 Record Details</h2>
+        <span class="close" onclick="closeRowModal()">&times;</span>
+      </div>
+      <div class="modal-body" id="rowModalBody"></div>
+    </div>
+  </div>
+</body>
+</html>
+
+

@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>📝 Content Management - Agricultural System</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <!-- Header -->
+  <header class="header">
+    <nav class="nav">
+      <a href="/admin-dashboard.html" class="logo">📝 Content Management</a>
+      <ul class="nav-links">
+        <li><a href="/admin-dashboard.html">🏠 Dashboard</a></li>
+        <li><a href="#" onclick="logoutAndRefresh()">Logout</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <div class="admin-container">
+    <!-- Admin Header -->
+    <div class="admin-header">
+      <h1>📝 Content Management System</h1>
+      <p>Manage weekly tasks, crop tips, and guidance content</p>
+    </div>
+
+    <!-- Admin Navigation -->
+    <div class="admin-nav">
+      <button class="nav-btn active" onclick="showSection('overview')">📊 Overview</button>
+      <button class="nav-btn" onclick="showSection('weekly-tasks')">📅 Weekly Tasks</button>
+      <button class="nav-btn" onclick="showSection('crop-tips')">💡 Crop Tips</button>
+      <button class="nav-btn" onclick="showSection('weather-rec')">🌤️ Weather Recommendations</button>
+      <button class="nav-btn" onclick="showSection('crop-stages')">🌱 Crop Stages</button>
+    </div>
+
+    <!-- Overview Section -->
+    <div id="overview" class="content-section active">
+      <div class="section-header">
+        <h2 class="section-title">📊 Content Overview</h2>
+      </div>
+      
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-number" id="totalTasks">-</div>
+          <div class="stat-label">Total Weekly Tasks</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number" id="totalTips">-</div>
+          <div class="stat-label">Crop Tips</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number" id="totalWeatherRecs">-</div>
+          <div class="stat-label">Weather Recommendations</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number" id="totalStages">-</div>
+          <div class="stat-label">Crop Stages</div>
+        </div>
+      </div>
+      
+      <div id="overviewContent">
+        <div class="loading">Loading overview data...</div>
+      </div>
+    </div>
+
+    <!-- Weekly Tasks Section -->
+    <div id="weekly-tasks" class="content-section">
+      <div class="section-header">
+        <h2 class="section-title">📅 Weekly Tasks Management</h2>
+        <button class="btn btn-primary" onclick="showAddTaskModal()">Add New Task</button>
+      </div>
+      
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Filter by Crop</label>
+          <select id="taskCropFilter" class="form-control">
+            <option value="">All Crops</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Filter by Week</label>
+          <select id="taskWeekFilter" class="form-control">
+            <option value="">All Weeks</option>
+          </select>
+        </div>
+      </div>
+      
+      <div id="tasksContent">
+        <div class="loading">Loading weekly tasks...</div>
+      </div>
+    </div>
+
+    <!-- Crop Tips Section -->
+    <div id="crop-tips" class="content-section">
+      <div class="section-header">
+        <h2 class="section-title">💡 Crop Tips Management</h2>
+        <button class="btn btn-primary" onclick="showAddTipModal()">Add New Tip</button>
+      </div>
+      
+      <div id="tipsContent">
+        <div class="loading">Loading crop tips...</div>
+      </div>
+    </div>
+
+    <!-- Weather Recommendations Section -->
+    <div id="weather-rec" class="content-section">
+      <div class="section-header">
+        <h2 class="section-title">🌤️ Weather Recommendations</h2>
+        <button class="btn btn-primary" onclick="showAddWeatherModal()">Add New Recommendation</button>
+      </div>
+      
+      <div id="weatherContent">
+        <div class="loading">Loading weather recommendations...</div>
+      </div>
+    </div>
+
+    <!-- Crop Stages Section -->
+    <div id="crop-stages" class="content-section">
+      <div class="section-header">
+        <h2 class="section-title">🌱 Crop Stages Management</h2>
+        <button class="btn btn-primary" onclick="showAddStageModal()">Add New Stage</button>
+      </div>
+      
+      <div id="stagesContent">
+        <div class="loading">Loading crop stages...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Task Modal -->
+  <div id="addTaskModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">Add New Weekly Task</h3>
+        <span class="modal-close" onclick="closeAddTaskModal()">&times;</span>
+      </div>
+      <form id="addTaskForm">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Crop</label>
+            <select id="taskCrop" class="form-control" required>
+              <option value="">Select Crop</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Week Number</label>
+            <input type="number" id="taskWeek" class="form-control" min="1" max="20" required>
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label">Task Title</label>
+          <input type="text" id="taskTitle" class="form-control" required>
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label">Task Description</label>
+          <textarea id="taskDescription" class="form-control" rows="3" required></textarea>
+        </div>
+        
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Task Type</label>
+            <select id="taskType" class="form-control" required>
+              <option value="">Select Type</option>
+              <option value="fertilizer">Fertilizer</option>
+              <option value="pesticide">Pesticide</option>
+              <option value="irrigation">Irrigation</option>
+              <option value="pruning">Pruning</option>
+              <option value="harvesting">Harvesting</option>
+              <option value="monitoring">Monitoring</option>
+              <option value="maintenance">Maintenance</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Priority</label>
+            <select id="taskPriority" class="form-control" required>
+              <option value="">Select Priority</option>
+              <option value="Low">Low</option>
+              <option value="Medium">Medium</option>
+              <option value="High">High</option>
+              <option value="Critical">Critical</option>
+            </select>
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label">Estimated Duration</label>
+          <input type="text" id="taskDuration" class="form-control" placeholder="e.g., 2 hours, 30 minutes">
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label">Equipment Needed</label>
+          <textarea id="taskEquipment" class="form-control" rows="2"></textarea>
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label">Materials Needed</label>
+          <textarea id="taskMaterials" class="form-control" rows="2"></textarea>
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label">Step-by-Step Instructions</label>
+          <textarea id="taskInstructions" class="form-control" rows="4"></textarea>
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label">Tips and Notes</label>
+          <textarea id="taskTips" class="form-control" rows="3"></textarea>
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label">Weather Conditions</label>
+          <textarea id="taskWeather" class="form-control" rows="2"></textarea>
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label">Safety Precautions</label>
+          <textarea id="taskSafety" class="form-control" rows="2"></textarea>
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label">Expected Outcome</label>
+          <textarea id="taskOutcome" class="form-control" rows="2"></textarea>
+        </div>
+        
+        <div class="form-group">
+          <button type="submit" class="btn btn-primary">Add Task</button>
+          <button type="button" class="btn btn-warning" onclick="closeAddTaskModal()">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    let currentUser = null;
+    let allCrops = [];
+    let allTasks = [];
+    let allTips = [];
+    let allWeatherRecs = [];
+    let allStages = [];
+
+    // Check authentication
+    async function ensureAuth() {
+      try {
+        const response = await fetch('/api/me');
+        const me = await response.json();
+        if (!me.authenticated) {
+          alert('Please login to access admin panel.');
+          window.location.href = '/login.html';
+          return false;
+        }
+        if (!me.is_admin) {
+          alert('Admin access required.');
+          window.location.href = '/index.html';
+          return false;
+        }
+        currentUser = me;
+        return true;
+      } catch (error) {
+        console.error('Auth check failed:', error);
+        window.location.href = '/login.html';
+        return false;
+      }
+    }
+
+    // Show section
+    function showSection(sectionId) {
+      // Hide all sections
+      document.querySelectorAll('.content-section').forEach(section => {
+        section.classList.remove('active');
+      });
+      
+      // Remove active class from all nav buttons
+      document.querySelectorAll('.nav-btn').forEach(btn => {
+        btn.classList.remove('active');
+      });
+      
+      // Show selected section
+      document.getElementById(sectionId).classList.add('active');
+      event.target.classList.add('active');
+      
+      // Load section data
+      loadSectionData(sectionId);
+    }
+
+    // Load section data
+    async function loadSectionData(sectionId) {
+      switch(sectionId) {
+        case 'overview':
+          await loadOverview();
+          break;
+        case 'weekly-tasks':
+          await loadWeeklyTasks();
+          break;
+        case 'crop-tips':
+          await loadCropTips();
+          break;
+        case 'weather-rec':
+          await loadWeatherRecommendations();
+          break;
+        case 'crop-stages':
+          await loadCropStages();
+          break;
+      }
+    }
+
+    // Load overview data
+    async function loadOverview() {
+      try {
+        const [tasksRes, tipsRes, weatherRes, stagesRes, cropsRes] = await Promise.all([
+          fetch('/api/admin/weekly_tasks'),
+          fetch('/api/admin/crop_tips'),
+          fetch('/api/admin/weather_recommendations'),
+          fetch('/api/admin/crop_stages'),
+          fetch('/api/crops')
+        ]);
+        
+        allTasks = await tasksRes.json();
+        allTips = await tipsRes.json();
+        allWeatherRecs = await weatherRes.json();
+        allStages = await stagesRes.json();
+        allCrops = await cropsRes.json();
+        
+        // Update stats
+        document.getElementById('totalTasks').textContent = allTasks.length;
+        document.getElementById('totalTips').textContent = allTips.length;
+        document.getElementById('totalWeatherRecs').textContent = allWeatherRecs.length;
+        document.getElementById('totalStages').textContent = allStages.length;
+        
+        // Load recent content
+        loadRecentContent();
+        
+      } catch (error) {
+        console.error('Error loading overview:', error);
+        document.getElementById('overviewContent').innerHTML = '<div class="error">Error loading overview data</div>';
+      }
+    }
+
+    // Load recent content
+    function loadRecentContent() {
+      const container = document.getElementById('overviewContent');
+      const recentTasks = allTasks.slice(0, 5);
+      
+      container.innerHTML = `
+        <h3>Recent Weekly Tasks</h3>
+        <div class="task-grid">
+          ${recentTasks.map(task => `
+            <div class="task-card">
+              <div class="task-title">${task.task_title}</div>
+              <div class="task-meta">
+                <span>Week ${task.week_number}</span>
+                <span class="priority-badge priority-${task.priority.toLowerCase()}">${task.priority}</span>
+              </div>
+              <div class="task-description">${task.task_description}</div>
+              <div class="task-actions">
+                <button class="btn btn-primary btn-sm" onclick="editTask(${task.id})">Edit</button>
+                <button class="btn btn-danger btn-sm" onclick="deleteTask(${task.id})">Delete</button>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      `;
+    }
+
+    // Load weekly tasks
+    async function loadWeeklyTasks() {
+      try {
+        const response = await fetch('/api/admin/weekly_tasks');
+        const tasks = await response.json();
+        
+        allTasks = tasks;
+        displayTasks(tasks);
+        populateTaskFilters();
+        
+      } catch (error) {
+        console.error('Error loading weekly tasks:', error);
+        document.getElementById('tasksContent').innerHTML = '<div class="error">Error loading weekly tasks</div>';
+      }
+    }
+
+    // Display tasks
+    function displayTasks(tasks) {
+      const container = document.getElementById('tasksContent');
+      container.innerHTML = `
+        <div class="task-grid">
+          ${tasks.map(task => `
+            <div class="task-card">
+              <div class="task-title">${task.task_title}</div>
+              <div class="task-meta">
+                <span>Week ${task.week_number}</span>
+                <span class="priority-badge priority-${task.priority.toLowerCase()}">${task.priority}</span>
+              </div>
+              <div class="task-description">${task.task_description}</div>
+              <div class="task-actions">
+                <button class="btn btn-primary btn-sm" onclick="editTask(${task.id})">Edit</button>
+                <button class="btn btn-danger btn-sm" onclick="deleteTask(${task.id})">Delete</button>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      `;
+    }
+
+    // Populate task filters
+    function populateTaskFilters() {
+      const cropFilter = document.getElementById('taskCropFilter');
+      const weekFilter = document.getElementById('taskWeekFilter');
+      
+      // Populate crop filter
+      cropFilter.innerHTML = '<option value="">All Crops</option>' + 
+        allCrops.map(crop => `<option value="${crop.id}">${crop.name}</option>`).join('');
+      
+      // Populate week filter
+      const weeks = [...new Set(allTasks.map(task => task.week_number))].sort((a, b) => a - b);
+      weekFilter.innerHTML = '<option value="">All Weeks</option>' + 
+        weeks.map(week => `<option value="${week}">Week ${week}</option>`).join('');
+    }
+
+    // Load crop tips
+    async function loadCropTips() {
+      try {
+        const response = await fetch('/api/admin/crop_tips');
+        const tips = await response.json();
+        
+        allTips = tips;
+        displayTips(tips);
+        
+      } catch (error) {
+        console.error('Error loading crop tips:', error);
+        document.getElementById('tipsContent').innerHTML = '<div class="error">Error loading crop tips</div>';
+      }
+    }
+
+    // Display tips
+    function displayTips(tips) {
+      const container = document.getElementById('tipsContent');
+      container.innerHTML = `
+        <div class="task-grid">
+          ${tips.map(tip => `
+            <div class="task-card">
+              <div class="task-title">${tip.tip_title}</div>
+              <div class="task-meta">
+                <span>${tip.tip_category}</span>
+                ${tip.is_featured ? '<span class="priority-badge priority-high">Featured</span>' : ''}
+              </div>
+              <div class="task-description">${tip.tip_description}</div>
+              <div class="task-actions">
+                <button class="btn btn-primary btn-sm" onclick="editTip(${tip.id})">Edit</button>
+                <button class="btn btn-danger btn-sm" onclick="deleteTip(${tip.id})">Delete</button>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      `;
+    }
+
+    // Load weather recommendations
+    async function loadWeatherRecommendations() {
+      try {
+        const response = await fetch('/api/admin/weather_recommendations');
+        const weatherRecs = await response.json();
+        
+        allWeatherRecs = weatherRecs;
+        displayWeatherRecommendations(weatherRecs);
+        
+      } catch (error) {
+        console.error('Error loading weather recommendations:', error);
+        document.getElementById('weatherContent').innerHTML = '<div class="error">Error loading weather recommendations</div>';
+      }
+    }
+
+    // Display weather recommendations
+    function displayWeatherRecommendations(weatherRecs) {
+      const container = document.getElementById('weatherContent');
+      container.innerHTML = `
+        <div class="task-grid">
+          ${weatherRecs.map(rec => `
+            <div class="task-card">
+              <div class="task-title">${rec.weather_condition}</div>
+              <div class="task-meta">
+                <span>${rec.priority} Priority</span>
+                ${rec.week_number ? `<span>Week ${rec.week_number}</span>` : ''}
+              </div>
+              <div class="task-description">${rec.recommendation}</div>
+              <div class="task-actions">
+                <button class="btn btn-primary btn-sm" onclick="editWeatherRec(${rec.id})">Edit</button>
+                <button class="btn btn-danger btn-sm" onclick="deleteWeatherRec(${rec.id})">Delete</button>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      `;
+    }
+
+    // Load crop stages
+    async function loadCropStages() {
+      try {
+        const response = await fetch('/api/admin/crop_stages');
+        const stages = await response.json();
+        
+        allStages = stages;
+        displayCropStages(stages);
+        
+      } catch (error) {
+        console.error('Error loading crop stages:', error);
+        document.getElementById('stagesContent').innerHTML = '<div class="error">Error loading crop stages</div>';
+      }
+    }
+
+    // Display crop stages
+    function displayCropStages(stages) {
+      const container = document.getElementById('stagesContent');
+      container.innerHTML = `
+        <div class="task-grid">
+          ${stages.map(stage => `
+            <div class="task-card">
+              <div class="task-title">${stage.title}</div>
+              <div class="task-meta">
+                <span>Stage ${stage.stage_number}</span>
+                <span>Weeks ${stage.start_week}-${stage.end_week}</span>
+              </div>
+              <div class="task-description">${stage.tasks}</div>
+              <div class="task-actions">
+                <button class="btn btn-primary btn-sm" onclick="editStage(${stage.id})">Edit</button>
+                <button class="btn btn-danger btn-sm" onclick="deleteStage(${stage.id})">Delete</button>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      `;
+    }
+
+    // Show add task modal
+    function showAddTaskModal() {
+      // Populate crop dropdown
+      const cropSelect = document.getElementById('taskCrop');
+      cropSelect.innerHTML = '<option value="">Select Crop</option>' + 
+        allCrops.map(crop => `<option value="${crop.id}">${crop.name}</option>`).join('');
+      
+      document.getElementById('addTaskModal').style.display = 'block';
+    }
+
+    // Close add task modal
+    function closeAddTaskModal() {
+      document.getElementById('addTaskModal').style.display = 'none';
+      document.getElementById('addTaskForm').reset();
+    }
+
+    // Add task form submission
+    document.getElementById('addTaskForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      
+      const formData = {
+        crop_id: document.getElementById('taskCrop').value,
+        week_number: document.getElementById('taskWeek').value,
+        task_title: document.getElementById('taskTitle').value,
+        task_description: document.getElementById('taskDescription').value,
+        task_type: document.getElementById('taskType').value,
+        priority: document.getElementById('taskPriority').value,
+        estimated_duration: document.getElementById('taskDuration').value,
+        equipment_needed: document.getElementById('taskEquipment').value,
+        materials_needed: document.getElementById('taskMaterials').value,
+        step_by_step_instructions: document.getElementById('taskInstructions').value,
+        tips_and_notes: document.getElementById('taskTips').value,
+        weather_conditions: document.getElementById('taskWeather').value,
+        safety_precautions: document.getElementById('taskSafety').value,
+        expected_outcome: document.getElementById('taskOutcome').value
+      };
+      
+      try {
+        const response = await fetch('/api/admin/weekly_tasks', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(formData)
+        });
+        
+        if (response.ok) {
+          showMessage('Task added successfully!', 'success');
+          closeAddTaskModal();
+          loadWeeklyTasks();
+        } else {
+          throw new Error('Failed to add task');
+        }
+      } catch (error) {
+        console.error('Error adding task:', error);
+        showMessage('Error adding task. Please try again.', 'error');
+      }
+    });
+
+    // Placeholder functions for edit/delete operations
+    function editTask(taskId) {
+      showMessage('Edit task functionality - Coming Soon!', 'info');
+    }
+
+    function deleteTask(taskId) {
+      if (confirm('Are you sure you want to delete this task?')) {
+        showMessage('Delete task functionality - Coming Soon!', 'info');
+      }
+    }
+
+    function showAddTipModal() {
+      showMessage('Add tip functionality - Coming Soon!', 'info');
+    }
+
+    function editTip(tipId) {
+      showMessage('Edit tip functionality - Coming Soon!', 'info');
+    }
+
+    function deleteTip(tipId) {
+      showMessage('Delete tip functionality - Coming Soon!', 'info');
+    }
+
+    function showAddWeatherModal() {
+      showMessage('Add weather recommendation functionality - Coming Soon!', 'info');
+    }
+
+    function editWeatherRec(recId) {
+      showMessage('Edit weather recommendation functionality - Coming Soon!', 'info');
+    }
+
+    function deleteWeatherRec(recId) {
+      showMessage('Delete weather recommendation functionality - Coming Soon!', 'info');
+    }
+
+    function showAddStageModal() {
+      showMessage('Add stage functionality - Coming Soon!', 'info');
+    }
+
+    function editStage(stageId) {
+      showMessage('Edit stage functionality - Coming Soon!', 'info');
+    }
+
+    function deleteStage(stageId) {
+      showMessage('Delete stage functionality - Coming Soon!', 'info');
+    }
+
+    // Show message
+    function showMessage(message, type) {
+      const messageDiv = document.createElement('div');
+      messageDiv.className = type;
+      messageDiv.textContent = message;
+      messageDiv.style.position = 'fixed';
+      messageDiv.style.top = '20px';
+      messageDiv.style.right = '20px';
+      messageDiv.style.zIndex = '9999';
+      messageDiv.style.padding = '1rem';
+      messageDiv.style.borderRadius = '8px';
+      messageDiv.style.maxWidth = '300px';
+      
+      document.body.appendChild(messageDiv);
+      
+      setTimeout(() => {
+        document.body.removeChild(messageDiv);
+      }, 3000);
+    }
+
+    // Logout function
+    async function logoutAndRefresh() {
+      await fetch('/api/logout', { method: 'POST' });
+      window.location.href = '/login.html';
+    }
+
+    // Initialize the application
+    document.addEventListener('DOMContentLoaded', async function() {
+      const isAuthenticated = await ensureAuth();
+      if (isAuthenticated) {
+        await loadOverview();
+      }
+    });
+  </script>
+</body>
+</html>
+
+

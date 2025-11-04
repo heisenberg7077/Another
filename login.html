@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="/style.css">
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agri Assistant Login</title>
+    <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+        <div class="login-page">
+
+            <div class="login-container user-mode" id="loginBox">
+                <h2 class="section-title">Agri Assistant Login</h2>
+        <form id="loginForm">
+            <input type="text" id="username" placeholder="Username" required autocomplete="username">
+            <input type="password" id="password" placeholder="Password" required autocomplete="current-password">
+            <div class="error" id="loginError" style="display:none;"></div>
+            <button type="submit">Login</button>
+        </form>
+        <p style="margin-top:1rem;">Don't have an account? <a href="#" id="showSignup">Create Account</a></p>
+            </div>
+        </div>
+    <div class="login-container" id="signupBox" style="display:none;">
+        <h2 class="section-title">Create Account</h2>
+        <form id="signupForm">
+            <input type="text" id="signupUsername" placeholder="Username" required autocomplete="username">
+            <input type="password" id="signupPassword" placeholder="Password" required autocomplete="new-password">
+            <div class="error" id="signupError" style="display:none;"></div>
+            <button type="submit">Sign Up</button>
+        </form>
+        <p style="margin-top:1rem;">Already have an account? <a href="#" id="showLogin">Login</a></p>
+    </div>
+    <script>
+        // Toggle forms
+        document.getElementById('showSignup').onclick = function() {
+            document.getElementById('loginBox').style.display = 'none';
+            document.getElementById('signupBox').style.display = 'block';
+        };
+        document.getElementById('showLogin').onclick = function() {
+            document.getElementById('signupBox').style.display = 'none';
+            document.getElementById('loginBox').style.display = 'block';
+        };
+
+        // Login handler
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value;
+            const errorDiv = document.getElementById('loginError');
+            errorDiv.style.display = 'none';
+            errorDiv.textContent = '';
+
+            // Example: POST to /api/login (backend implementation needed)
+            try {
+                const response = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+                const data = await response.json();
+                if (response.ok && data.success) {
+                    if (data.is_admin) {
+                        window.location.href = '/admin-dashboard.html';
+                    } else {
+                        window.location.href = '/';
+                    }
+                } else {
+                    errorDiv.textContent = data.error || 'Invalid username or password.';
+                    errorDiv.style.display = 'block';
+                }
+            } catch (err) {
+                errorDiv.textContent = 'Server error. Please try again later.';
+                errorDiv.style.display = 'block';
+            }
+        });
+
+        // Signup handler
+        document.getElementById('signupForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const username = document.getElementById('signupUsername').value.trim();
+            const password = document.getElementById('signupPassword').value;
+            const errorDiv = document.getElementById('signupError');
+            errorDiv.style.display = 'none';
+            errorDiv.textContent = '';
+            try {
+                const response = await fetch('/api/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+                const data = await response.json();
+                if (response.ok && data.success) {
+                    alert('Account created! You can now log in.');
+                    document.getElementById('showLogin').click();
+                } else {
+                    errorDiv.textContent = data.error || 'Could not create account.';
+                    errorDiv.style.display = 'block';
+                }
+            } catch (err) {
+                errorDiv.textContent = 'Server error. Please try again later.';
+                errorDiv.style.display = 'block';
+            }
+        });
+    </script>
+</body>
+</html>

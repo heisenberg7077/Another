@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🗺️ Land & Resource Planning - Smart Crop Advisor</title>
+  <link rel="stylesheet" href="/css/common.css">
+  <link rel="stylesheet" href="/style.css">
+  <style>
+    /* Dark Mode Fixes */
+    [data-theme='dark'] .alert-success {
+      background: linear-gradient(135deg, rgba(40, 167, 69, 0.2), rgba(33, 136, 56, 0.1));
+      color: #7dffb3;
+    }
+    
+    [data-theme='dark'] .alert-warning {
+      background: linear-gradient(135deg, rgba(255, 193, 7, 0.2), rgba(224, 168, 0, 0.1));
+      color: #ffd966;
+    }
+    
+    [data-theme='dark'] .alert-danger {
+      background: linear-gradient(135deg, rgba(220, 53, 69, 0.2), rgba(200, 35, 51, 0.1));
+      color: #ff9999;
+    }
+    
+    [data-theme='dark'] .alert-info {
+      background: linear-gradient(135deg, rgba(23, 162, 184, 0.2), rgba(19, 132, 150, 0.1));
+      color: #7dd3fc;
+    }
+    
+    /* Fix subtitle and secondary text in dark mode */
+    [data-theme='dark'] .subtitle {
+      color: var(--text-secondary);
+    }
+    
+    /* Fix card backgrounds in dark mode */
+    [data-theme='dark'] .card-custom {
+      background: var(--bg-secondary);
+      border-color: var(--border-color);
+    }
+    
+    /* Fix progress bar backgrounds */
+    [data-theme='dark'] .progress-bar {
+      background: var(--border-color);
+    }
+    
+    /* Fix input placeholders in dark mode */
+    [data-theme='dark'] .form-control-custom::placeholder {
+      color: var(--text-muted);
+    }
+    
+    /* Fix dropdown select in dark mode */
+    [data-theme='dark'] select.form-control-custom option {
+      background: var(--bg-secondary);
+      color: var(--text-primary);
+    }
+    
+    /* Fix soil type info card in dark mode */
+    [data-theme='dark'] #soilTypeInfo .card-custom {
+      background: linear-gradient(135deg, rgba(74, 124, 89, 0.15), rgba(40, 167, 69, 0.08)) !important;
+    }
+    
+    /* Fix strong tags in dark mode */
+    [data-theme='dark'] strong {
+      color: var(--text-primary);
+    }
+    
+    /* Fix text-secondary class in dark mode */
+    [data-theme='dark'] .text-secondary {
+      color: var(--text-secondary) !important;
+    }
+    
+    /* Fix category headers in dark mode */
+    [data-theme='dark'] h4 {
+      color: var(--text-primary);
+    }
+  </style>
+</head>
+<body data-page="land">
+  
+  <div class="container-custom section">
+    <!-- Page Header -->
+    <div class="page-header text-center mb-4">
+      <h1>🗺️ Land & Resource Planning</h1>
+      <p class="subtitle">Comprehensive land analysis, crop suggestions, and resource planning</p>
+    </div>
+
+    <!-- Step 1: Soil Type & Crop Suggestions -->
+    <section class="card-custom mb-4 fade-in">
+      <div class="card-header-custom">
+        <h2 class="card-title">🌱 Step 1: Get Crop Suggestions</h2>
+      </div>
+      <div class="p-3">
+        <p class="text-secondary mb-3">Select your soil type to get personalized crop recommendations based on your land conditions.</p>
+        
+        <div class="grid-2 mb-3">
+          <div class="form-group-custom">
+            <label class="form-label-custom">Soil Type *</label>
+            <select id="soilType" class="form-control-custom" required>
+              <option value="">Select soil type</option>
+            </select>
+          </div>
+          <div class="form-group-custom">
+            <label class="form-label-custom">Soil pH (Optional)</label>
+            <input type="number" id="soilPh" class="form-control-custom" 
+                   placeholder="6.0-7.5" step="0.1" min="4.0" max="9.0">
+          </div>
+        </div>
+        
+        <div class="d-flex gap-2">
+          <button id="getSuggestions" class="btn-custom btn-primary">
+            🌱 Get Crop Suggestions
+          </button>
+          <button id="getSoilAnalysis" class="btn-custom btn-warning">
+            🔬 Soil Analysis
+          </button>
+        </div>
+        
+        <div class="alert-custom alert-info mt-3">
+          <span>💡</span>
+          <span><strong>Tip:</strong> Select your soil type to get personalized crop suggestions based on soil characteristics and climate conditions!</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Crop Suggestions Display -->
+    <div id="cropSuggestionsSection" class="hidden">
+      <section class="card-custom mb-4 fade-in">
+        <h3 class="mb-3">💡 Recommended Crops for Your Soil</h3>
+        <div id="suggestionsList" class="grid-auto"></div>
+      </section>
+    </div>
+
+    <!-- Step 2: Land Details & Planning -->
+    <section class="card-custom mb-4 fade-in" style="animation-delay: 0.1s">
+      <div class="card-header-custom">
+        <h2 class="card-title">📏 Step 2: Land Details & Resource Planning</h2>
+      </div>
+      <div class="p-3">
+        <p class="text-secondary mb-3">Enter your land details to get comprehensive resource planning and cost analysis.</p>
+        
+        <div class="grid-2 mb-3">
+          <div class="form-group-custom">
+            <label class="form-label-custom">Land Size (acres)</label>
+            <input type="number" id="landSize" class="form-control-custom" 
+                   placeholder="Enter land size" step="0.1" min="0.1">
+          </div>
+          <div class="form-group-custom">
+            <label class="form-label-custom">Irrigation Type *</label>
+            <select id="irrigationType" class="form-control-custom" required>
+              <option value="drip">Drip Irrigation</option>
+              <option value="sprinkler">Sprinkler Irrigation</option>
+              <option value="flood">Flood Irrigation</option>
+              <option value="furrow">Furrow Irrigation</option>
+              <option value="basin">Basin Irrigation</option>
+              <option value="rainfed">Rainfed</option>
+            </select>
+          </div>
+        </div>
+        
+        <button id="getLandAnalysis" class="btn-custom btn-success">
+          📊 Analyze Land & Resources
+        </button>
+      </div>
+    </section>
+
+    <!-- Land Analysis Results -->
+    <div id="landAnalysisSection" class="hidden">
+      <div class="grid-2 mb-4">
+        <!-- Water Requirements -->
+        <div class="card-custom fade-in">
+          <h3 class="mb-3">💧 Water Requirements</h3>
+          <div id="waterRequirements">
+            <div class="text-center p-4">
+              <p class="text-secondary">Enter land details to see water requirements</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Nutrient Requirements -->
+        <div class="card-custom fade-in" style="animation-delay: 0.1s">
+          <h3 class="mb-3">🌱 Nutrient Requirements</h3>
+          <div id="nutrientRequirements">
+            <div class="text-center p-4">
+              <p class="text-secondary">Enter land details to see nutrient requirements</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Cost Analysis -->
+      <div class="card-custom fade-in" style="animation-delay: 0.2s">
+        <h3 class="mb-3">💰 Resource Cost Analysis</h3>
+        <div id="costAnalysis">
+          <div class="text-center p-4">
+            <p class="text-secondary">Enter land details to see cost breakdown</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Soil Type Information -->
+    <div id="soilTypeInfo" class="hidden mt-4">
+      <div class="card-custom" style="background: linear-gradient(135deg, rgba(74, 124, 89, 0.05), rgba(40, 167, 69, 0.02));">
+        <h3 class="mb-3">📚 Soil Type Information</h3>
+        <div id="soilTypeDetails"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Crop Details Modal -->
+  <div id="cropModal" class="modal-overlay">
+    <div class="modal-content-custom">
+      <div class="modal-header-custom">
+        <h2 class="modal-title-custom" id="modalCropName"></h2>
+        <button class="modal-close" onclick="closeCropModal()">&times;</button>
+      </div>
+      <div class="modal-body-custom" id="modalCropDetails"></div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="/js/utils.js"></script>
+  <script src="/js/navbar.js"></script>
+  <script>
+    // Page-specific JavaScript
+    let currentSoilType = '';
+    let currentLandSize = 0;
+
+    // Initialize page
+    document.addEventListener('DOMContentLoaded', async () => {
+      await loadSoilTypes();
+      setupEventListeners();
+    });
+
+    // Load soil types
+    async function loadSoilTypes() {
+      try {
+        const result = await fetchSoilTypes();
+        if (result.success) {
+          const select = document.getElementById('soilType');
+          result.data.forEach(soil => {
+            const option = document.createElement('option');
+            option.value = soil.name;
+            option.textContent = soil.name;
+            option.dataset.description = soil.description || '';
+            select.appendChild(option);
+          });
+        }
+      } catch (error) {
+        console.error('Error loading soil types:', error);
+        showToast('Failed to load soil types', 'error');
+      }
+    }
+
+    // Setup event listeners
+    function setupEventListeners() {
+      document.getElementById('getSuggestions').addEventListener('click', getCropSuggestions);
+      document.getElementById('getSoilAnalysis').addEventListener('click', getSoilAnalysis);
+      document.getElementById('getLandAnalysis').addEventListener('click', getLandAnalysis);
+      
+      // Soil type change
+      document.getElementById('soilType').addEventListener('change', (e) => {
+        currentSoilType = e.target.value;
+        if (currentSoilType) {
+          showSoilTypeInfo(e.target.selectedOptions[0]);
+        }
+      });
+    }
+
+    // Get crop suggestions
+    async function getCropSuggestions() {
+      const soilType = document.getElementById('soilType').value;
+      const soilPh = document.getElementById('soilPh').value;
+      
+      if (!soilType) {
+        showToast('Please select a soil type', 'warning');
+        return;
+      }
+
+      const btn = document.getElementById('getSuggestions');
+      btn.textContent = '🔄 Loading...';
+      btn.disabled = true;
+
+      try {
+        const params = { soil_type: soilType };
+        if (soilPh) params.ph = soilPh;
+
+        const response = await fetch('/api/crop-suggestions', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(params)
+        });
+
+        if (!response.ok) throw new Error('Failed to fetch suggestions');
+
+        const data = await response.json();
+        displayCropSuggestions(data);
+        
+        // Show section
+        document.getElementById('cropSuggestionsSection').classList.remove('hidden');
+        
+        showToast('Crop suggestions loaded successfully!', 'success');
+      } catch (error) {
+        console.error('Error:', error);
+        showToast('Failed to load crop suggestions', 'error');
+      } finally {
+        btn.textContent = '🌱 Get Crop Suggestions';
+        btn.disabled = false;
+      }
+    }
+
+    // Display crop suggestions
+    function displayCropSuggestions(data) {
+      const container = document.getElementById('suggestionsList');
+      
+      if (!data.suggested_crops || data.suggested_crops.length === 0) {
+        container.innerHTML = `
+          <div class="text-center p-4">
+            <div style="font-size: 4rem; opacity: 0.5; margin-bottom: 1rem;">🌾</div>
+            <h4 class="text-secondary">No crops found for your criteria</h4>
+            <p>Try adjusting your soil type or pH values</p>
+          </div>
+        `;
+        return;
+      }
+
+      // Group by category
+      const categories = {};
+      data.suggested_crops.forEach(crop => {
+        const category = crop.crop_category || 'Other';
+        if (!categories[category]) categories[category] = [];
+        categories[category].push(crop);
+      });
+
+      container.innerHTML = Object.keys(categories).map(category => `
+        <div class="mb-4">
+          <h4 style="color: var(--primary-green); margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 2px solid var(--primary-green);">
+            ${category} (${categories[category].length} crops)
+          </h4>
+          <div class="grid-auto">
+            ${categories[category].map(crop => createCropCard(crop)).join('')}
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // Create crop card
+    function createCropCard(crop) {
+      const suitability = crop.suitability_score || 75;
+      const suitabilityClass = suitability >= 80 ? 'success' : suitability >= 60 ? 'warning' : 'danger';
+      
+      return `
+        <div class="card-custom" style="animation: fade-in 0.5s ease">
+          <div class="d-flex justify-between align-center mb-2">
+            <h4 style="margin: 0; color: var(--primary-green)">${crop.name}</h4>
+            <span class="badge-custom badge-primary">${crop.crop_category || 'N/A'}</span>
+          </div>
+          
+          <div class="mb-3">
+            <div style="background: var(--border-color); height: 8px; border-radius: 999px; overflow: hidden;">
+              <div style="width: ${suitability}%; height: 100%; background: var(--${suitabilityClass}); transition: width 0.5s ease;"></div>
+            </div>
+            <p class="mt-1" style="font-weight: 600; color: var(--${suitabilityClass})">
+              ${suitability}% Suitable
+            </p>
+          </div>
+          
+          <div class="mb-3" style="font-size: 0.9rem; color: var(--text-secondary);">
+            <p><strong>Season:</strong> ${crop.season || 'N/A'}</p>
+            <p><strong>Land Size:</strong> ${crop.land_size_min ? crop.land_size_min + ' - ' + crop.land_size_max + ' acres' : 'Any size'}</p>
+            <p><strong>Soil Types:</strong> ${crop.soil_types || 'N/A'}</p>
+          </div>
+          
+          <div class="d-flex gap-2">
+            <button class="btn-custom btn-outline btn-sm" onclick="viewCropDetails(${crop.id})">
+              📋 View Details
+            </button>
+            <button class="btn-custom btn-success btn-sm" onclick="startCropJourney(${crop.id}, '${crop.name}')">
+              🌱 Start Journey
+            </button>
+          </div>
+        </div>
+      `;
+    }
+
+    // Get soil analysis
+    function getSoilAnalysis() {
+      const soilType = document.getElementById('soilType').value;
+      if (!soilType) {
+        showToast('Please select a soil type first', 'warning');
+        return;
+      }
+      showToast('Soil analysis feature coming soon!', 'info');
+    }
+
+    // Get land analysis
+    async function getLandAnalysis() {
+      const landSize = document.getElementById('landSize').value;
+      const irrigationType = document.getElementById('irrigationType').value;
+      const soilType = document.getElementById('soilType').value;
+
+      if (!landSize || !soilType) {
+        showToast('Please enter land size and select soil type', 'warning');
+        return;
+      }
+
+      currentLandSize = parseFloat(landSize);
+
+      // Show analysis section
+      document.getElementById('landAnalysisSection').classList.remove('hidden');
+
+      // Calculate and display water requirements
+      displayWaterRequirements(currentLandSize, irrigationType);
+      
+      // Display nutrient requirements
+      displayNutrientRequirements(currentLandSize, soilType);
+      
+      // Display cost analysis
+      displayCostAnalysis(currentLandSize, irrigationType);
+
+      showToast('Land analysis completed!', 'success');
+    }
+
+    // Display water requirements
+    function displayWaterRequirements(landSize, irrigationType) {
+      const waterPerAcre = {
+        'drip': 2500,
+        'sprinkler': 3500,
+        'flood': 5000,
+        'furrow': 4500,
+        'basin': 4000,
+        'rainfed': 0
+      };
+
+      const totalWater = waterPerAcre[irrigationType] * landSize;
+      
+      document.getElementById('waterRequirements').innerHTML = `
+        <div class="mb-3">
+          <div class="d-flex justify-between align-center mb-2">
+            <span class="text-secondary">Daily Water Requirement:</span>
+            <strong>${(totalWater / 30).toFixed(0)} liters/day</strong>
+          </div>
+          <div class="d-flex justify-between align-center mb-2">
+            <span class="text-secondary">Monthly Water Requirement:</span>
+            <strong>${totalWater.toLocaleString()} liters/month</strong>
+          </div>
+          <div class="d-flex justify-between align-center mb-2">
+            <span class="text-secondary">Irrigation Type:</span>
+            <strong style="text-transform: capitalize;">${irrigationType}</strong>
+          </div>
+        </div>
+        <div class="alert-custom alert-info">
+          <span>💡</span>
+          <span><strong>Tip:</strong> ${getIrrigationTip(irrigationType)}</span>
+        </div>
+      `;
+    }
+
+    // Display nutrient requirements
+    function displayNutrientRequirements(landSize, soilType) {
+      const nutrients = {
+        'Nitrogen (N)': (landSize * 120).toFixed(0) + ' kg',
+        'Phosphorus (P)': (landSize * 60).toFixed(0) + ' kg',
+        'Potassium (K)': (landSize * 40).toFixed(0) + ' kg',
+        'Organic Matter': (landSize * 500).toFixed(0) + ' kg'
+      };
+
+      document.getElementById('nutrientRequirements').innerHTML = `
+        <div class="mb-3">
+          ${Object.entries(nutrients).map(([nutrient, amount]) => `
+            <div class="d-flex justify-between align-center mb-2">
+              <span class="text-secondary">${nutrient}:</span>
+              <strong>${amount}</strong>
+            </div>
+          `).join('')}
+        </div>
+        <div class="alert-custom alert-success">
+          <span>✓</span>
+          <span>These are estimated requirements. Conduct soil testing for precise values.</span>
+        </div>
+      `;
+    }
+
+    // Display cost analysis
+    function displayCostAnalysis(landSize, irrigationType) {
+      const costs = {
+        'Seeds': landSize * 2000,
+        'Fertilizers': landSize * 5000,
+        'Pesticides': landSize * 3000,
+        'Irrigation': landSize * (irrigationType === 'rainfed' ? 0 : 4000),
+        'Labor': landSize * 8000,
+        'Equipment': landSize * 2000
+      };
+
+      const total = Object.values(costs).reduce((a, b) => a + b, 0);
+
+      document.getElementById('costAnalysis').innerHTML = `
+        <div class="grid-2 mb-3">
+          ${Object.entries(costs).map(([item, cost]) => `
+            <div class="d-flex justify-between align-center p-2" style="background: var(--bg-primary); border-radius: 8px;">
+              <span class="text-secondary">${item}:</span>
+              <strong>${formatCurrency(cost)}</strong>
+            </div>
+          `).join('')}
+        </div>
+        <div class="d-flex justify-between align-center p-3" style="background: var(--primary-gradient); color: white; border-radius: 12px; font-size: 1.25rem;">
+          <strong>Total Estimated Cost:</strong>
+          <strong>${formatCurrency(total)}</strong>
+        </div>
+        <p class="mt-3 text-secondary text-center">
+          <small>* These are estimated costs. Actual costs may vary based on location and market conditions.</small>
+        </p>
+      `;
+    }
+
+    // Show soil type info
+    function showSoilTypeInfo(option) {
+      const description = option.dataset.description;
+      if (description) {
+        document.getElementById('soilTypeInfo').classList.remove('hidden');
+        document.getElementById('soilTypeDetails').innerHTML = `
+          <p>${description}</p>
+        `;
+      }
+    }
+
+    // Get irrigation tip
+    function getIrrigationTip(type) {
+      const tips = {
+        'drip': 'Drip irrigation is most water-efficient, saving up to 50% water compared to flood irrigation.',
+        'sprinkler': 'Sprinkler irrigation is suitable for most crops and provides uniform water distribution.',
+        'flood': 'Flood irrigation is traditional but uses more water. Consider upgrading to drip or sprinkler.',
+        'furrow': 'Furrow irrigation works well for row crops but requires proper land leveling.',
+        'basin': 'Basin irrigation is suitable for orchards and tree crops.',
+        'rainfed': 'Rainfed farming depends on natural rainfall. Consider rainwater harvesting.'
+      };
+      return tips[type] || 'Choose the right irrigation method for your crop and soil type.';
+    }
+
+    // View crop details
+    async function viewCropDetails(cropId) {
+      const modal = document.getElementById('cropModal');
+      const detailsDiv = document.getElementById('modalCropDetails');
+      
+      modal.classList.add('active');
+      showLoading(detailsDiv, 'Loading crop details...');
+      
+      try {
+        const result = await fetchCropDetails(cropId);
+        
+        if (result.success) {
+          const crop = result.data;
+          document.getElementById('modalCropName').textContent = crop.name;
+          
+          detailsDiv.innerHTML = `
+            <div class="mb-3">
+              <h4>📋 Overview</h4>
+              <p>${crop.guide?.overview || 'No overview available'}</p>
+            </div>
+            <div class="grid-2 mb-3">
+              <div>
+                <h5>🌤️ Climate</h5>
+                <p>${crop.guide?.climate || 'N/A'}</p>
+              </div>
+              <div>
+                <h5>🌱 Soil Requirements</h5>
+                <p>${crop.guide?.soil || 'N/A'}</p>
+              </div>
+            </div>
+            <div class="mb-3">
+              <h4>📈 Expected Yield</h4>
+              <p>${crop.guide?.yieldInfo || 'N/A'}</p>
+            </div>
+            <button class="btn-custom btn-primary" onclick="startCropJourney(${crop.id}, '${crop.name}'); closeCropModal();">
+              🌱 Start Crop Journey
+            </button>
+          `;
+        }
+      } catch (error) {
+        showError(detailsDiv, 'Failed to load crop details');
+      }
+    }
+
+    // Start crop journey
+    async function startCropJourney(cropId, cropName) {
+      const soilType = document.getElementById('soilType').value;
+      const landSize = document.getElementById('landSize').value;
+      
+      if (!soilType) {
+        showToast('Please select a soil type first', 'warning');
+        return;
+      }
+
+      // Check if user is authenticated
+      try {
+        const authResponse = await fetch('/api/me');
+        const authData = await authResponse.json();
+        
+        if (!authData.authenticated) {
+          showToast('Please login first to start a crop journey', 'warning');
+          setTimeout(() => {
+            window.location.href = '/login.html';
+          }, 1500);
+          return;
+        }
+      } catch (error) {
+        console.error('Authentication check failed:', error);
+        showToast('Please login to continue', 'warning');
+        setTimeout(() => {
+          window.location.href = '/login.html';
+        }, 1500);
+        return;
+      }
+
+      try {
+        const startDate = new Date().toISOString();
+        
+        console.log('Starting crop journey with data:', {
+          crop_id: cropId,
+          crop_name: cropName,
+          land_size: landSize ? parseFloat(landSize) : null,
+          soil_type: soilType,
+          start_date: startDate
+        });
+        
+        const response = await fetch('/api/start-crop-monitoring', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            crop_id: cropId,
+            crop_name: cropName,
+            land_size: landSize ? parseFloat(landSize) : null,
+            soil_type: soilType,
+            start_date: startDate
+          })
+        });
+
+        const result = await response.json();
+        console.log('API Response:', result);
+
+        if (response.ok) {
+          showToast(`🎉 Crop journey started for ${cropName}!`, 'success');
+          
+          // Redirect to My Tasks page after a longer delay to ensure DB commit
+          setTimeout(() => {
+            window.location.href = '/my-tasks.html';
+          }, 2000);
+        } else {
+          throw new Error(result.error || 'Failed to start crop monitoring');
+        }
+      } catch (error) {
+        console.error('Error starting crop journey:', error);
+        showToast(`Error: ${error.message}`, 'error');
+      }
+    }
+
+    // Close modal
+    function closeCropModal() {
+      document.getElementById('cropModal').classList.remove('active');
+    }
+
+    // Close modal on outside click
+    document.getElementById('cropModal')?.addEventListener('click', (e) => {
+      if (e.target.id === 'cropModal') closeCropModal();
+    });
+  </script>
+</body>
+</html>

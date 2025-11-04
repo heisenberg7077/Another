@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🎥 Admin Video Management - Agricultural System</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <!-- Header -->
+  <header class="header">
+    <nav class="nav">
+      <a href="/index.html" class="logo">🌱 Admin Video Management</a>
+      <ul class="nav-links">
+        <li><a href="/index.html">🏠 Home</a></li>
+        <li><a href="/database.html">📊 Database</a></li>
+        <li><a href="#" onclick="logoutAndRefresh()">Logout</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <div class="admin-container">
+    <!-- Admin Header -->
+    <div class="admin-header">
+      <h1>🎥 Video Management System</h1>
+      <p>Manage educational videos, tutorials, and demonstrations for crop guidance</p>
+    </div>
+
+    <!-- Admin Navigation -->
+    <div class="admin-nav">
+      <button class="nav-btn active" onclick="showSection('overview')">📊 Overview</button>
+      <button class="nav-btn" onclick="showSection('videos')">🎥 Manage Videos</button>
+      <button class="nav-btn" onclick="showSection('add-video')">➕ Add Video</button>
+      <button class="nav-btn" onclick="showSection('categories')">📂 Categories</button>
+      <button class="nav-btn" onclick="showSection('process-videos')">🧩 Process Videos</button>
+      <button class="nav-btn" onclick="showSection('analytics')">📈 Analytics</button>
+    </div>
+
+    <!-- Overview Section -->
+    <div id="overview" class="content-section active">
+      <div class="section-header">
+        <h2 class="section-title">📊 System Overview</h2>
+      </div>
+      
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-number" id="totalVideos">-</div>
+          <div class="stat-label">Total Videos</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number" id="featuredVideos">-</div>
+          <div class="stat-label">Featured Videos</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number" id="totalCrops">-</div>
+          <div class="stat-label">Crops with Videos</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number" id="totalDuration">-</div>
+          <div class="stat-label">Total Duration (hrs)</div>
+        </div>
+      </div>
+      
+      <div id="overviewContent">
+        <div class="loading">Loading overview data...</div>
+      </div>
+    </div>
+
+    <!-- Videos Management Section -->
+    <div id="videos" class="content-section">
+      <div class="section-header">
+        <h2 class="section-title">🎥 Manage Videos</h2>
+        <div>
+          <select id="cropFilter" class="form-control" style="width: auto; display: inline-block; margin-right: 1rem;">
+            <option value="">All Crops</option>
+          </select>
+          <select id="typeFilter" class="form-control" style="width: auto; display: inline-block;">
+            <option value="">All Types</option>
+            <option value="tutorial">Tutorial</option>
+            <option value="demonstration">Demonstration</option>
+            <option value="safety">Safety</option>
+            <option value="troubleshooting">Troubleshooting</option>
+            <option value="harvesting">Harvesting</option>
+          </select>
+        </div>
+      </div>
+      
+      <div id="videosContent">
+        <div class="loading">Loading videos...</div>
+      </div>
+    </div>
+
+    <!-- Add Video Section -->
+    <div id="add-video" class="content-section">
+      <div class="section-header">
+        <h2 class="section-title">➕ Add New Video</h2>
+      </div>
+      
+      <form id="addVideoForm">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Crop</label>
+            <select id="videoCrop" class="form-control" required>
+              <option value="">Select Crop</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Week Number</label>
+            <input type="number" id="videoWeek" class="form-control" min="1" max="20" placeholder="Leave empty for general videos">
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label">Video Title</label>
+          <input type="text" id="videoTitle" class="form-control" required placeholder="Enter video title">
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label">Video URL</label>
+          <input type="url" id="videoUrl" class="form-control" required placeholder="https://www.youtube.com/watch?v=...">
+        </div>
+        
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Video Type</label>
+            <select id="videoType" class="form-control" required>
+              <option value="">Select Type</option>
+              <option value="tutorial">Tutorial</option>
+              <option value="demonstration">Demonstration</option>
+              <option value="safety">Safety</option>
+              <option value="troubleshooting">Troubleshooting</option>
+              <option value="harvesting">Harvesting</option>
+              <option value="disease">Disease</option>
+              <option value="common_problem">Common Problem</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Duration (minutes)</label>
+            <input type="number" id="videoDuration" class="form-control" min="1" placeholder="Enter duration in minutes">
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label">Description</label>
+          <textarea id="videoDescription" class="form-control" rows="3" placeholder="Enter video description"></textarea>
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label">Thumbnail URL</label>
+          <input type="url" id="videoThumbnail" class="form-control" placeholder="https://img.youtube.com/vi/.../maxresdefault.jpg">
+        </div>
+        
+        <div class="form-group">
+          <label>
+            <input type="checkbox" id="videoFeatured"> Featured Video
+          </label>
+        </div>
+        
+        <div class="form-group">
+          <button type="submit" class="btn btn-primary">Add Video</button>
+          <button type="button" class="btn btn-warning" onclick="resetForm()">Reset</button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Categories Section -->
+    <div id="categories" class="content-section">
+      <div class="section-header">
+        <h2 class="section-title">📂 Video Categories</h2>
+      </div>
+      
+      <div id="categoriesContent">
+        <div class="loading">Loading categories...</div>
+      </div>
+    </div>
+
+    <!-- Process Videos Section -->
+    <div id="process-videos" class="content-section">
+      <div class="section-header">
+        <h2 class="section-title">🧩 Common Process Videos</h2>
+      </div>
+
+      <form id="addProcessVideoForm">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Process Category</label>
+            <select id="pvCategory" class="form-control" required>
+              <option value="">Select Category</option>
+              <option value="land_preparation">Land Preparation</option>
+              <option value="sowing">Sowing</option>
+              <option value="planting">Planting</option>
+              <option value="applying_fertilizer">Applying Fertilizer</option>
+              <option value="applying_pesticide">Applying Pesticide</option>
+              <option value="harvesting">Harvesting</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Process Type (optional)</label>
+            <input type="text" id="pvType" class="form-control" placeholder="e.g., puddling, drip, broadcasting">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Video Title</label>
+          <input type="text" id="pvTitle" class="form-control" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Video URL</label>
+          <input type="url" id="pvUrl" class="form-control" required>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Duration (minutes)</label>
+            <input type="number" id="pvDuration" class="form-control" min="1">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Thumbnail URL</label>
+            <input type="url" id="pvThumb" class="form-control">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Description</label>
+          <textarea id="pvDesc" class="form-control" rows="3"></textarea>
+        </div>
+        <div class="form-group">
+          <label><input type="checkbox" id="pvFeatured"> Featured</label>
+        </div>
+        <div class="form-group">
+          <button type="submit" class="btn btn-primary">Add Process Video</button>
+        </div>
+      </form>
+
+      <div id="processVideosList" style="margin-top:1rem;">
+        <div class="loading">Loading process videos...</div>
+      </div>
+    </div>
+
+    <!-- Analytics Section -->
+    <div id="analytics" class="content-section">
+      <div class="section-header">
+        <h2 class="section-title">📈 Video Analytics</h2>
+      </div>
+      
+      <div id="analyticsContent">
+        <div class="loading">Loading analytics...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Video Modal -->
+  <div id="videoModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title" id="modalVideoTitle">Video Details</h3>
+        <span class="modal-close" onclick="closeVideoModal()">&times;</span>
+      </div>
+      <div class="modal-body">
+        <form id="editVideoForm">
+          <input type="hidden" id="editVideoId">
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Crop</label>
+              <select id="editVideoCrop" class="form-control" required>
+                <option value="">Select Crop</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Week Number</label>
+              <input type="number" id="editVideoWeek" class="form-control" min="1" max="20">
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">Video Title</label>
+            <input type="text" id="editVideoTitle" class="form-control" required>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">Video URL</label>
+            <input type="url" id="editVideoUrl" class="form-control" required>
+          </div>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Video Type</label>
+              <select id="editVideoType" class="form-control" required>
+                <option value="tutorial">Tutorial</option>
+                <option value="demonstration">Demonstration</option>
+                <option value="safety">Safety</option>
+                <option value="troubleshooting">Troubleshooting</option>
+                <option value="harvesting">Harvesting</option>
+                <option value="disease">Disease</option>
+                <option value="common_problem">Common Problem</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Duration (minutes)</label>
+              <input type="number" id="editVideoDuration" class="form-control" min="1">
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">Description</label>
+            <textarea id="editVideoDescription" class="form-control" rows="3"></textarea>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">Thumbnail URL</label>
+            <input type="url" id="editVideoThumbnail" class="form-control">
+          </div>
+          
+          <div class="form-group">
+            <label>
+              <input type="checkbox" id="editVideoFeatured"> Featured Video
+            </label>
+          </div>
+          
+          <div class="form-group">
+            <button type="submit" class="btn btn-success">Update Video</button>
+            <button type="button" class="btn btn-danger" onclick="deleteVideo()">Delete Video</button>
+            <button type="button" class="btn btn-warning" onclick="closeVideoModal()">Cancel</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let currentUser = null;
+    let allVideos = [];
+    let allCrops = [];
+
+    // Check authentication
+    async function ensureAuth() {
+      try {
+        const response = await fetch('/api/me');
+        const me = await response.json();
+        if (!me.authenticated) {
+          alert('Please login to access admin panel.');
+          window.location.href = '/login.html';
+          return false;
+        }
+        if (!me.is_admin) {
+          alert('Admin access required.');
+          window.location.href = '/index.html';
+          return false;
+        }
+        currentUser = me;
+        return true;
+      } catch (error) {
+        console.error('Auth check failed:', error);
+        window.location.href = '/login.html';
+        return false;
+      }
+    }
+
+    // Show section
+    function showSection(sectionId) {
+      // Hide all sections
+      document.querySelectorAll('.content-section').forEach(section => {
+        section.classList.remove('active');
+      });
+      
+      // Remove active class from all nav buttons
+      document.querySelectorAll('.nav-btn').forEach(btn => {
+        btn.classList.remove('active');
+      });
+      
+      // Show selected section
+      document.getElementById(sectionId).classList.add('active');
+      event.target.classList.add('active');
+      
+      // Load section data
+      loadSectionData(sectionId);
+      // Ensure crop selects are populated when opening Add Video section
+      if (sectionId === 'add-video') {
+        // Best-effort refresh of crops and selects
+        ensureCropsInitialized().catch(() => {});
+      }
+    }
+
+    // Load section data
+    async function loadSectionData(sectionId) {
+      switch(sectionId) {
+        case 'overview':
+          await loadOverview();
+          break;
+        case 'videos':
+          await loadVideos();
+          break;
+        case 'categories':
+          await loadCategories();
+          break;
+        case 'analytics':
+          await loadAnalytics();
+          break;
+        case 'process-videos':
+          await loadProcessVideos();
+          break;
+      }
+    }
+
+    // Load overview data
+    async function loadOverview() {
+      try {
+        const cropsRes = await fetch('/api/crops');
+        const crops = await cropsRes.json();
+        allCrops = crops;
+        await ensureCropsInitialized();
+        const firstCropId = allCrops[0]?.id;
+        let videos = [];
+        if (firstCropId) {
+          const videosRes = await fetch(`/api/crops/${firstCropId}/videos`);
+          videos = await videosRes.json();
+        }
+        allVideos = videos;
+        
+        // Update stats
+        document.getElementById('totalVideos').textContent = videos.length;
+        document.getElementById('featuredVideos').textContent = videos.filter(v => v.is_featured).length;
+        document.getElementById('totalCrops').textContent = crops.length;
+        
+        const totalDuration = videos.reduce((sum, v) => sum + (v.duration_minutes || 0), 0);
+        document.getElementById('totalDuration').textContent = Math.round(totalDuration / 60);
+        
+        // Load recent videos
+        const recentVideos = videos.slice(0, 5);
+        displayRecentVideos(recentVideos);
+        
+      } catch (error) {
+        console.error('Error loading overview:', error);
+        document.getElementById('overviewContent').innerHTML = '<div class="error">Error loading overview data</div>';
+      }
+    }
+
+    // Display recent videos
+    function displayRecentVideos(videos) {
+      const container = document.getElementById('overviewContent');
+      container.innerHTML = `
+        <h3>Recent Videos</h3>
+        <div class="video-grid">
+          ${videos.map(video => `
+            <div class="video-card">
+              <div class="video-thumbnail" style="background-image: url('${video.thumbnail_url || 'https://via.placeholder.com/300x150?text=No+Thumbnail'}')">
+                ${!video.thumbnail_url ? '🎥' : ''}
+              </div>
+              <div class="video-title">${video.video_title}</div>
+              <div class="video-meta">
+                <span>${video.video_type}</span>
+                <span>${video.duration_minutes || 'N/A'} min</span>
+              </div>
+              <div class="video-description">${video.description || 'No description'}</div>
+              <div class="video-actions">
+                <button class="btn btn-primary btn-sm" onclick="editVideo(${video.id})">Edit</button>
+                <button class="btn btn-danger btn-sm" onclick="deleteVideo(${video.id})">Delete</button>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      `;
+    }
+
+    // Load videos
+    async function ensureCropsInitialized() {
+      if (!allCrops || allCrops.length === 0) {
+        const res = await fetch('/api/crops');
+        allCrops = await res.json();
+      }
+      populateCropFilter();
+      populateCropSelects();
+    }
+
+    async function loadVideos() {
+      try {
+        await ensureCropsInitialized();
+        const cropFilter = document.getElementById('cropFilter');
+        if (!cropFilter.value) {
+          cropFilter.value = allCrops[0] ? allCrops[0].id : '';
+        }
+        let videos = [];
+        if (cropFilter.value) {
+          const response = await fetch(`/api/crops/${cropFilter.value}/videos`);
+          videos = await response.json();
+        }
+        allVideos = videos;
+        displayVideos(videos);
+        
+      } catch (error) {
+        console.error('Error loading videos:', error);
+        document.getElementById('videosContent').innerHTML = '<div class="error">Error loading videos</div>';
+      }
+    }
+
+    // Display videos
+    function displayVideos(videos) {
+      const container = document.getElementById('videosContent');
+      container.innerHTML = `
+        <div class="video-grid">
+          ${videos.map(video => `
+            <div class="video-card">
+              <div class="video-thumbnail" style="background-image: url('${video.thumbnail_url || 'https://via.placeholder.com/300x150?text=No+Thumbnail'}')">
+                ${!video.thumbnail_url ? '🎥' : ''}
+              </div>
+              <div class="video-title">${video.video_title}</div>
+              <div class="video-meta">
+                <span>${video.video_type}</span>
+                <span>${video.duration_minutes || 'N/A'} min</span>
+                ${video.is_featured ? '<span style="color: #ffc107;">⭐ Featured</span>' : ''}
+              </div>
+              <div class="video-description">${video.description || 'No description'}</div>
+              <div class="video-actions">
+                <button class="btn btn-primary btn-sm" onclick="editVideo(${video.id})">Edit</button>
+                <button class="btn btn-danger btn-sm" onclick="deleteVideo(${video.id})">Delete</button>
+                <button class="btn btn-warning btn-sm" onclick="toggleFeatured(${video.id})">
+                  ${video.is_featured ? 'Remove Featured' : 'Make Featured'}
+                </button>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      `;
+    }
+
+    // Populate crop filter
+    function populateCropFilter() {
+      const cropFilter = document.getElementById('cropFilter');
+      cropFilter.innerHTML = '<option value="">Select Crop</option>' + 
+        allCrops.map(crop => `<option value="${crop.id}">${crop.name}</option>`).join('');
+    }
+
+    function populateCropSelects() {
+      const videoCrop = document.getElementById('videoCrop');
+      const editVideoCrop = document.getElementById('editVideoCrop');
+      if (videoCrop) {
+        videoCrop.innerHTML = '<option value="">Select Crop</option>' +
+          allCrops.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+      }
+      if (editVideoCrop) {
+        editVideoCrop.innerHTML = '<option value="">Select Crop</option>' +
+          allCrops.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+      }
+    }
+
+    // Load categories
+    async function loadCategories() {
+      const container = document.getElementById('categoriesContent');
+      const categories = ['tutorial', 'demonstration', 'safety', 'troubleshooting', 'harvesting'];
+      
+      container.innerHTML = `
+        <div class="stats-grid">
+          ${categories.map(category => {
+            const count = allVideos.filter(v => v.video_type === category).length;
+            return `
+              <div class="stat-card">
+                <div class="stat-number">${count}</div>
+                <div class="stat-label">${category.charAt(0).toUpperCase() + category.slice(1)} Videos</div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      `;
+    }
+
+    // Process videos CRUD
+    async function loadProcessVideos() {
+      try {
+        const res = await fetch('/api/admin/process-videos');
+        const items = await res.json();
+        const container = document.getElementById('processVideosList');
+        container.innerHTML = `
+          <div class="video-grid">
+            ${items.map(v => `
+              <div class="video-card">
+                <div class="video-thumbnail" style="background-image:url('${v.thumbnail_url || 'https://via.placeholder.com/300x150?text=No+Thumbnail'}')"></div>
+                <div class="video-title">${v.video_title}</div>
+                <div class="video-meta">
+                  <span>${v.process_category}${v.process_type ? ' • ' + v.process_type : ''}</span>
+                  <span>${v.duration_minutes || 'N/A'} min</span>
+                </div>
+                <div class="video-description">${v.description || ''}</div>
+                <div class="video-actions">
+                  <button class="btn btn-danger btn-sm" onclick="deleteProcessVideo(${v.id})">Delete</button>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        `;
+      } catch (e) {
+        document.getElementById('processVideosList').innerHTML = '<div class="error">Failed to load process videos</div>';
+      }
+    }
+
+    document.getElementById('addProcessVideoForm').addEventListener('submit', async function(e){
+      e.preventDefault();
+      const payload = {
+        process_category: document.getElementById('pvCategory').value,
+        process_type: document.getElementById('pvType').value || null,
+        video_title: document.getElementById('pvTitle').value,
+        video_url: document.getElementById('pvUrl').value,
+        duration_minutes: document.getElementById('pvDuration').value || null,
+        description: document.getElementById('pvDesc').value,
+        thumbnail_url: document.getElementById('pvThumb').value,
+        is_featured: document.getElementById('pvFeatured').checked
+      };
+      try {
+        const res = await fetch('/api/admin/process-videos', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) });
+        if (!res.ok) throw new Error();
+        showMessage('Process video added!', 'success');
+        e.target.reset();
+        loadProcessVideos();
+      } catch {
+        showMessage('Failed to add process video', 'error');
+      }
+    });
+
+    async function deleteProcessVideo(id) {
+      if (!confirm('Delete this process video?')) return;
+      try {
+        const res = await fetch(`/api/admin/process-videos/${id}`, { method:'DELETE' });
+        if (!res.ok) throw new Error();
+        showMessage('Deleted', 'success');
+        loadProcessVideos();
+      } catch {
+        showMessage('Failed to delete', 'error');
+      }
+    }
+
+    // Load analytics
+    async function loadAnalytics() {
+      const container = document.getElementById('analyticsContent');
+      
+      const analytics = {
+        totalVideos: allVideos.length,
+        featuredVideos: allVideos.filter(v => v.is_featured).length,
+        totalDuration: allVideos.reduce((sum, v) => sum + (v.duration_minutes || 0), 0),
+        videosByType: {},
+        videosByWeek: {}
+      };
+      
+      // Calculate videos by type
+      allVideos.forEach(video => {
+        analytics.videosByType[video.video_type] = (analytics.videosByType[video.video_type] || 0) + 1;
+        if (video.week_number) {
+          analytics.videosByWeek[video.week_number] = (analytics.videosByWeek[video.week_number] || 0) + 1;
+        }
+      });
+      
+      container.innerHTML = `
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-number">${analytics.totalVideos}</div>
+            <div class="stat-label">Total Videos</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-number">${analytics.featuredVideos}</div>
+            <div class="stat-label">Featured Videos</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-number">${Math.round(analytics.totalDuration / 60)}</div>
+            <div class="stat-label">Total Hours</div>
+          </div>
+        </div>
+        
+        <h3>Videos by Type</h3>
+        <div class="stats-grid">
+          ${Object.entries(analytics.videosByType).map(([type, count]) => `
+            <div class="stat-card">
+              <div class="stat-number">${count}</div>
+              <div class="stat-label">${type.charAt(0).toUpperCase() + type.slice(1)}</div>
+            </div>
+          `).join('')}
+        </div>
+      `;
+    }
+
+    // Add video form submission
+    document.getElementById('addVideoForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      
+      const formData = {
+        crop_id: document.getElementById('videoCrop').value,
+        week_number: document.getElementById('videoWeek').value || null,
+        video_title: document.getElementById('videoTitle').value,
+        video_url: document.getElementById('videoUrl').value,
+        video_type: document.getElementById('videoType').value,
+        duration_minutes: document.getElementById('videoDuration').value || null,
+        description: document.getElementById('videoDescription').value,
+        thumbnail_url: document.getElementById('videoThumbnail').value,
+        is_featured: document.getElementById('videoFeatured').checked
+      };
+      
+      try {
+        const response = await fetch('/api/admin/crop_videos', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(formData)
+        });
+        
+        if (response.ok) {
+          showMessage('Video added successfully!', 'success');
+          resetForm();
+          loadVideos();
+        } else {
+          throw new Error('Failed to add video');
+        }
+      } catch (error) {
+        console.error('Error adding video:', error);
+        showMessage('Error adding video. Please try again.', 'error');
+      }
+    });
+
+    // Edit video
+    function editVideo(videoId) {
+      const video = allVideos.find(v => v.id === videoId);
+      if (!video) return;
+      
+      // Ensure crop options are present before setting values
+      try { ensureCropsInitialized(); } catch (e) {}
+
+      // Populate edit form
+      document.getElementById('editVideoId').value = video.id;
+      document.getElementById('editVideoCrop').value = video.crop_id;
+      document.getElementById('editVideoWeek').value = video.week_number || '';
+      document.getElementById('editVideoTitle').value = video.video_title;
+      document.getElementById('editVideoUrl').value = video.video_url;
+      document.getElementById('editVideoType').value = video.video_type;
+      document.getElementById('editVideoDuration').value = video.duration_minutes || '';
+      document.getElementById('editVideoDescription').value = video.description || '';
+      document.getElementById('editVideoThumbnail').value = video.thumbnail_url || '';
+      document.getElementById('editVideoFeatured').checked = video.is_featured;
+      
+      // Show modal
+      document.getElementById('videoModal').style.display = 'block';
+    }
+
+    // Update video
+    document.getElementById('editVideoForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      
+      const videoId = document.getElementById('editVideoId').value;
+      const formData = {
+        crop_id: document.getElementById('editVideoCrop').value,
+        week_number: document.getElementById('editVideoWeek').value || null,
+        video_title: document.getElementById('editVideoTitle').value,
+        video_url: document.getElementById('editVideoUrl').value,
+        video_type: document.getElementById('editVideoType').value,
+        duration_minutes: document.getElementById('editVideoDuration').value || null,
+        description: document.getElementById('editVideoDescription').value,
+        thumbnail_url: document.getElementById('editVideoThumbnail').value,
+        is_featured: document.getElementById('editVideoFeatured').checked
+      };
+      
+      try {
+        const response = await fetch(`/api/admin/crop_videos/${videoId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(formData)
+        });
+        
+        if (response.ok) {
+          showMessage('Video updated successfully!', 'success');
+          closeVideoModal();
+          loadVideos();
+        } else {
+          throw new Error('Failed to update video');
+        }
+      } catch (error) {
+        console.error('Error updating video:', error);
+        showMessage('Error updating video. Please try again.', 'error');
+      }
+    });
+
+    // Delete video
+    async function deleteVideo(videoId) {
+      if (!confirm('Are you sure you want to delete this video?')) return;
+      
+      try {
+        const response = await fetch(`/api/admin/crop_videos/${videoId}`, {
+          method: 'DELETE'
+        });
+        
+        if (response.ok) {
+          showMessage('Video deleted successfully!', 'success');
+          loadVideos();
+        } else {
+          throw new Error('Failed to delete video');
+        }
+      } catch (error) {
+        console.error('Error deleting video:', error);
+        showMessage('Error deleting video. Please try again.', 'error');
+      }
+    }
+
+    // Toggle featured
+    async function toggleFeatured(videoId) {
+      const video = allVideos.find(v => v.id === videoId);
+      if (!video) return;
+      
+      try {
+        const response = await fetch(`/api/admin/crop_videos/${videoId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ is_featured: !video.is_featured })
+        });
+        
+        if (response.ok) {
+          showMessage('Video featured status updated!', 'success');
+          loadVideos();
+        } else {
+          throw new Error('Failed to update featured status');
+        }
+      } catch (error) {
+        console.error('Error updating featured status:', error);
+        showMessage('Error updating featured status. Please try again.', 'error');
+      }
+    }
+
+    // Close video modal
+    function closeVideoModal() {
+      document.getElementById('videoModal').style.display = 'none';
+    }
+
+    // Reset form
+    function resetForm() {
+      document.getElementById('addVideoForm').reset();
+    }
+
+    // Show message
+    function showMessage(message, type) {
+      const messageDiv = document.createElement('div');
+      messageDiv.className = type;
+      messageDiv.textContent = message;
+      messageDiv.style.position = 'fixed';
+      messageDiv.style.top = '20px';
+      messageDiv.style.right = '20px';
+      messageDiv.style.zIndex = '9999';
+      messageDiv.style.padding = '1rem';
+      messageDiv.style.borderRadius = '8px';
+      messageDiv.style.maxWidth = '300px';
+      
+      document.body.appendChild(messageDiv);
+      
+      setTimeout(() => {
+        document.body.removeChild(messageDiv);
+      }, 3000);
+    }
+
+    // Logout function
+    async function logoutAndRefresh() {
+      await fetch('/api/logout', { method: 'POST' });
+      window.location.href = '/login.html';
+    }
+
+    // Initialize the application
+    document.addEventListener('DOMContentLoaded', async function() {
+      const isAuthenticated = await ensureAuth();
+      if (isAuthenticated) {
+        await loadOverview();
+        // Populate selects initially
+        await ensureCropsInitialized();
+        // Hook crop filter change
+        const cropFilter = document.getElementById('cropFilter');
+        cropFilter.addEventListener('change', loadVideos);
+        // Default select first crop and load
+        if (!cropFilter.value && allCrops[0]) {
+          cropFilter.value = allCrops[0].id;
+        }
+        await loadVideos();
+      }
+    });
+  </script>
+</body>
+</html>
+

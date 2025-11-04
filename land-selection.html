@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="/style.css">
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🌱 Land Selection & Crop Planning - Precision Agriculture</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .land-selection-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+    
+    .land-selection-header {
+      background: linear-gradient(135deg, #4a7c59 0%, #28a745 100%);
+      color: white;
+      padding: 2rem;
+      border-radius: 15px;
+      margin-bottom: 2rem;
+      text-align: center;
+    }
+    
+    .land-selection-form {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      padding: 2rem;
+      margin-bottom: 2rem;
+    }
+    
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+    
+    .form-group label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 600;
+      color: #4a7c59;
+    }
+    
+    .form-group input,
+    .form-group select {
+      width: 100%;
+      padding: 0.75rem;
+      border: 2px solid #e9ecef;
+      border-radius: 8px;
+      font-size: 1rem;
+      transition: border-color 0.3s ease;
+    }
+    
+    .form-group input:focus,
+    .form-group select:focus {
+      outline: none;
+      border-color: #4a7c59;
+      box-shadow: 0 0 0 3px rgba(74, 124, 89, 0.1);
+    }
+    
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+    
+    .btn {
+      padding: 0.75rem 1.5rem;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-decoration: none;
+      display: inline-block;
+      text-align: center;
+    }
+    
+    .btn-primary {
+      background: #4a7c59;
+      color: white;
+    }
+    
+    .btn-primary:hover {
+      background: #3a6b4a;
+      transform: translateY(-1px);
+    }
+    
+    .btn-secondary {
+      background: #6c757d;
+      color: white;
+    }
+    
+    .btn-secondary:hover {
+      background: #5a6268;
+    }
+    
+    .results-section {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      padding: 2rem;
+      margin-bottom: 2rem;
+    }
+    
+    .results-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+    
+    .result-card {
+      background: #f8f9fa;
+      border-radius: 12px;
+      padding: 1.5rem;
+      border-left: 4px solid #4a7c59;
+    }
+    
+    .result-card h3 {
+      margin: 0 0 1rem 0;
+      color: #4a7c59;
+      font-size: 1.2rem;
+    }
+    
+    .result-item {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 0.5rem;
+      padding: 0.5rem 0;
+      border-bottom: 1px solid #e9ecef;
+    }
+    
+    .result-item:last-child {
+      border-bottom: none;
+    }
+    
+    .result-label {
+      font-weight: 600;
+      color: #666;
+    }
+    
+    .result-value {
+      color: #2d1e2f;
+      font-weight: 500;
+    }
+    
+    .crop-suggestions {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      padding: 2rem;
+    }
+    
+    .crop-card {
+      background: #f8f9fa;
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 1rem;
+      border: 2px solid #e9ecef;
+      transition: all 0.3s ease;
+    }
+    
+    .crop-card:hover {
+      border-color: #4a7c59;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    }
+    
+    .crop-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+    
+    .crop-name {
+      font-size: 1.3rem;
+      font-weight: bold;
+      color: #4a7c59;
+    }
+    
+    .crop-category {
+      padding: 0.25rem 0.75rem;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      background: rgba(74, 124, 89, 0.1);
+      color: #4a7c59;
+    }
+    
+    .crop-details {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+    
+    .crop-detail {
+      text-align: center;
+    }
+    
+    .crop-detail-label {
+      font-size: 0.8rem;
+      color: #666;
+      margin-bottom: 0.25rem;
+    }
+    
+    .crop-detail-value {
+      font-weight: bold;
+      color: #2d1e2f;
+    }
+    
+    .crop-actions {
+      display: flex;
+      gap: 0.5rem;
+      justify-content: center;
+    }
+    
+    .btn-sm {
+      padding: 0.5rem 1rem;
+      font-size: 0.9rem;
+    }
+    
+    .loading {
+      text-align: center;
+      padding: 2rem;
+      color: #666;
+    }
+    
+    .error {
+      background: #f8d7da;
+      color: #721c24;
+      padding: 1rem;
+      border-radius: 8px;
+      margin-bottom: 1rem;
+      border: 1px solid #f5c6cb;
+    }
+    
+    .success {
+      background: #d4edda;
+      color: #155724;
+      padding: 1rem;
+      border-radius: 8px;
+      margin-bottom: 1rem;
+      border: 1px solid #c3e6cb;
+    }
+    
+    .soil-type-info {
+      background: #e7f3ff;
+      border: 1px solid #b3d9ff;
+      border-radius: 8px;
+      padding: 1rem;
+      margin-top: 1rem;
+    }
+    
+    .soil-type-info h4 {
+      margin: 0 0 0.5rem 0;
+      color: #0066cc;
+    }
+    
+    .soil-type-info p {
+      margin: 0;
+      color: #004499;
+      font-size: 0.9rem;
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header class="header">
+    <nav class="nav">
+      <a href="/index.html" class="logo">🌱 Precision Agriculture</a>
+      <ul class="nav-links">
+        <li><a href="/index.html">🏠 Home</a></li>
+        <li><a href="/my-tasks.html">📋 My Tasks</a></li>
+        <li><a href="#" onclick="logoutAndRefresh()">Logout</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <div class="land-selection-container">
+    <!-- Header -->
+    <div class="land-selection-header">
+      <h1>🌱 Land Selection & Crop Planning</h1>
+      <p>Get personalized fertilizer, pesticide recommendations and crop suggestions based on your land</p>
+    </div>
+
+    <!-- Land Selection Form -->
+    <div class="land-selection-form">
+      <h2>📏 Land Information</h2>
+      <form id="landSelectionForm">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="landSize">Land Size (acres) - Optional</label>
+            <input type="number" id="landSize" name="landSize" step="0.1" min="0.1" max="1000">
+          </div>
+          <div class="form-group">
+            <label for="soilType">Soil Type</label>
+            <select id="soilType" name="soilType" required>
+              <option value="">Select Soil Type</option>
+              <option value="clay">Clay Soil</option>
+              <option value="sandy">Sandy Soil</option>
+              <option value="loamy">Loamy Soil</option>
+              <option value="silty">Silty Soil</option>
+              <option value="black_cotton">Black Cotton Soil</option>
+              <option value="red_soil">Red Soil</option>
+              <option value="alluvial">Alluvial Soil</option>
+              <option value="laterite">Laterite Soil</option>
+            </select>
+          </div>
+        </div>
+        
+        <div class="form-row">
+          <div class="form-group">
+            <label for="region">Region/State</label>
+            <select id="region" name="region">
+              <option value="">Select Region</option>
+              <option value="tamil_nadu">Tamil Nadu</option>
+              <option value="karnataka">Karnataka</option>
+              <option value="kerala">Kerala</option>
+              <option value="andhra_pradesh">Andhra Pradesh</option>
+              <option value="telangana">Telangana</option>
+              <option value="maharashtra">Maharashtra</option>
+              <option value="gujarat">Gujarat</option>
+              <option value="rajasthan">Rajasthan</option>
+              <option value="punjab">Punjab</option>
+              <option value="haryana">Haryana</option>
+              <option value="uttar_pradesh">Uttar Pradesh</option>
+              <option value="bihar">Bihar</option>
+              <option value="west_bengal">West Bengal</option>
+              <option value="odisha">Odisha</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="irrigation">Irrigation Type</label>
+            <select id="irrigation" name="irrigation">
+              <option value="">Select Irrigation</option>
+              <option value="rainfed">Rainfed</option>
+              <option value="drip">Drip Irrigation</option>
+              <option value="sprinkler">Sprinkler Irrigation</option>
+              <option value="flood">Flood Irrigation</option>
+              <option value="furrow">Furrow Irrigation</option>
+              <option value="basin">Basin Irrigation</option>
+            </select>
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <button type="submit" class="btn btn-primary">🌱 Get Recommendations</button>
+          <button type="button" class="btn btn-secondary" onclick="clearForm()">Clear Form</button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Results Section -->
+    <div id="resultsSection" class="results-section" style="display: none;">
+      <h2>📊 Your Recommendations</h2>
+      <div id="resultsContent">
+        <div class="loading">Calculating recommendations...</div>
+      </div>
+    </div>
+
+    <!-- Crop Suggestions Section -->
+    <div id="cropSuggestionsSection" class="crop-suggestions" style="display: none;">
+      <h2>🌾 Recommended Crops</h2>
+      <div id="cropSuggestionsContent">
+        <div class="loading">Finding suitable crops...</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let currentUser = null;
+    let landData = null;
+    let recommendations = null;
+    let cropSuggestions = null;
+
+    // Check authentication
+    async function ensureAuth() {
+      try {
+        const response = await fetch('/api/me');
+        const me = await response.json();
+        if (!me.authenticated) {
+          alert('Please login to access land selection.');
+          window.location.href = '/login.html';
+          return false;
+        }
+        currentUser = me;
+        return true;
+      } catch (error) {
+        console.error('Auth check failed:', error);
+        window.location.href = '/login.html';
+        return false;
+      }
+    }
+
+    // Load soil types from API
+    async function loadSoilTypes() {
+      try {
+        const response = await fetch('/api/soil-types');
+        if (response.ok) {
+          const soilTypes = await response.json();
+          const soilSelect = document.getElementById('soilType');
+          soilSelect.innerHTML = '<option value="">Select Soil Type</option>';
+          
+          soilTypes.forEach(soil => {
+            const option = document.createElement('option');
+            option.value = soil.name.toLowerCase().replace(/\s+/g, '_');
+            option.textContent = soil.name;
+            soilSelect.appendChild(option);
+          });
+        }
+      } catch (error) {
+        console.error('Error loading soil types:', error);
+      }
+    }
+
+    // Handle form submission
+    document.getElementById('landSelectionForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      
+      const formData = new FormData(this);
+      landData = {
+        landSize: parseFloat(formData.get('landSize')),
+        soilType: formData.get('soilType'),
+        region: formData.get('region'),
+        irrigation: formData.get('irrigation')
+      };
+
+      if (!landData.soilType) {
+        alert('Please select a soil type.');
+        return;
+      }
+
+      // Only calculate recommendations if land size is provided
+      if (landData.landSize) {
+        await calculateRecommendations();
+      }
+      await getCropSuggestions();
+    });
+
+    // Calculate fertilizer and pesticide recommendations
+    async function calculateRecommendations() {
+      try {
+        // Show loading
+        document.getElementById('resultsSection').style.display = 'block';
+        document.getElementById('resultsContent').innerHTML = '<div class="loading">Calculating recommendations...</div>';
+
+        // Call the API for land calculations
+        const response = await fetch('/api/land-calculations', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            land_size: landData.landSize,
+            soil_type: landData.soilType,
+            irrigation_type: landData.irrigation
+          })
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          recommendations = {
+            fertilizer: data.fertilizer_recommendations,
+            pesticide: data.pesticide_recommendations,
+            irrigation: data.irrigation_recommendations,
+            costs: data.cost_estimates
+          };
+          displayRecommendations();
+        } else {
+          throw new Error('Failed to calculate recommendations');
+        }
+      } catch (error) {
+        console.error('Error calculating recommendations:', error);
+        document.getElementById('resultsContent').innerHTML = 
+          '<div class="error">Error calculating recommendations. Please try again.</div>';
+      }
+    }
+
+
+    // Display recommendations
+    function displayRecommendations() {
+      const container = document.getElementById('resultsContent');
+      
+      container.innerHTML = `
+        <div class="results-grid">
+          <div class="result-card">
+            <h3>🌱 Fertilizer Recommendations</h3>
+            ${Object.entries(recommendations.fertilizer).map(([name, data]) => `
+              <div class="result-item">
+                <span class="result-label">${name.toUpperCase()}</span>
+                <span class="result-value">${data.amount} ${data.unit} (₹${data.cost})</span>
+              </div>
+            `).join('')}
+          </div>
+          
+          <div class="result-card">
+            <h3>🐛 Pesticide Recommendations</h3>
+            ${Object.entries(recommendations.pesticide).map(([name, data]) => `
+              <div class="result-item">
+                <span class="result-label">${name.replace('_', ' ').toUpperCase()}</span>
+                <span class="result-value">${data.amount} ${data.unit} (₹${data.cost})</span>
+              </div>
+            `).join('')}
+          </div>
+          
+          <div class="result-card">
+            <h3>💧 Irrigation Requirements</h3>
+            <div class="result-item">
+              <span class="result-label">Water per irrigation</span>
+              <span class="result-value">${recommendations.irrigation.water_per_irrigation} liters</span>
+            </div>
+            <div class="result-item">
+              <span class="result-label">Frequency</span>
+              <span class="result-value">${recommendations.irrigation.frequency_per_week} times/week</span>
+            </div>
+            <div class="result-item">
+              <span class="result-label">Monthly water</span>
+              <span class="result-value">${recommendations.irrigation.monthly_water} liters</span>
+            </div>
+            <div class="result-item">
+              <span class="result-label">Efficiency</span>
+              <span class="result-value">${Math.round(recommendations.irrigation.efficiency * 100)}%</span>
+            </div>
+          </div>
+          
+          <div class="result-card">
+            <h3>💰 Cost Estimates</h3>
+            <div class="result-item">
+              <span class="result-label">Fertilizers</span>
+              <span class="result-value">₹${recommendations.costs.fertilizer_cost}</span>
+            </div>
+            <div class="result-item">
+              <span class="result-label">Pesticides</span>
+              <span class="result-value">₹${recommendations.costs.pesticide_cost}</span>
+            </div>
+            <div class="result-item">
+              <span class="result-label">Irrigation</span>
+              <span class="result-value">₹${recommendations.costs.irrigation_cost}</span>
+            </div>
+            <div class="result-item" style="border-top: 2px solid #4a7c59; font-weight: bold;">
+              <span class="result-label">Total Cost</span>
+              <span class="result-value">₹${recommendations.costs.total_cost}</span>
+            </div>
+            <div class="result-item">
+              <span class="result-label">Cost per acre</span>
+              <span class="result-value">₹${recommendations.costs.cost_per_acre}</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="soil-type-info">
+          <h4>📋 Soil Type Information</h4>
+          <p>Your soil type (${landData.soilType}) has been considered in the calculations. Different soil types require different amounts of fertilizers and have varying pest pressures.</p>
+        </div>
+      `;
+    }
+
+    // Get crop suggestions based on soil type only
+    async function getCropSuggestions() {
+      try {
+        document.getElementById('cropSuggestionsSection').style.display = 'block';
+        document.getElementById('cropSuggestionsContent').innerHTML = '<div class="loading">Finding suitable crops...</div>';
+
+        const response = await fetch('/api/crop-suggestions', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            soil_type: landData.soilType
+          })
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          cropSuggestions = data.suggested_crops;
+          displayCropSuggestions();
+        } else {
+          throw new Error('Failed to get crop suggestions');
+        }
+      } catch (error) {
+        console.error('Error getting crop suggestions:', error);
+        document.getElementById('cropSuggestionsContent').innerHTML = 
+          '<div class="error">Error loading crop suggestions. Please try again.</div>';
+      }
+    }
+
+    // Display crop suggestions
+    function displayCropSuggestions() {
+      const container = document.getElementById('cropSuggestionsContent');
+      
+      if (cropSuggestions.length === 0) {
+        container.innerHTML = `
+          <div class="error">
+            <h4>No Suitable Crops Found</h4>
+            <p>No crops found that match your land size and soil type. Try adjusting your criteria.</p>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = cropSuggestions.map(crop => `
+        <div class="crop-card">
+          <div class="crop-header">
+            <div class="crop-name">${crop.name}</div>
+            <div class="crop-category">${crop.crop_category || 'General'}</div>
+          </div>
+          
+          <div class="crop-details">
+            <div class="crop-detail">
+              <div class="crop-detail-label">Season</div>
+              <div class="crop-detail-value">${crop.season || 'Year-round'}</div>
+            </div>
+            <div class="crop-detail">
+              <div class="crop-detail-label">Land Size</div>
+              <div class="crop-detail-value">${crop.land_size_min || 'Any'} - ${crop.land_size_max || 'Any'} acres</div>
+            </div>
+            <div class="crop-detail">
+              <div class="crop-detail-label">EC Range</div>
+              <div class="crop-detail-value">${crop.ec_range || 'Not specified'}</div>
+            </div>
+            <div class="crop-detail">
+              <div class="crop-detail-label">Soil Types</div>
+              <div class="crop-detail-value">${crop.soil_types || 'Various'}</div>
+            </div>
+          </div>
+          
+          <div class="crop-actions">
+            <button class="btn btn-primary btn-sm" onclick="startCropMonitoring(${crop.id}, '${crop.name}')">
+              🌱 Start Growing
+            </button>
+            <button class="btn btn-secondary btn-sm" onclick="viewCropDetails(${crop.id})">
+              ℹ️ Details
+            </button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // Start crop monitoring
+    async function startCropMonitoring(cropId, cropName) {
+      if (!landData || !landData.soilType) {
+        alert('Please select a soil type first.');
+        return;
+      }
+
+      try {
+        const startDate = new Date().toISOString();
+        
+        const response = await fetch('/api/start-crop-monitoring', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            crop_id: cropId,
+            crop_name: cropName,
+            land_size: landData.landSize || null,
+            soil_type: landData.soilType,
+            start_date: startDate
+          })
+        });
+
+        if (response.ok) {
+          const result = await response.json();
+          alert(`Crop monitoring started successfully! Session ID: ${result.session_id}`);
+          window.location.href = '/my-tasks.html';
+        } else {
+          throw new Error('Failed to start crop monitoring');
+        }
+      } catch (error) {
+        console.error('Error starting crop monitoring:', error);
+        alert('Error starting crop monitoring. Please try again.');
+      }
+    }
+
+    // View crop details
+    function viewCropDetails(cropId) {
+      window.open(`/index.html#crops`, '_blank');
+    }
+
+    // Clear form
+    function clearForm() {
+      document.getElementById('landSelectionForm').reset();
+      document.getElementById('resultsSection').style.display = 'none';
+      document.getElementById('cropSuggestionsSection').style.display = 'none';
+      landData = null;
+      recommendations = null;
+      cropSuggestions = null;
+    }
+
+    // Logout function
+    async function logoutAndRefresh() {
+      await fetch('/api/logout', { method: 'POST' });
+      window.location.href = '/login.html';
+    }
+
+    // Initialize the page
+    async function initializePage() {
+      const isAuthenticated = await ensureAuth();
+      if (isAuthenticated) {
+        await loadSoilTypes();
+      }
+    }
+
+    // Start the page
+    document.addEventListener('DOMContentLoaded', initializePage);
+  </script>
+</body>
+</html>

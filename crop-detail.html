@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Crop Details - Precision Agriculture</title>
+  <link rel="stylesheet" href="/css/common.css">
+  <style>
+    .detail-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+
+    .back-button {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: var(--primary-green);
+      text-decoration: none;
+      margin-bottom: 2rem;
+      font-weight: 600;
+    }
+
+    .back-button:hover {
+      text-decoration: underline;
+    }
+
+    .crop-header {
+      background: linear-gradient(135deg, var(--primary-green-light), var(--primary-green));
+      border-radius: 16px;
+      padding: 3rem 2rem;
+      margin-bottom: 2rem;
+      text-align: center;
+      color: white;
+    }
+
+    .crop-icon {
+      font-size: 6rem;
+      margin-bottom: 1rem;
+    }
+
+    .crop-name {
+      font-size: 2.5rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .crop-subtitle {
+      font-size: 1.2rem;
+      opacity: 0.9;
+    }
+
+    .crop-badges {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      margin-top: 1.5rem;
+      flex-wrap: wrap;
+    }
+
+    .badge {
+      padding: 0.5rem 1.2rem;
+      background: rgba(255, 255, 255, 0.2);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      font-weight: 600;
+    }
+
+    .action-buttons {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      margin-top: 2rem;
+      flex-wrap: wrap;
+    }
+
+    .btn-primary, .btn-secondary {
+      padding: 0.8rem 2rem;
+      border-radius: 10px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      font-size: 1rem;
+      transition: all 0.3s;
+    }
+
+    .btn-primary {
+      background: white;
+      color: var(--primary-green);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.2);
+      color: white;
+      border: 2px solid white;
+    }
+
+    .btn-secondary:hover {
+      background: white;
+      color: var(--primary-green);
+    }
+
+    .content-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 2rem;
+      margin-bottom: 2rem;
+    }
+
+    @media (max-width: 968px) {
+      .content-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .card {
+      background: var(--card-bg);
+      border-radius: 12px;
+      padding: 2rem;
+      box-shadow: var(--shadow-sm);
+      border: 1px solid var(--border-color);
+    }
+
+    .card h2 {
+      color: var(--primary-green);
+      margin-bottom: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .info-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .info-item {
+      padding: 1rem;
+      background: var(--bg-secondary);
+      border-radius: 8px;
+    }
+
+    .info-label {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      margin-bottom: 0.5rem;
+    }
+
+    .info-value {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .stages-list {
+      display: grid;
+      gap: 1rem;
+    }
+
+    .stage-item {
+      padding: 1.5rem;
+      background: var(--bg-secondary);
+      border-radius: 10px;
+      border-left: 4px solid var(--primary-green);
+    }
+
+    .stage-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.5rem;
+    }
+
+    .stage-title {
+      font-weight: 700;
+      color: var(--text-primary);
+      font-size: 1.1rem;
+    }
+
+    .stage-weeks {
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+    }
+
+    .stage-tasks {
+      color: var(--text-secondary);
+      margin-top: 0.5rem;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+      border-bottom: 2px solid var(--border-color);
+    }
+
+    .tab {
+      padding: 0.8rem 1.5rem;
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-weight: 600;
+      color: var(--text-secondary);
+      border-bottom: 3px solid transparent;
+      transition: all 0.3s;
+    }
+
+    .tab.active {
+      color: var(--primary-green);
+      border-bottom-color: var(--primary-green);
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 3rem;
+      color: var(--text-secondary);
+    }
+  </style>
+</head>
+<body>
+  <div id="navbar-container"></div>
+
+  <div class="detail-container">
+    <a href="/crops.html" class="back-button">← Back to All Crops</a>
+
+    <div id="cropContent" class="loading">Loading crop details...</div>
+  </div>
+
+  <script src="/js/navbar.js"></script>
+  <script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const cropId = urlParams.get('id');
+
+    if (!cropId) {
+      window.location.href = '/crops.html';
+    }
+
+    let cropData = null;
+
+    document.addEventListener('DOMContentLoaded', () => {
+      loadCropDetails();
+    });
+
+    async function loadCropDetails() {
+      try {
+        const [cropResponse, guideResponse, stagesResponse] = await Promise.all([
+          fetch(`/api/crops/${cropId}`),
+          fetch(`/api/crops/${cropId}`).then(r => r.json()).catch(() => null),
+          fetch(`/api/crops/${cropId}`).then(r => r.json()).catch(() => null)
+        ]);
+
+        cropData = await cropResponse.json();
+        displayCropDetails(cropData);
+      } catch (error) {
+        console.error('Error loading crop details:', error);
+        document.getElementById('cropContent').innerHTML = '<div class="loading"><h3>Error loading crop details</h3><p>Please try again later.</p></div>';
+      }
+    }
+
+    function displayCropDetails(crop) {
+      const content = document.getElementById('cropContent');
+      
+      content.innerHTML = `
+        <div class="crop-header">
+          <div class="crop-icon">${crop.image_url || '🌱'}</div>
+          <h1 class="crop-name">${crop.name}</h1>
+          <p class="crop-subtitle">${crop.description || 'Agricultural crop'}</p>
+          
+          <div class="crop-badges">
+            <span class="badge">📂 ${crop.crop_category || 'Crop'}</span>
+            <span class="badge">⏱️ ${crop.average_duration_weeks || 12} weeks</span>
+            <span class="badge">📊 ${crop.difficulty || 'Medium'}</span>
+            <span class="badge">📅 ${crop.season || 'N/A'}</span>
+          </div>
+
+          <div class="action-buttons">
+            <button class="btn-primary" onclick="startMonitoring()">🌱 Start Monitoring</button>
+            <button class="btn-secondary" onclick="viewWeeklyGuidance()">📋 Weekly Guidance</button>
+          </div>
+        </div>
+
+        <div class="content-grid">
+          <div>
+            <div class="card">
+              <h2>📊 Crop Information</h2>
+              <div class="info-grid">
+                <div class="info-item">
+                  <div class="info-label">Season</div>
+                  <div class="info-value">${crop.season || 'N/A'}</div>
+                </div>
+                <div class="info-item">
+                  <div class="info-label">Duration</div>
+                  <div class="info-value">${crop.average_duration_weeks || 12} weeks</div>
+                </div>
+                <div class="info-item">
+                  <div class="info-label">Difficulty</div>
+                  <div class="info-value">${crop.difficulty || 'Medium'}</div>
+                </div>
+                <div class="info-item">
+                  <div class="info-label">Category</div>
+                  <div class="info-value">${crop.crop_category || 'N/A'}</div>
+                </div>
+                <div class="info-item">
+                  <div class="info-label">EC Range</div>
+                  <div class="info-value">${crop.ec || 'N/A'}</div>
+                </div>
+                <div class="info-item">
+                  <div class="info-label">Land Size</div>
+                  <div class="info-value">${crop.land_size_min || 0.1} - ${crop.land_size_max || 100} acres</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="card" style="margin-top: 2rem;">
+              <h2>🌱 Growth Information</h2>
+              <div class="tabs">
+                <button class="tab active" onclick="switchTab('overview')">Overview</button>
+                <button class="tab" onclick="switchTab('stages')">Growth Stages</button>
+                <button class="tab" onclick="switchTab('requirements')">Requirements</button>
+              </div>
+
+              <div id="overview" class="tab-content active">
+                <div class="info-item" style="margin-bottom: 1rem;">
+                  <div class="info-label">Suitable Soil Types</div>
+                  <div class="info-value">${crop.soil_types || 'Various soil types'}</div>
+                </div>
+                <div class="info-item">
+                  <div class="info-label">Description</div>
+                  <div class="info-value" style="font-weight: normal; line-height: 1.6;">${crop.description || 'No detailed description available.'}</div>
+                </div>
+              </div>
+
+              <div id="stages" class="tab-content">
+                <p style="color: var(--text-secondary);">Loading growth stages...</p>
+              </div>
+
+              <div id="requirements" class="tab-content">
+                <div class="info-grid">
+                  <div class="info-item">
+                    <div class="info-label">Climate</div>
+                    <div class="info-value" style="font-weight: normal;">Based on season: ${crop.season || 'N/A'}</div>
+                  </div>
+                  <div class="info-item">
+                    <div class="info-label">Water Requirement</div>
+                    <div class="info-value" style="font-weight: normal;">Varies by growth stage</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <div class="card">
+              <h2>📈 Quick Stats</h2>
+              <div class="info-grid">
+                <div class="info-item">
+                  <div class="info-label">Total Videos</div>
+                  <div class="info-value" id="videoCount">-</div>
+                </div>
+                <div class="info-item">
+                  <div class="info-label">Total Tasks</div>
+                  <div class="info-value" id="taskCount">-</div>
+                </div>
+                <div class="info-item">
+                  <div class="info-label">Growth Stages</div>
+                  <div class="info-value" id="stageCount">-</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="card" style="margin-top: 2rem;">
+              <h2>🎯 Quick Actions</h2>
+              <div style="display: grid; gap: 1rem;">
+                <button class="btn-primary" style="width: 100%; background: var(--primary-green); color: white;" onclick="startMonitoring()">
+                  🌱 Start Monitoring This Crop
+                </button>
+                <button class="btn-secondary" style="width: 100%; background: var(--bg-secondary); color: var(--text-primary); border: 1px solid var(--border-color);" onclick="viewWeeklyGuidance()">
+                  📋 View Weekly Guidance
+                </button>
+                <button class="btn-secondary" style="width: 100%; background: var(--bg-secondary); color: var(--text-primary); border: 1px solid var(--border-color);" onclick="window.location.href='/land-resource-planning.html'">
+                  🗺️ Land Planning
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+
+      // Load additional data
+      loadStages();
+      loadStats();
+    }
+
+    async function loadStages() {
+      try {
+        // This would fetch from /api/crops/${cropId}/stages if available
+        // For now, show placeholder
+        document.getElementById('stages').innerHTML = `
+          <p style="color: var(--text-secondary);">Growth stage information will be displayed here once you start monitoring this crop.</p>
+        `;
+      } catch (error) {
+        console.error('Error loading stages:', error);
+      }
+    }
+
+    async function loadStats() {
+      try {
+        // Load video count, task count, etc.
+        // For now, use placeholder values
+        document.getElementById('videoCount').textContent = '-';
+        document.getElementById('taskCount').textContent = '-';
+        document.getElementById('stageCount').textContent = '-';
+      } catch (error) {
+        console.error('Error loading stats:', error);
+      }
+    }
+
+    function switchTab(tabName) {
+      // Remove active class from all tabs and contents
+      document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+
+      // Add active class to selected tab and content
+      event.target.classList.add('active');
+      document.getElementById(tabName).classList.add('active');
+    }
+
+    async function startMonitoring() {
+      // Check if user is logged in
+      const response = await fetch('/api/check-auth');
+      const auth = await response.json();
+
+      if (!auth.authenticated) {
+        alert('Please login to start monitoring crops');
+        window.location.href = '/login.html';
+        return;
+      }
+
+      // Redirect to land planning with pre-selected crop
+      window.location.href = `/land-resource-planning.html?crop=${cropId}`;
+    }
+
+    function viewWeeklyGuidance() {
+      window.location.href = `/crop-weekly-guidance.html?crop_id=${cropId}&week=1`;
+    }
+  </script>
+</body>
+</html>

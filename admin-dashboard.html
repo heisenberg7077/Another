@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="/style.css">
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🌱 Admin Dashboard - Agricultural System</title>
+</head>
+<body>
+  <!-- Header -->
+  <header class="header">
+    <nav class="nav">
+      <a href="/index.html" class="logo">🌱 Admin Dashboard</a>
+      <ul class="nav-links">
+        <li><button id="themeToggle" class="theme-toggle" title="Toggle theme">🌞</button></li>
+        <li><a href="/index.html">🏠 Home</a></li>
+        <li><a href="#" onclick="logoutAndRefresh()">Logout</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <div class="admin-container">
+    <!-- Admin Header -->
+    <div class="admin-header">
+      <h1>🌱 Agricultural System Admin Dashboard</h1>
+      <p>Comprehensive management system for agricultural guidance and monitoring</p>
+    </div>
+
+    <!-- Breadcrumbs -->
+    <nav class="breadcrumbs" aria-label="Breadcrumb">
+      <a href="/index.html">Home</a>
+      <span class="divider">/</span>
+      <span>Admin</span>
+      <span class="divider">/</span>
+      <span>Dashboard</span>
+    </nav>
+
+    <!-- Admin Navigation -->
+    <div class="admin-nav">
+      <div class="nav-card active" onclick="showSection('overview')">
+        <div class="nav-icon">📊</div>
+        <div class="nav-title">Overview</div>
+        <div class="nav-description">System statistics and quick actions</div>
+      </div>
+      
+      <div class="nav-card" onclick="showSection('monitoring')">
+        <div class="nav-icon">👥</div>
+        <div class="nav-title">User Monitoring</div>
+        <div class="nav-description">Track user progress and sessions</div>
+      </div>
+      
+      
+      
+      <div class="nav-card" onclick="showSection('videos')">
+        <div class="nav-icon">🎥</div>
+        <div class="nav-title">Video Management</div>
+        <div class="nav-description">Manage educational videos</div>
+      </div>
+      
+      <div class="nav-card" onclick="showSection('content')">
+        <div class="nav-icon">📝</div>
+        <div class="nav-title">Content Management</div>
+        <div class="nav-description">Manage guidance and tasks</div>
+      </div>
+      
+      <div class="nav-card" onclick="showSection('users')">
+        <div class="nav-icon">👤</div>
+        <div class="nav-title">User Management</div>
+        <div class="nav-description">Manage users and permissions</div>
+      </div>
+      
+      <div class="nav-card" onclick="showSection('crops')">
+        <div class="nav-icon">🌾</div>
+        <div class="nav-title">Crop Guidance</div>
+        <div class="nav-description">Manage crop guidance content</div>
+      </div>
+      
+      <div class="nav-card" onclick="showSection('system')">
+        <div class="nav-icon">⚙️</div>
+        <div class="nav-title">System Config</div>
+        <div class="nav-description">System settings and configuration</div>
+      </div>
+      
+      <div class="nav-card" onclick="showSection('reports')">
+        <div class="nav-icon">📈</div>
+        <div class="nav-title">Reports & Analytics</div>
+        <div class="nav-description">System reports and analytics</div>
+      </div>
+    </div>
+
+    <!-- Overview Section -->
+    <div id="overview" class="content-section active">
+      <div class="section-header">
+        <h2 class="section-title">📊 System Overview</h2>
+        <div>
+          <span class="status-dot ok" title="Systems Operational"></span>
+          <small class="text-muted">All systems operational</small>
+        </div>
+      </div>
+      
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-number" id="totalUsers">-</div>
+          <div class="stat-label">Total Users</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number" id="activeSessions">-</div>
+          <div class="stat-label">Active Sessions</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number" id="totalCrops">-</div>
+          <div class="stat-label">Crops Available</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number" id="totalVideos">-</div>
+          <div class="stat-label">Educational Videos</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number" id="completedTasks">-</div>
+          <div class="stat-label">Completed Tasks</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number" id="systemUptime">-</div>
+          <div class="stat-label">System Uptime</div>
+        </div>
+      </div>
+      
+      <!-- Charts & Trends -->
+      
+
+      <div class="quick-actions">
+        <div class="action-card">
+          <div class="action-title">🚀 Quick Actions</div>
+          <div class="action-description">Common administrative tasks</div>
+          <span class="badge">Coming Soon</span>
+          <a href="#" class="btn btn-secondary" onclick="showSection('videos')">Manage Videos</a>
+        </div>
+        
+        <div class="action-card">
+          <div class="action-title">📊 Analytics</div>
+          <div class="action-description">View system analytics and reports</div>
+          <a href="#" class="btn btn-success" onclick="showSection('reports')">View Reports</a>
+          <a href="#" class="btn btn-warning" onclick="showSection('monitoring')">User Activity</a>
+        </div>
+        
+        <div class="action-card">
+          <div class="action-title">⚙️ System</div>
+          <div class="action-description">System configuration and maintenance</div>
+          <a href="#" class="btn btn-primary" onclick="showSection('system')">System Config</a>
+          <a href="#" class="btn btn-secondary" onclick="showSection('users')">User Management</a>
+        </div>
+      </div>
+      
+      <div class="quick-actions">
+        <div class="action-card">
+          <div class="action-title">🧠 AI Insights</div>
+          <div class="action-description">Automated recommendations for admins</div>
+          <span class="badge">Coming Soon</span>
+        </div>
+        <div class="action-card">
+          <div class="action-title">🛰️ IoT Device Integration</div>
+          <div class="action-description">Connect sensors and actuators</div>
+          <span class="badge">Coming Soon</span>
+        </div>
+        <div class="action-card">
+          <div class="action-title">🤝 Role-Based Access</div>
+          <div class="action-description">Granular permissions for admin roles</div>
+          <span class="badge">Coming Soon</span>
+        </div>
+      </div>
+      
+      <div class="recent-activity">
+        <h3>Recent Activity</h3>
+        <div id="recentActivity">
+          <div class="loading">Loading recent activity...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- User Monitoring Section -->
+    <div id="monitoring" class="content-section">
+      <div class="section-header">
+        <h2 class="section-title">👥 User Monitoring</h2>
+        <a href="/database.html" class="btn btn-primary">Advanced Monitoring</a>
+      </div>
+      <div id="monitoringContent">
+        <div class="loading">Loading monitoring data...</div>
+      </div>
+    </div>
+
+    
+
+    <!-- Video Management Section -->
+    <div id="videos" class="content-section">
+      <div class="section-header">
+        <h2 class="section-title">🎥 Video Management</h2>
+        <a href="/admin-video-management.html" class="btn btn-primary">Full Video Interface</a>
+      </div>
+      <div id="videosContent">
+        <div class="loading">Loading video information...</div>
+      </div>
+    </div>
+
+    <!-- Content Management Section -->
+    <div id="content" class="content-section">
+      <div class="section-header">
+        <h2 class="section-title">📝 Content Management</h2>
+      </div>
+      <div id="contentContent">
+        <div class="loading">Loading content management...</div>
+      </div>
+    </div>
+
+    <!-- User Management Section -->
+    <div id="users" class="content-section">
+      <div class="section-header">
+        <h2 class="section-title">👤 User Management</h2>
+      </div>
+      <div id="usersContent">
+        <div class="loading">Loading user management...</div>
+      </div>
+    </div>
+
+    <!-- Crop Guidance Section -->
+    <div id="crops" class="content-section">
+      <div class="section-header">
+        <h2 class="section-title">🌾 Crop Guidance Management</h2>
+      </div>
+      <div id="cropsContent">
+        <div class="loading">Loading crop guidance...</div>
+      </div>
+    </div>
+
+    <!-- System Configuration Section -->
+    <div id="system" class="content-section">
+      <div class="section-header">
+        <h2 class="section-title">⚙️ System Configuration</h2>
+      </div>
+      <div id="systemContent">
+        <div class="loading">Loading system configuration...</div>
+      </div>
+    </div>
+
+    <!-- Reports & Analytics Section -->
+    <div id="reports" class="content-section">
+      <div class="section-header">
+        <h2 class="section-title">📈 Reports & Analytics</h2>
+      </div>
+      <div id="reportsContent">
+        <div class="loading">Loading reports and analytics...</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let currentUser = null;
+    let systemStats = {};
+
+    // Check authentication
+    async function ensureAuth() {
+      try {
+        const response = await fetch('/api/me');
+        const me = await response.json();
+        if (!me.authenticated) {
+          alert('Please login to access admin panel.');
+          window.location.href = '/login.html';
+          return false;
+        }
+        if (!me.is_admin) {
+          alert('Admin access required.');
+          window.location.href = '/index.html';
+          return false;
+        }
+        currentUser = me;
+        return true;
+      } catch (error) {
+        console.error('Auth check failed:', error);
+        window.location.href = '/login.html';
+        return false;
+      }
+    }
+
+    // Show section
+    function showSection(sectionId) {
+      // Hide all sections
+      document.querySelectorAll('.content-section').forEach(section => {
+        section.classList.remove('active');
+      });
+      
+      // Remove active class from all nav cards
+      document.querySelectorAll('.nav-card').forEach(card => {
+        card.classList.remove('active');
+      });
+      
+      // Show selected section
+      document.getElementById(sectionId).classList.add('active');
+      event.target.closest('.nav-card').classList.add('active');
+      
+      // Load section data
+      loadSectionData(sectionId);
+    }
+
+    // Load section data
+    async function loadSectionData(sectionId) {
+      switch(sectionId) {
+        case 'overview':
+          await loadOverview();
+          break;
+        case 'monitoring':
+          await loadMonitoring();
+          break;
+        
+        case 'videos':
+          await loadVideos();
+          break;
+        case 'content':
+          await loadContent();
+          break;
+        case 'users':
+          await loadUsers();
+          break;
+        case 'crops':
+          await loadCrops();
+          break;
+        case 'system':
+          await loadSystem();
+          break;
+        case 'reports':
+          await loadReports();
+          break;
+      }
+    }
+
+    // Load overview data
+    async function loadOverview() {
+      try {
+        const [usersRes, sessionsRes, cropsRes, videosRes] = await Promise.all([
+          fetch('/api/admin/users'),
+          fetch('/api/admin/monitoring-sessions'),
+          fetch('/api/crops'),
+          fetch('/api/admin/crop_videos')
+        ]);
+        
+        const users = await usersRes.json();
+        const sessions = await sessionsRes.json();
+        const crops = await cropsRes.json();
+        const videos = await videosRes.json();
+        
+        // Update stats
+        document.getElementById('totalUsers').textContent = users.length;
+        document.getElementById('activeSessions').textContent = sessions.filter(s => s.status === 'active').length;
+        document.getElementById('totalCrops').textContent = crops.length;
+        document.getElementById('totalVideos').textContent = videos.length;
+        document.getElementById('completedTasks').textContent = '0'; // Will be calculated from progress tracking
+        document.getElementById('systemUptime').textContent = '99.9%';
+        
+        // Load recent activity
+        loadRecentActivity(sessions);
+
+        // (Charts removed)
+        
+      } catch (error) {
+        console.error('Error loading overview:', error);
+        showMessage('Error loading overview data', 'error');
+      }
+    }
+
+    // Load recent activity
+    function loadRecentActivity(sessions) {
+      const container = document.getElementById('recentActivity');
+      const recentSessions = sessions.slice(0, 5);
+      
+      container.innerHTML = recentSessions.map(session => `
+        <div class="activity-item">
+          <div class="activity-icon">🌱</div>
+          <div class="activity-content">
+            <div class="activity-title">${session.username} started monitoring ${session.crop_name}</div>
+            <div class="activity-time">${new Date(session.created_at).toLocaleString()}</div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // Charts removed
+
+    // Load monitoring data
+    async function loadMonitoring() {
+      try {
+        const response = await fetch('/api/admin/monitoring-sessions');
+        const sessions = await response.json();
+        
+        const container = document.getElementById('monitoringContent');
+        container.innerHTML = `
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-number">${sessions.length}</div>
+              <div class="stat-label">Total Sessions</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-number">${sessions.filter(s => s.status === 'active').length}</div>
+              <div class="stat-label">Active Sessions</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-number">${sessions.filter(s => s.status === 'completed').length}</div>
+              <div class="stat-label">Completed Sessions</div>
+            </div>
+          </div>
+          <p>For detailed monitoring, use the <a href="/database.html" class="btn btn-primary">Advanced Monitoring Interface</a></p>
+        `;
+      } catch (error) {
+        console.error('Error loading monitoring:', error);
+        document.getElementById('monitoringContent').innerHTML = '<div class="error">Error loading monitoring data</div>';
+      }
+    }
+
+    
+
+    // Load videos data
+    async function loadVideos() {
+      try {
+        const response = await fetch('/api/admin/crop_videos');
+        const videos = await response.json();
+        
+        const container = document.getElementById('videosContent');
+        container.innerHTML = `
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-number">${videos.length}</div>
+              <div class="stat-label">Total Videos</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-number">${videos.filter(v => v.is_featured).length}</div>
+              <div class="stat-label">Featured Videos</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-number">${new Set(videos.map(v => v.video_type)).size}</div>
+              <div class="stat-label">Video Categories</div>
+            </div>
+          </div>
+          <p>For detailed video management, use the <a href="/admin-video-management.html" class="btn btn-primary">Full Video Interface</a></p>
+        `;
+      } catch (error) {
+        console.error('Error loading videos:', error);
+        document.getElementById('videosContent').innerHTML = '<div class="error">Error loading video data</div>';
+      }
+    }
+
+    // Load content management
+    async function loadContent() {
+      const container = document.getElementById('contentContent');
+      container.innerHTML = `
+        <div class="quick-actions">
+          <div class="action-card">
+            <div class="action-title">📝 Weekly Tasks</div>
+            <div class="action-description">Manage weekly tasks and guidance content</div>
+            <button class="btn btn-primary" onclick="manageWeeklyTasks()">Manage Tasks</button>
+          </div>
+          <div class="action-card">
+            <div class="action-title">💡 Crop Tips</div>
+            <div class="action-description">Manage crop tips and recommendations</div>
+            <button class="btn btn-success" onclick="manageCropTips()">Manage Tips</button>
+          </div>
+          <div class="action-card">
+            <div class="action-title">🌤️ Weather Recommendations</div>
+            <div class="action-description">Manage weather-based recommendations</div>
+            <button class="btn btn-warning" onclick="manageWeatherRecs()">Manage Weather</button>
+          </div>
+        </div>
+      `;
+    }
+
+    // Load user management
+    async function loadUsers() {
+      try {
+        const response = await fetch('/api/admin/users');
+        const users = await response.json();
+        
+        const container = document.getElementById('usersContent');
+        container.innerHTML = `
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-number">${users.length}</div>
+              <div class="stat-label">Total Users</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-number">${users.filter(u => u.is_admin).length}</div>
+              <div class="stat-label">Admin Users</div>
+            </div>
+          </div>
+          <div class="quick-actions">
+            <div class="action-card">
+              <div class="action-title">👤 User Management</div>
+              <div class="action-description">Add, edit, or remove users from the system</div>
+              <button class="btn btn-primary" onclick="manageUsers()">Manage Users</button>
+            </div>
+          </div>
+        `;
+      } catch (error) {
+        console.error('Error loading users:', error);
+        document.getElementById('usersContent').innerHTML = '<div class="error">Error loading user data</div>';
+      }
+    }
+
+    // Load crop guidance
+    async function loadCrops() {
+      try {
+        const response = await fetch('/api/crops');
+        const crops = await response.json();
+        
+        const container = document.getElementById('cropsContent');
+        container.innerHTML = `
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-number">${crops.length}</div>
+              <div class="stat-label">Available Crops</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-number">${crops.filter(c => c.crop_category).length}</div>
+              <div class="stat-label">Categorized Crops</div>
+            </div>
+          </div>
+          <div class="quick-actions">
+            <div class="action-card">
+              <div class="action-title">🌾 Crop Management</div>
+              <div class="action-description">Manage crop information and guidance</div>
+              <button class="btn btn-primary" onclick="manageCrops()">Manage Crops</button>
+            </div>
+          </div>
+        `;
+      } catch (error) {
+        console.error('Error loading crops:', error);
+        document.getElementById('cropsContent').innerHTML = '<div class="error">Error loading crop data</div>';
+      }
+    }
+
+    // Load system configuration
+    async function loadSystem() {
+      const container = document.getElementById('systemContent');
+      container.innerHTML = `
+        <div class="quick-actions">
+          <div class="action-card">
+            <div class="action-title">⚙️ System Settings</div>
+            <div class="action-description">Configure system parameters and settings</div>
+            <button class="btn btn-primary" onclick="configureSystem()">Configure System</button>
+          </div>
+          <div class="action-card">
+            <div class="action-title">🗄️ Database Maintenance</div>
+            <div class="action-description">Database backup, cleanup, and maintenance</div>
+            <button class="btn btn-warning" onclick="maintainDatabase()">Database Maintenance</button>
+          </div>
+          <div class="action-card">
+            <div class="action-title">🔧 System Health</div>
+            <div class="action-description">Monitor system health and performance</div>
+            <button class="btn btn-success" onclick="checkSystemHealth()">Check Health</button>
+          </div>
+        </div>
+      `;
+    }
+
+    // Load reports and analytics
+    async function loadReports() {
+      const container = document.getElementById('reportsContent');
+      container.innerHTML = `
+        <div class="quick-actions">
+          <div class="action-card">
+            <div class="action-title">📊 User Analytics</div>
+            <div class="action-description">User activity and engagement reports</div>
+            <button class="btn btn-primary" onclick="generateUserReport()">Generate Report</button>
+          </div>
+          <div class="action-card">
+            <div class="action-title">📈 Content Analytics</div>
+            <div class="action-description">Content usage and effectiveness reports</div>
+            <button class="btn btn-success" onclick="generateContentReport()">Generate Report</button>
+          </div>
+          <div class="action-card">
+            <div class="action-title">📋 System Reports</div>
+            <div class="action-description">System performance and usage reports</div>
+            <button class="btn btn-warning" onclick="generateSystemReport()">Generate Report</button>
+          </div>
+        </div>
+      `;
+    }
+
+    // Placeholder functions for future implementation
+    function manageWeeklyTasks() {
+      showMessage('Weekly Tasks management - Coming Soon!', 'info');
+    }
+
+    function manageCropTips() {
+      showMessage('Crop Tips management - Coming Soon!', 'info');
+    }
+
+    function manageWeatherRecs() {
+      showMessage('Weather Recommendations management - Coming Soon!', 'info');
+    }
+
+    function manageUsers() {
+      showMessage('User management - Coming Soon!', 'info');
+    }
+
+    function manageCrops() {
+      showMessage('Crop management - Coming Soon!', 'info');
+    }
+
+    function configureSystem() {
+      showMessage('System configuration - Coming Soon!', 'info');
+    }
+
+    function maintainDatabase() {
+      showMessage('Database maintenance - Coming Soon!', 'info');
+    }
+
+    function checkSystemHealth() {
+      showMessage('System health check - Coming Soon!', 'info');
+    }
+
+    function generateUserReport() {
+      showMessage('User analytics report - Coming Soon!', 'info');
+    }
+
+    function generateContentReport() {
+      showMessage('Content analytics report - Coming Soon!', 'info');
+    }
+
+    function generateSystemReport() {
+      showMessage('System report - Coming Soon!', 'info');
+    }
+
+    // Show message
+    function showMessage(message, type) {
+      const messageDiv = document.createElement('div');
+      messageDiv.className = type;
+      messageDiv.textContent = message;
+      messageDiv.style.position = 'fixed';
+      messageDiv.style.top = '20px';
+      messageDiv.style.right = '20px';
+      messageDiv.style.zIndex = '9999';
+      messageDiv.style.padding = '1rem';
+      messageDiv.style.borderRadius = '8px';
+      messageDiv.style.maxWidth = '300px';
+      
+      document.body.appendChild(messageDiv);
+      
+      setTimeout(() => {
+        document.body.removeChild(messageDiv);
+      }, 3000);
+    }
+
+    // Logout function
+    async function logoutAndRefresh() {
+      await fetch('/api/logout', { method: 'POST' });
+      window.location.href = '/login.html';
+    }
+
+    // Initialize the application
+    document.addEventListener('DOMContentLoaded', async function() {
+      const isAuthenticated = await ensureAuth();
+      if (isAuthenticated) {
+        await loadOverview();
+      }
+      // Theme handling for admin
+      function applyTheme(theme){
+        document.documentElement.setAttribute('data-theme', theme);
+        const btn = document.getElementById('themeToggle');
+        if (btn) btn.textContent = theme === 'dark' ? '🌙' : '🌞';
+      }
+      const saved = localStorage.getItem('theme') || 'light';
+      applyTheme(saved);
+      const btn = document.getElementById('themeToggle');
+      if (btn){
+        btn.addEventListener('click', () => {
+          const next = (localStorage.getItem('theme') || 'light') === 'light' ? 'dark' : 'light';
+          localStorage.setItem('theme', next);
+          applyTheme(next);
+        });
+      }
+    });
+  </script>
+</body>
+</html>
+
+
