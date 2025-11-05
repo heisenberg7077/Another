@@ -22,20 +22,25 @@
         <span class="bar"></span>
       </button>
       <ul class="nav-links">
-        <li><a href="#crops">Crops</a></li>
-      </ul>
-      <ul class="nav-links">
+        <!-- Only show Login before authentication -->
+        <li id="navLogin"><a href="/login.html">Login</a></li>
+        
+        <!-- Show these only after authentication -->
+        <li id="navCrops" style="display:none;"><a href="#crops">Crops</a></li>
         <li id="navDatabase" style="display:none;"><a href="/admin-dashboard.html">Admin Dashboard</a></li>
         <li id="navLandSelection" style="display:none;"><a href="/land-resource-planning.html">🗺️ Land & Resource Planning</a></li>
         <li id="navMonitoring" style="display:none;"><a href="/monitoring.html">📊 Monitoring</a></li>
-        <li id="navLogin"><a href="/login.html">Login</a></li>
+        <li id="navMyTasks" style="display:none;"><a href="/my-tasks.html">📋 My Tasks</a></li>
+        <li id="navWeeklyGuidance" style="display:none;"><a href="/weekly-guidance.html">🌱 Weekly Guidance</a></li>
+        
+        <!-- User profile and logout -->
         <li id="navProfile" style="display:none;">
           <a href="#" id="profileAnchor" style="display:flex; align-items:center; gap:8px; pointer-events:none;">
             <span id="profileAvatar" style="display:inline-flex; width:28px; height:28px; border-radius:50%; background:#4a7c59; color:#fff; align-items:center; justify-content:center; font-weight:700; font-size:14px;">U</span>
             <span id="profileName" style="font-weight:600; color:#2c5f2d;">User</span>
           </a>
         </li>
-        <li id="navLogout" style="display:none; visibility:hidden;"><a href="#" onclick="logoutAndRefresh(); return false;" style="background:#dc3545; color:white; padding:8px 16px; border-radius:4px; font-weight:600; text-decoration:none; display:inline-block; cursor:pointer; transition:all 0.3s ease;">🚪 Logout</a></li>
+        <li id="navLogout" style="display:none;"><a href="#" onclick="logoutAndRefresh(); return false;" style="background:#dc3545; color:white; padding:8px 16px; border-radius:4px; font-weight:600; text-decoration:none; display:inline-block; cursor:pointer; transition:all 0.3s ease;">🚪 Logout</a></li>
       </ul>
     </nav>
   </header>
@@ -239,17 +244,18 @@
         <div class="bot-msg">
           👋 Hello! I'm your Precision Agriculture Assistant. I can help you with:
           <br/>• Crop selection advice
-          <br/>• Farming best practices
-          <br/>• Seasonal recommendations
-          <br/>• Pest management tips
+          <br/>• Soil and climate recommendations
+          <br/>• Pest and disease management
+          <br/>• Irrigation and fertilization tips
+          <br/>• 📷 <strong>Plant disease detection</strong> - Upload a leaf image!
           <br/><br/>How can I help you today?
         </div>
       </div>
       <div class="chatbot-input">
-        <input type="text" id="chatbotInput" placeholder="Ask me about farming..." />
-        <!-- Image upload disabled -->
+        <input type="text" id="chatbotInput" placeholder="Ask me about farming or upload a plant image..." />
+        <!-- Image upload for plant disease detection -->
         <input type="file" id="chatbotImageUpload" accept="image/*" style="display: none;" />
-        <button id="chatbotImageBtn" title="Upload Image" disabled>📷</button>
+        <button id="chatbotImageBtn" title="Upload Plant Image for Disease Detection" style="background: #4CAF50; color: white;">📷</button>
         <button id="chatbotSendBtn">Send</button>
       </div>
     </div>
@@ -306,12 +312,15 @@
         const onMobile = isMobileScreen();
 
         // Desktop header behavior (show links when authenticated) - with null checks
+        const navCrops = document.getElementById('navCrops');
         const navDatabase = document.getElementById('navDatabase');
         const navLandSelection = document.getElementById('navLandSelection');
         const navMonitoring = document.getElementById('navMonitoring');
         const navMyTasks = document.getElementById('navMyTasks');
         const navWeeklyGuidance = document.getElementById('navWeeklyGuidance');
         
+        // Show Crops link only when authenticated
+        if (navCrops) navCrops.style.display = (!onMobile && isAuth) ? 'inline-block' : 'none';
         if (navDatabase) navDatabase.style.display = (!onMobile && isAuth && me.is_admin) ? 'inline-block' : 'none';
         if (navLandSelection) navLandSelection.style.display = (!onMobile && isAuth) ? 'inline-block' : 'none';
         if (navMonitoring) navMonitoring.style.display = (!onMobile && isAuth && me.is_admin) ? 'inline-block' : 'none';
@@ -1619,11 +1628,49 @@
       setTimeout(() => { chatbotWin.style.display = 'none'; chatbotWin.classList.remove('closing'); }, 180);
     });
 
-    // Image upload disabled
-    // chatbotImageBtn.addEventListener("click", () => chatbotImageUpload.click());
-    // chatbotImageUpload.addEventListener("change", handleImageUpload);
+    // Image upload enabled for plant disease detection
+    let selectedImage = null;
+    
+    chatbotImageBtn.addEventListener("click", () => chatbotImageUpload.click());
+    chatbotImageUpload.addEventListener("change", handleImageUpload);
 
-    // function handleImageUpload(event) { /* disabled */ }
+    function handleImageUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        alert('Please upload an image file');
+        return;
+      }
+      
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        alert('Image size should be less than 5MB');
+        return;
+      }
+      
+      selectedImage = file;
+      
+      // Show preview in chat
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        chatbotMessages.innerHTML += `
+          <div class="user-msg">
+            <div style="margin-bottom: 0.5rem;">📷 Analyzing plant image...</div>
+            <img src="${e.target.result}" style="max-width: 200px; border-radius: 8px; margin-top: 0.5rem;" />
+          </div>
+        `;
+        chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
+        
+        // Automatically send for analysis
+        sendImageForAnalysis();
+      };
+      reader.readAsDataURL(file);
+      
+      // Reset file input
+      event.target.value = '';
+    }
 
     // Send message function
     function typeText(targetEl, fullText, speed = 18) {
@@ -1643,6 +1690,55 @@
         }
         targetEl.parentElement.scrollTop = targetEl.parentElement.scrollHeight;
       }, speed);
+    }
+
+    function sendImageForAnalysis() {
+      if (!selectedImage) return;
+      
+      const loadingId = `loading-${Date.now()}`;
+      chatbotMessages.innerHTML += `
+        <div class="bot-msg" id="${loadingId}">
+          <div class="chat-loading">
+            <div class="loading-spinner"></div>
+            <span>Analyzing plant image with AI...</span>
+          </div>
+        </div>`;
+      chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
+      
+      const formData = new FormData();
+      formData.append('image', selectedImage);
+      
+      fetch("/api/chatbot/analyze-image", {
+        method: "POST",
+        body: formData
+      })
+      .then(res => res.json())
+      .then(data => {
+        const loadingElem = document.getElementById(loadingId);
+        if (loadingElem) loadingElem.remove();
+        
+        if (data.error) {
+          chatbotMessages.innerHTML += `<div class="bot-msg">❌ Error: ${data.error}</div>`;
+        } else {
+          const botEl = document.createElement('div');
+          botEl.className = 'bot-msg';
+          const contentEl = document.createElement('div');
+          contentEl.className = 'bot-typing';
+          botEl.appendChild(contentEl);
+          chatbotMessages.appendChild(botEl);
+          const text = String(data.response || '').trim();
+          typeText(contentEl, text, 14);
+        }
+        chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
+        selectedImage = null;
+      })
+      .catch(err => {
+        const loadingElem = document.getElementById(loadingId);
+        if (loadingElem) loadingElem.remove();
+        chatbotMessages.innerHTML += `<div class="bot-msg">❌ Error: Unable to analyze image.</div>`;
+        chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
+        selectedImage = null;
+      });
     }
 
     function sendMessage() {
@@ -1665,7 +1761,7 @@
         </div>`;
       chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
 
-      // Send message to backend Gemini API
+      // Send message to backend API
       fetch("/api/chatbot", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -1692,7 +1788,7 @@
       .catch(err => {
         const loadingElem = document.getElementById(loadingId);
         if (loadingElem) loadingElem.remove();
-        chatbotMessages.innerHTML += `<div class="bot-msg">❌ Error: Unable to get response from Gemini API.</div>`;
+        chatbotMessages.innerHTML += `<div class="bot-msg">❌ Error: Unable to get response from API.</div>`;
         chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
       });
     }

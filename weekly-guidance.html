@@ -159,6 +159,8 @@
     let maxWeeks = 20;
     let activeCrops = [];
     let currentSessionId = null;
+    let availableWeeks = []; // Array of weeks that have tasks
+    let currentWeekIndex = 0; // Index in availableWeeks array
 
     // Check authentication
     async function ensureAuth() {
@@ -204,6 +206,8 @@
           document.getElementById('guidanceContent').style.display = 'grid';
           document.getElementById('noDataState').style.display = 'none';
           
+          // Load available weeks first
+          await loadAvailableWeeks();
           loadWeeklyGuidance();
         } else {
           throw new Error('Failed to load active crops');
@@ -214,13 +218,44 @@
       }
     }
 
+    // Load available weeks (weeks that have tasks)
+    async function loadAvailableWeeks() {
+      if (!currentCrop) return;
+      
+      try {
+        const response = await fetch(`/api/crops/${currentCrop.crop_id}/available-weeks`);
+        if (response.ok) {
+          const data = await response.json();
+          availableWeeks = data.weeks || [];
+          
+          if (availableWeeks.length === 0) {
+            // Fallback to all weeks if no specific weeks found
+            availableWeeks = Array.from({length: maxWeeks}, (_, i) => i + 1);
+          }
+          
+          // Find current week in available weeks or use first
+          currentWeekIndex = availableWeeks.indexOf(currentWeek);
+          if (currentWeekIndex === -1) {
+            currentWeekIndex = 0;
+            currentWeek = availableWeeks[0];
+          }
+        }
+      } catch (error) {
+        console.error('Error loading available weeks:', error);
+        // Fallback to all weeks
+        availableWeeks = Array.from({length: maxWeeks}, (_, i) => i + 1);
+      }
+    }
+
     // Load weekly guidance
     async function loadWeeklyGuidance() {
       if (!currentCrop) return;
       
       try {
         // Update week display
-        document.getElementById('weekTitle').textContent = `Week ${currentWeek}`;
+        const weekPosition = currentWeekIndex + 1;
+        const totalAvailableWeeks = availableWeeks.length;
+        document.getElementById('weekTitle').textContent = `Week ${currentWeek} (${weekPosition} of ${totalAvailableWeeks})`;
         document.getElementById('weekSubtitle').textContent = getWeekSubtitle(currentWeek);
         
         // Load comprehensive weekly guidance
@@ -551,24 +586,32 @@
 
     // Navigation functions
     function goToPreviousWeek() {
-      if (currentWeek > 1) {
-        currentWeek--;
+      if (currentWeekIndex > 0) {
+        currentWeekIndex--;
+        currentWeek = availableWeeks[currentWeekIndex];
         loadWeeklyGuidance();
       }
     }
 
     function goToNextWeek() {
-      if (currentWeek < maxWeeks) {
-        currentWeek++;
+      if (currentWeekIndex < availableWeeks.length - 1) {
+        currentWeekIndex++;
+        currentWeek = availableWeeks[currentWeekIndex];
         loadWeeklyGuidance();
       }
     }
 
     function jumpToWeek() {
-      const week = prompt(`Enter week number (1-${maxWeeks}):`, currentWeek);
-      if (week && week >= 1 && week <= maxWeeks) {
-        currentWeek = parseInt(week);
+      const availableWeeksStr = availableWeeks.join(', ');
+      const week = prompt(`Available weeks with tasks: ${availableWeeksStr}\n\nEnter week number:`, currentWeek);
+      const weekNum = parseInt(week);
+      
+      if (weekNum && availableWeeks.includes(weekNum)) {
+        currentWeekIndex = availableWeeks.indexOf(weekNum);
+        currentWeek = weekNum;
         loadWeeklyGuidance();
+      } else if (weekNum) {
+        alert(`Week ${weekNum} has no tasks. Available weeks: ${availableWeeksStr}`);
       }
     }
 

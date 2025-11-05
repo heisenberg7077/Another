@@ -322,6 +322,98 @@ def chatbot():
         logging.error("Chatbot error: %s", str(e))
         return jsonify({"error": str(e)}), 500
 
+@app.route("/api/chatbot/analyze-image", methods=["POST"])
+@limiter.limit("10 per minute")  # Limit image analysis requests
+def chatbot_analyze_image():
+    """
+    Analyze plant/crop image for disease detection using Ollama vision model.
+    Accepts multipart/form-data with 'image' file.
+    """
+    try:
+        if 'image' not in request.files:
+            return jsonify({"error": "No image file provided"}), 400
+        
+        image_file = request.files['image']
+        if image_file.filename == '':
+            return jsonify({"error": "No image selected"}), 400
+        
+        # Save uploaded image temporarily
+        import tempfile
+        import base64
+        
+        with tempfile.NamedTemporaryFile(delete=False, suffix='.jpg') as temp_file:
+            image_file.save(temp_file.name)
+            temp_path = temp_file.name
+        
+        try:
+            # Prepare prompt for plant disease detection
+            prompt = """
+You are an AI trained to identify plant species and detect leaf diseases.
+Analyze the image carefully and provide:
+
+1. Plant/Crop name
+2. Disease status (Healthy or specific disease name)
+3. Visible symptoms on the leaf
+4. Treatment recommendation
+
+Be concise and practical in your response.
+"""
+            
+            # Use Ollama vision model for image analysis
+            model = "ayansh03/agribot"  # Vision-capable model
+            
+            response = ollama.chat(
+                model=model,
+                messages=[
+                    {
+                        "role": "user",
+                        "content": prompt,
+                        "images": [temp_path],
+                    }
+                ],
+            )
+            
+            # Extract response
+            output = response.get("message", {}).get("content", "")
+            
+            if not output:
+                return jsonify({"error": "No response from vision model"}), 502
+            
+            # Try to parse JSON if model returns structured data
+            try:
+                import json as json_lib
+                data_start = output.find("{")
+                data_end = output.rfind("}") + 1
+                if data_start != -1 and data_end > data_start:
+                    json_data = json_lib.loads(output[data_start:data_end])
+                    # Format structured response
+                    formatted_response = f"""
+🌿 **Plant Analysis Results**
+
+**Plant:** {json_data.get('plant', 'Unknown')}
+**Status:** {json_data.get('disease', 'Unknown')}
+**Symptoms:** {json_data.get('symptoms', 'N/A')}
+**Treatment:** {json_data.get('treatment', 'N/A')}
+"""
+                    return jsonify({"response": formatted_response.strip(), "structured_data": json_data})
+            except:
+                pass
+            
+            # Return raw response if JSON parsing fails
+            return jsonify({"response": output})
+            
+        finally:
+            # Clean up temporary file
+            import os as os_module
+            try:
+                os_module.unlink(temp_path)
+            except:
+                pass
+                
+    except Exception as e:
+        logging.error(f"Image analysis error: {str(e)}")
+        return jsonify({"error": f"Image analysis failed: {str(e)}"}), 500
+
  
 
 # Removed duplicate /api/detect-disease route (Gemini) to avoid conflict with CNN-based endpoint below
@@ -1717,6 +1809,29 @@ def get_weekly_guidance(crop_id, week):
         } for p in week_pesticides],
         "total_weeks": int(dynamic_total_weeks)
     })
+
+@app.route("/api/crops/<int:crop_id>/available-weeks", methods=["GET"])
+def get_available_weeks(crop_id):
+    """Get list of weeks that have tasks for a specific crop"""
+    try:
+        # Get distinct week numbers that have tasks
+        weeks_with_tasks = db.session.query(WeeklyTask.week_number)\
+            .filter(WeeklyTask.crop_id == crop_id)\
+            .distinct()\
+            .order_by(WeeklyTask.week_number)\
+            .all()
+        
+        # Extract week numbers from tuples
+        available_weeks = [week[0] for week in weeks_with_tasks]
+        
+        return jsonify({
+            "crop_id": crop_id,
+            "weeks": available_weeks,
+            "total_weeks_with_tasks": len(available_weeks)
+        })
+    except Exception as e:
+        logging.error(f"Error getting available weeks: {str(e)}")
+        return jsonify({"error": "Failed to get available weeks"}), 500
 
 @app.route("/api/crop-progress/<int:session_id>/week/<int:week>", methods=["GET"])
 def get_week_progress(session_id, week):

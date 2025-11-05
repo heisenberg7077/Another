@@ -136,6 +136,8 @@
     let totalWeeks = 12;
     let cropData = null;
     let sessionId = null;
+    let availableWeeks = []; // Only weeks with tasks
+    let currentWeekIndex = 0; // Index in availableWeeks array
 
     // Initialize page
     async function initializePage() {
@@ -152,6 +154,7 @@
       }
 
       await loadCropData();
+      await loadAvailableWeeks();
       await loadWeekData();
     }
 
@@ -195,7 +198,9 @@
 
     // Load data for specific week
     async function loadWeekData() {
-      document.getElementById('currentWeekDisplay').textContent = `Week ${currentWeek}`;
+      const weekPosition = currentWeekIndex + 1;
+      const totalAvailableWeeks = availableWeeks.length;
+      document.getElementById('currentWeekDisplay').textContent = `Week ${currentWeek} (${weekPosition} of ${totalAvailableWeeks})`;
       
       try {
         const response = await fetch(`/api/crops/${currentCropId}/weekly-guidance/${currentWeek}`);
@@ -435,19 +440,47 @@
 
     
 
-    // Generate week timeline
+    // Load available weeks (weeks that have tasks)
+    async function loadAvailableWeeks() {
+      try {
+        const response = await fetch(`/api/crops/${currentCropId}/available-weeks`);
+        if (response.ok) {
+          const data = await response.json();
+          availableWeeks = data.weeks || [];
+          
+          if (availableWeeks.length === 0) {
+            // Fallback to all weeks if no specific weeks found
+            availableWeeks = Array.from({length: totalWeeks}, (_, i) => i + 1);
+          }
+          
+          // Find current week in available weeks or use first
+          currentWeekIndex = availableWeeks.indexOf(currentWeek);
+          if (currentWeekIndex === -1) {
+            currentWeekIndex = 0;
+            currentWeek = availableWeeks[0];
+          }
+        }
+      } catch (error) {
+        console.error('Error loading available weeks:', error);
+        // Fallback to all weeks
+        availableWeeks = Array.from({length: totalWeeks}, (_, i) => i + 1);
+      }
+    }
+
+    // Generate week timeline - only show weeks with tasks
     function generateWeekTimeline() {
       const timeline = document.getElementById('weekTimeline');
       let html = '';
       
-      for (let i = 1; i <= totalWeeks; i++) {
-        const isActive = i === currentWeek;
-        const isCompleted = i < currentWeek;
+      for (let i = 0; i < availableWeeks.length; i++) {
+        const weekNum = availableWeeks[i];
+        const isActive = weekNum === currentWeek;
+        const isCompleted = availableWeeks.indexOf(currentWeek) > i;
         const classes = `timeline-week ${isActive ? 'active' : ''} ${isCompleted ? 'completed' : ''}`;
         
         html += `
-          <div class="${classes}" onclick="goToWeek(${i})">
-            <div class="week-number">W${i}</div>
+          <div class="${classes}" onclick="goToWeekByNumber(${weekNum})">
+            <div class="week-number">W${weekNum}</div>
             <div class="week-status">${isCompleted ? '✓' : isActive ? '●' : ''}</div>
           </div>
         `;
@@ -458,23 +491,32 @@
 
     // Navigation functions
     function changeWeek(delta) {
-      const newWeek = currentWeek + delta;
-      if (newWeek >= 1 && newWeek <= totalWeeks) {
-        currentWeek = newWeek;
+      const newIndex = currentWeekIndex + delta;
+      if (newIndex >= 0 && newIndex < availableWeeks.length) {
+        currentWeekIndex = newIndex;
+        currentWeek = availableWeeks[currentWeekIndex];
+        updateURL();
+        loadWeekData();
+      }
+    }
+
+    function goToWeekByNumber(weekNum) {
+      const index = availableWeeks.indexOf(weekNum);
+      if (index !== -1) {
+        currentWeekIndex = index;
+        currentWeek = weekNum;
         updateURL();
         loadWeekData();
       }
     }
 
     function goToWeek(week) {
-      currentWeek = week;
-      updateURL();
-      loadWeekData();
+      goToWeekByNumber(week);
     }
 
     function updateNavigationButtons() {
-      document.getElementById('prevWeek').disabled = currentWeek === 1;
-      document.getElementById('nextWeek').disabled = currentWeek === totalWeeks;
+      document.getElementById('prevWeek').disabled = currentWeekIndex === 0;
+      document.getElementById('nextWeek').disabled = currentWeekIndex === availableWeeks.length - 1;
     }
 
     function updateURL() {
