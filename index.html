@@ -30,12 +30,12 @@
         <li id="navMonitoring" style="display:none;"><a href="/monitoring.html">📊 Monitoring</a></li>
         <li id="navLogin"><a href="/login.html">Login</a></li>
         <li id="navProfile" style="display:none;">
-          <a href="#" id="profileAnchor" style="display:flex; align-items:center; gap:8px;">
-            <span id="profileAvatar" style="display:inline-flex; width:28px; height:28px; border-radius:50%; background:#4a7c59; color:#fff; align-items:center; justify-content:center; font-weight:700;">U</span>
-            <span id="profileName">User</span>
+          <a href="#" id="profileAnchor" style="display:flex; align-items:center; gap:8px; pointer-events:none;">
+            <span id="profileAvatar" style="display:inline-flex; width:28px; height:28px; border-radius:50%; background:#4a7c59; color:#fff; align-items:center; justify-content:center; font-weight:700; font-size:14px;">U</span>
+            <span id="profileName" style="font-weight:600; color:#2c5f2d;">User</span>
           </a>
         </li>
-        <li id="navLogout" style="display:none;"><a href="#" onclick="logoutAndRefresh()">Logout</a></li>
+        <li id="navLogout" style="display:none; visibility:hidden;"><a href="#" onclick="logoutAndRefresh(); return false;" style="background:#dc3545; color:white; padding:8px 16px; border-radius:4px; font-weight:600; text-decoration:none; display:inline-block; cursor:pointer; transition:all 0.3s ease;">🚪 Logout</a></li>
       </ul>
     </nav>
   </header>
@@ -276,9 +276,19 @@
 
     async function refreshAuthUi() {
       try {
-        const res = await fetch('/api/me');
+        console.log('Checking authentication status...');
+        const res = await fetch('/api/me', {
+          method: 'GET',
+          credentials: 'include'  // Include cookies for session
+        });
+        if (!res.ok) {
+          console.error('Failed to fetch user info:', res.status);
+          throw new Error('Auth check failed');
+        }
         const me = await res.json();
         const isAuth = !!me.authenticated;
+        console.log('Auth check response:', me);
+        console.log('Is authenticated:', isAuth);
         
         // Store user data globally for use in other functions
         if (isAuth) {
@@ -295,47 +305,105 @@
         
         const onMobile = isMobileScreen();
 
-        // Desktop header behavior (show links when authenticated)
-        document.getElementById('navDatabase').style.display = (!onMobile && isAuth && me.is_admin) ? 'inline-block' : (!onMobile ? 'none' : 'none');
-        document.getElementById('navLandSelection').style.display = (!onMobile && isAuth) ? 'inline-block' : (!onMobile ? 'none' : 'none');
-        document.getElementById('navMonitoring').style.display = (!onMobile && isAuth && me.is_admin) ? 'inline-block' : (!onMobile ? 'none' : 'none');
-        document.getElementById('navMyTasks').style.display = (!onMobile && isAuth) ? 'inline-block' : (!onMobile ? 'none' : 'none');
-        document.getElementById('navWeeklyGuidance').style.display = (!onMobile && isAuth) ? 'inline-block' : (!onMobile ? 'none' : 'none');
+        // Desktop header behavior (show links when authenticated) - with null checks
+        const navDatabase = document.getElementById('navDatabase');
+        const navLandSelection = document.getElementById('navLandSelection');
+        const navMonitoring = document.getElementById('navMonitoring');
+        const navMyTasks = document.getElementById('navMyTasks');
+        const navWeeklyGuidance = document.getElementById('navWeeklyGuidance');
+        
+        if (navDatabase) navDatabase.style.display = (!onMobile && isAuth && me.is_admin) ? 'inline-block' : 'none';
+        if (navLandSelection) navLandSelection.style.display = (!onMobile && isAuth) ? 'inline-block' : 'none';
+        if (navMonitoring) navMonitoring.style.display = (!onMobile && isAuth && me.is_admin) ? 'inline-block' : 'none';
+        if (navMyTasks) navMyTasks.style.display = (!onMobile && isAuth) ? 'inline-block' : 'none';
+        if (navWeeklyGuidance) navWeeklyGuidance.style.display = (!onMobile && isAuth) ? 'inline-block' : 'none';
 
-        // Login/Logout/Profile in header
-        document.getElementById('navLogin').style.display = isAuth ? 'none' : 'inline-block';
-        document.getElementById('navLogout').style.display = (!onMobile && isAuth) ? 'inline-block' : 'none';
-        document.getElementById('navProfile').style.display = isAuth ? 'inline-block' : 'none';
+        // Login/Logout/Profile in header - CRITICAL: Show logout for ALL authenticated users
+        const navLogin = document.getElementById('navLogin');
+        if (navLogin) navLogin.style.display = isAuth ? 'none' : 'inline-block';
+        
+        // Show logout button for all authenticated users (admin and non-admin)
+        const logoutBtn = document.getElementById('navLogout');
+        const profileBtn = document.getElementById('navProfile');
+        
+        if (logoutBtn) {
+          if (isAuth) {
+            logoutBtn.style.display = 'inline-block';
+            logoutBtn.style.visibility = 'visible';
+            console.log('✅ Logout button SHOWN - User is authenticated');
+          } else {
+            logoutBtn.style.display = 'none';
+            console.log('❌ Logout button HIDDEN - User not authenticated');
+          }
+        } else {
+          console.error('❌ Logout button element not found!');
+        }
+        
+        if (profileBtn) {
+          profileBtn.style.display = isAuth ? 'inline-block' : 'none';
+        }
 
         // Mobile: show hamburger only when authenticated
         const mobileMenuBtn = document.getElementById('mobileMenuBtn');
-        mobileMenuBtn.style.display = (onMobile && isAuth) ? 'inline-flex' : 'none';
+        if (mobileMenuBtn) {
+          mobileMenuBtn.style.display = (onMobile && isAuth) ? 'inline-flex' : 'none';
+        }
 
-        // Populate mobile sidebar visibility/links
-        document.getElementById('msDatabase').style.display = (isAuth && me.is_admin) ? 'block' : 'none';
-        document.getElementById('msLandSelection').style.display = isAuth ? 'block' : 'none';
-        document.getElementById('msMonitoring').style.display = (isAuth && me.is_admin) ? 'block' : 'none';
-        document.getElementById('msMyTasks').style.display = isAuth ? 'block' : 'none';
-        document.getElementById('msWeeklyGuidance').style.display = isAuth ? 'block' : 'none';
-        document.getElementById('msLogin').style.display = isAuth ? 'none' : 'block';
-        document.getElementById('msLogout').style.display = isAuth ? 'block' : 'none';
-        document.getElementById('mobileProfile').style.display = isAuth ? 'flex' : 'none';
+        // Populate mobile sidebar visibility/links - with null checks
+        const msDatabase = document.getElementById('msDatabase');
+        const msLandSelection = document.getElementById('msLandSelection');
+        const msMonitoring = document.getElementById('msMonitoring');
+        const msMyTasks = document.getElementById('msMyTasks');
+        const msWeeklyGuidance = document.getElementById('msWeeklyGuidance');
+        const msLogin = document.getElementById('msLogin');
+        const msLogout = document.getElementById('msLogout');
+        const mobileProfile = document.getElementById('mobileProfile');
+        
+        if (msDatabase) msDatabase.style.display = (isAuth && me.is_admin) ? 'block' : 'none';
+        if (msLandSelection) msLandSelection.style.display = isAuth ? 'block' : 'none';
+        if (msMonitoring) msMonitoring.style.display = (isAuth && me.is_admin) ? 'block' : 'none';
+        if (msMyTasks) msMyTasks.style.display = isAuth ? 'block' : 'none';
+        if (msWeeklyGuidance) msWeeklyGuidance.style.display = isAuth ? 'block' : 'none';
+        if (msLogin) msLogin.style.display = isAuth ? 'none' : 'block';
+        if (msLogout) msLogout.style.display = isAuth ? 'block' : 'none';
+        if (mobileProfile) mobileProfile.style.display = isAuth ? 'flex' : 'none';
+        
         if (isAuth) {
           const name = (me.username || 'User');
           const initials = name.trim().slice(0,1).toUpperCase();
-          document.getElementById('profileName').textContent = name + (me.is_admin ? ' (Admin)' : '');
-          document.getElementById('profileAvatar').textContent = initials || 'U';
-          document.getElementById('mobileProfileName').textContent = name + (me.is_admin ? ' (Admin)' : '');
-          document.getElementById('mobileProfileAvatar').textContent = initials || 'U';
+          const displayName = me.is_admin ? name + ' (Admin)' : name;
+          
+          const profileName = document.getElementById('profileName');
+          const profileAvatar = document.getElementById('profileAvatar');
+          const mobileProfileName = document.getElementById('mobileProfileName');
+          const mobileProfileAvatar = document.getElementById('mobileProfileAvatar');
+          
+          if (profileName) profileName.textContent = displayName;
+          if (profileAvatar) profileAvatar.textContent = initials || 'U';
+          if (mobileProfileName) mobileProfileName.textContent = displayName;
+          if (mobileProfileAvatar) mobileProfileAvatar.textContent = initials || 'U';
+          
+          console.log('Profile updated:', { name, displayName, isAuth, is_admin: me.is_admin });
         }
 
         // If logged out, ensure sidebar is closed
         if (!isAuth) setMobileSidebarVisibility(false);
-      } catch {}
+      } catch (error) {
+        console.error('Error in refreshAuthUi:', error);
+        // On error, hide logout button
+        const logoutBtn = document.getElementById('navLogout');
+        if (logoutBtn) {
+          logoutBtn.style.display = 'none';
+        }
+      }
     }
     async function logoutAndRefresh() {
       setMobileSidebarVisibility(false);
-      await fetch('/api/logout', { method:'POST' });
+      await fetch('/api/logout', { 
+        method:'POST',
+        credentials: 'include'  // Include cookies for session
+      });
+      sessionStorage.removeItem('username');  // Clear stored username
       location.reload();
     }
     // Theme handling
@@ -1803,7 +1871,35 @@
 
     // Initialize the application
     async function initializeApp() {
-      // First load authentication state
+      console.log('Initializing app...');
+      // First load authentication state - try multiple times if needed
+      let retries = 3;
+      let authSuccess = false;
+      
+      while (retries > 0 && !authSuccess) {
+        try {
+          await refreshAuthUi();
+          const meRes = await fetch('/api/me', {
+            method: 'GET',
+            credentials: 'include'
+          });
+          const meData = await meRes.json();
+          console.log('Initial auth check:', meData);
+          if (meData.authenticated) {
+            authSuccess = true;
+            console.log('✅ Authentication successful');
+            break;
+          }
+        } catch (e) {
+          console.log('Auth check failed, retrying...', e);
+        }
+        retries--;
+        if (retries > 0) {
+          await new Promise(resolve => setTimeout(resolve, 200));
+        }
+      }
+      
+      // Force refresh auth UI one more time to ensure logout button is shown
       await refreshAuthUi();
       
       // Small delay to ensure authentication state is fully loaded
@@ -1815,6 +1911,21 @@
       loadWeather();
       initializeNotifications();
       initTheme();
+      
+      // Final check - force show logout if authenticated
+      const finalCheck = await fetch('/api/me', {
+        method: 'GET',
+        credentials: 'include'
+      });
+      const finalData = await finalCheck.json();
+      if (finalData.authenticated) {
+        const logoutBtn = document.getElementById('navLogout');
+        if (logoutBtn) {
+          logoutBtn.style.display = 'inline-block';
+          logoutBtn.style.visibility = 'visible';
+          console.log('✅ Final check: Logout button forced to show');
+        }
+      }
     }
 
     // Start the application when DOM is loaded

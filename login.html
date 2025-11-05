@@ -12,38 +12,42 @@
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-        <div class="login-page">
-
-            <div class="login-container user-mode" id="loginBox">
-                <h2 class="section-title">Agri Assistant Login</h2>
-        <form id="loginForm">
-            <input type="text" id="username" placeholder="Username" required autocomplete="username">
-            <input type="password" id="password" placeholder="Password" required autocomplete="current-password">
-            <div class="error" id="loginError" style="display:none;"></div>
-            <button type="submit">Login</button>
-        </form>
-        <p style="margin-top:1rem;">Don't have an account? <a href="#" id="showSignup">Create Account</a></p>
-            </div>
+    <div class="login-page">
+        <div class="login-container user-mode" id="loginBox">
+            <h2 class="section-title">Agri Assistant Login</h2>
+            <form id="loginForm">
+                <input type="text" id="username" placeholder="Username" required autocomplete="username">
+                <input type="password" id="password" placeholder="Password" required autocomplete="current-password">
+                <div class="error" id="loginError" style="display:none;"></div>
+                <button type="submit">Login</button>
+            </form>
+            <p style="margin-top:1rem;">Don't have an account? <a href="#" id="showSignup">Create Account</a></p>
         </div>
-    <div class="login-container" id="signupBox" style="display:none;">
-        <h2 class="section-title">Create Account</h2>
-        <form id="signupForm">
-            <input type="text" id="signupUsername" placeholder="Username" required autocomplete="username">
-            <input type="password" id="signupPassword" placeholder="Password" required autocomplete="new-password">
-            <div class="error" id="signupError" style="display:none;"></div>
-            <button type="submit">Sign Up</button>
-        </form>
-        <p style="margin-top:1rem;">Already have an account? <a href="#" id="showLogin">Login</a></p>
+
+        <div class="login-container" id="signupBox" style="display:none;">
+            <h2 class="section-title">Create Account</h2>
+            <form id="signupForm">
+                <input type="text" id="signupUsername" placeholder="Username" required autocomplete="username">
+                <input type="password" id="signupPassword" placeholder="Password" required autocomplete="new-password">
+                <div class="error" id="signupError" style="display:none;"></div>
+                <button type="submit">Sign Up</button>
+            </form>
+            <p style="margin-top:1rem;">Already have an account? <a href="#" id="showLogin">Login</a></p>
+        </div>
     </div>
     <script>
         // Toggle forms
-        document.getElementById('showSignup').onclick = function() {
+        document.getElementById('showSignup').onclick = function(e) {
+            e.preventDefault();
             document.getElementById('loginBox').style.display = 'none';
             document.getElementById('signupBox').style.display = 'block';
+            return false;
         };
-        document.getElementById('showLogin').onclick = function() {
+        document.getElementById('showLogin').onclick = function(e) {
+            e.preventDefault();
             document.getElementById('signupBox').style.display = 'none';
             document.getElementById('loginBox').style.display = 'block';
+            return false;
         };
 
         // Login handler
@@ -60,10 +64,21 @@
                 const response = await fetch('/api/login', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',  // Include cookies for session
                     body: JSON.stringify({ username, password })
                 });
                 const data = await response.json();
+                console.log('Login response:', data);
                 if (response.ok && data.success) {
+                    // Store username in sessionStorage for immediate display
+                    if (data.username) {
+                        sessionStorage.setItem('username', data.username);
+                        sessionStorage.setItem('is_admin', data.is_admin);
+                    }
+                    console.log('Login successful, redirecting...');
+                    // Longer delay to ensure session cookie is set and sent
+                    await new Promise(resolve => setTimeout(resolve, 300));
+                    // Redirect based on admin status
                     if (data.is_admin) {
                         window.location.href = '/admin-dashboard.html';
                     } else {
@@ -87,13 +102,31 @@
             const errorDiv = document.getElementById('signupError');
             errorDiv.style.display = 'none';
             errorDiv.textContent = '';
+            
+            if (!username || !password) {
+                errorDiv.textContent = 'Username and password are required.';
+                errorDiv.style.display = 'block';
+                return;
+            }
+            
             try {
                 const response = await fetch('/api/register', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',  // Include cookies for session
                     body: JSON.stringify({ username, password })
                 });
-                const data = await response.json();
+                
+                let data;
+                try {
+                    data = await response.json();
+                } catch (parseError) {
+                    console.error('Failed to parse response:', parseError);
+                    errorDiv.textContent = 'Server error. Please try again later.';
+                    errorDiv.style.display = 'block';
+                    return;
+                }
+                
                 if (response.ok && data.success) {
                     alert('Account created! You can now log in.');
                     document.getElementById('showLogin').click();
@@ -102,6 +135,7 @@
                     errorDiv.style.display = 'block';
                 }
             } catch (err) {
+                console.error('Registration error:', err);
                 errorDiv.textContent = 'Server error. Please try again later.';
                 errorDiv.style.display = 'block';
             }

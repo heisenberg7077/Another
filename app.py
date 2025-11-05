@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, send_from_directory, request, session
+from flask import Flask, jsonify, send_from_directory, request, session, make_response
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import text, or_
 from sqlalchemy.exc import SQLAlchemyError
@@ -126,9 +126,17 @@ def generate_agri_response(messages, model: str = "phi3") -> str:
 # ================= Flask Setup =================
 app = Flask(__name__, static_folder='.', static_url_path='')
 # Allow API access from any local/LAN origin during development
-CORS(app, resources={r"/api/*": {"origins": "*"}}, supports_credentials=True)
+# IMPORTANT: When using credentials, cannot use "*" - must allow specific origins or use None
+# For same-origin requests (served from same Flask server), CORS shouldn't block cookies
+CORS(app, resources={r"/api/*": {"origins": "*", "supports_credentials": True}}, supports_credentials=True)
 # Secret key from environment, fallback only for local dev
 app.secret_key = os.environ.get("FLASK_SECRET_KEY", "dev-secret-change-me")
+# Configure session cookies to persist properly
+app.config['SESSION_COOKIE_HTTPONLY'] = True
+app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'  # 'Lax' allows cookies in same-site requests
+app.config['PERMANENT_SESSION_LIFETIME'] = 86400  # 24 hours
+app.config['SESSION_COOKIE_SECURE'] = False  # Set to True in production with HTTPS
+app.config['SESSION_COOKIE_PATH'] = '/'  # Ensure cookie is available for all paths
 
 # Initialize rate limiter
 limiter = Limiter(
@@ -480,6 +488,10 @@ class User(db.Model):
     id = db.Column('user_id', db.Integer, primary_key=True)  # Maps to user_id in database
     username = db.Column(db.String(80), unique=True, nullable=False)
     password = db.Column('password_hash', db.String(255), nullable=False)
+    email = db.Column(db.String(100), unique=True, nullable=True)  # Make nullable for backwards compatibility
+    full_name = db.Column(db.String(100), nullable=True)
+    phone = db.Column(db.String(20), nullable=True)
+    role_id = db.Column(db.Integer, default=2, nullable=True)  # Default to user role (2)
 
 class CropMonitoringSession(db.Model):
     __tablename__ = 'crop_monitoring_sessions'
@@ -750,22 +762,47 @@ def register():
     data = request.get_json(force=True) or {}
     username = (data.get('username') or '').strip()
     password = data.get('password') or ''
+    email = (data.get('email') or '').strip()
+    full_name = (data.get('full_name') or '').strip()
+    
     if not username or not password:
         return jsonify({"success": False, "error": "Username and password are required"}), 400
+    
+    # Check if username already exists
     if User.query.filter_by(username=username).first():
         log_audit("user_registration_attempt", "user", details={"username": username}, status="failure")
         return jsonify({"success": False, "error": "Username already exists"}), 400
+    
+    # Generate email if not provided (use username@presicide.local)
+    if not email:
+        email = f"{username}@presicide.local"
+    
+    # Check if email already exists
+    if User.query.filter_by(email=email).first():
+        # If auto-generated email exists, append a number
+        counter = 1
+        while User.query.filter_by(email=f"{username}{counter}@presicide.local").first():
+            counter += 1
+        email = f"{username}{counter}@presicide.local"
+    
     try:
-        hashed_password = generate_password_hash(password, method='pbkdf2:sha256')
-        user = User(username=username, password=hashed_password)
+        # Store password as plain text (WARNING: Security risk - for development only)
+        user = User(
+            username=username, 
+            password=password,
+            email=email,
+            full_name=full_name if full_name else None,
+            role_id=2  # Default to user role
+        )
         db.session.add(user)
         db.session.commit()
-        log_audit("user_registration", "user", user.id, {"username": username})
-        return jsonify({"success": True})
+        log_audit("user_registration", "user", user.id, {"username": username, "email": email})
+        return jsonify({"success": True, "message": "Account created successfully"})
     except Exception as e:
         log_audit("user_registration_attempt", "user", details={"username": username, "error": str(e)}, status="error")
         db.session.rollback()
-        raise
+        print(f"[ERROR] Registration failed: {str(e)}")
+        return jsonify({"success": False, "error": f"Registration failed: {str(e)}"}), 500
 
 @app.route('/api/login', methods=['POST'])
 @limiter.limit("10 per minute")  # Limit login attempts
@@ -779,17 +816,8 @@ def login():
         return jsonify({"success": False, "error": "Invalid credentials"}), 401
     
     try:
-        # First try password hash verification
-        if check_password_hash(user.password, password):
-            is_valid = True
-        else:
-            # Legacy plaintext comparison (for transition period)
-            is_valid = (user.password == password)
-            if is_valid:
-                # Update to hashed password if login successful with plaintext
-                user.password = generate_password_hash(password, method='pbkdf2:sha256')
-                db.session.commit()
-                log_audit("password_hash_update", "user", user.id, {"username": username})
+        # Plain text password comparison (WARNING: Security risk - for development only)
+        is_valid = (user.password == password)
         
         if not is_valid:
             log_audit("user_login_attempt", "user", user.id, {"username": username}, status="failure")
@@ -798,8 +826,16 @@ def login():
         session['user_id'] = user.id
         session['username'] = user.username
         session['is_admin'] = is_admin_user(user.username)
+        session.permanent = True  # Make session persistent
+        session.modified = True  # Mark session as modified to ensure it's saved
         log_audit("user_login", "user", user.id, {"username": username})
-        return jsonify({"success": True, "is_admin": bool(session['is_admin'])})
+        # Create response and ensure session cookie is sent
+        response = jsonify({
+            "success": True, 
+            "is_admin": bool(session['is_admin']),
+            "username": user.username
+        })
+        return response
     except Exception as e:
         log_audit("user_login_attempt", "user", user.id if user else None, {"username": username, "error": str(e)}, status="error")
         db.session.rollback()
@@ -807,16 +843,29 @@ def login():
 
 @app.route('/api/me', methods=['GET'])
 def me():
+    # Debug: Check what's in the session
+    print(f"[DEBUG] /api/me - Session data: {dict(session)}")
+    print(f"[DEBUG] /api/me - Session user_id: {session.get('user_id')}")
+    print(f"[DEBUG] /api/me - Session username: {session.get('username')}")
+    print(f"[DEBUG] /api/me - Request cookies: {request.cookies}")
+    
     uid = session.get('user_id')
     if not uid:
+        print("[DEBUG] /api/me - No user_id in session, returning unauthenticated")
         return jsonify({"authenticated": False})
-    return jsonify({
+    
+    # Ensure session is maintained
+    session.modified = True
+    response = jsonify({
         "authenticated": True,
         "user_id": uid,
         "id": uid,  # compatibility for frontend expecting `id`
         "username": session.get('username'),
         "is_admin": bool(session.get('is_admin'))
     })
+    
+    print(f"[DEBUG] /api/me - Returning authenticated response for user_id: {uid}")
+    return response
 
 @app.route('/api/logout', methods=['POST'])
 def logout():

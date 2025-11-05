@@ -339,7 +339,7 @@ ON DUPLICATE KEY UPDATE role_name=role_name;
 
 -- Create default admin user (password: admin123)
 INSERT INTO users (username, password_hash, email, full_name, role_id, is_verified) VALUES 
-('admin', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'admin@presicide.com', 'System Administrator', 1, true)
+('admin', '123', 'admin@presicide.com', 'System Administrator', 1, true)
 ON DUPLICATE KEY UPDATE username=username;
 
 CREATE TABLE soil_types (
@@ -1238,3 +1238,17 @@ VALUES
 (29, 48, 'Harvest Management', 'Manage nut collection and storage', 'harvesting', 'Medium', '4 hours', 'Climbers', 'Baskets', NULL, '1. Harvest safely\n2. Store nuts', 'Reduce damage', 'Any', 'Use PPE', 'Good collection'),
 (30, 6, 'Jute Sowing', 'Prepare and sow jute', 'maintenance', 'Medium', '2 hours', 'Seeder', 'Seeds', NULL, '1. Sow evenly\n2. Maintain moisture', 'Good emergence', 'Wet', 'Be careful', 'Uniform stand'),
 (30, 18, 'Harvest Prep', 'Prepare for jute retting and harvest', 'harvesting', 'Medium', '2 hours', 'Tools', 'Storage', NULL, '1. Plan retting\n2. Harvest timely', 'Quality fiber', 'Any', 'Use care', 'Good fiber');
+
+-- Audit logs table for tracking user actions
+CREATE TABLE IF NOT EXISTS audit_logs (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT,
+    action VARCHAR(100) NOT NULL,
+    resource_type VARCHAR(50) NOT NULL,
+    resource_id INT,
+    details JSON,
+    ip_address VARCHAR(45),
+    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+    status VARCHAR(20),
+    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
