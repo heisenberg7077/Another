@@ -15,6 +15,8 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
 from datetime import datetime
 import ollama
+import google.generativeai as genai
+from PIL import Image
 try:
     from agricheck import ask_agri_bot  # type: ignore
 except Exception:
@@ -231,6 +233,14 @@ def ratelimit_handler(error):
 TEXTGEN_API_BASE = os.environ.get('TEXTGEN_API_BASE', 'http://127.0.0.1:5001/v1')
 TEXTGEN_API_KEY = os.environ.get('TEXTGEN_API_KEY', None)
 
+# Configure Gemini API for plant disease detection
+GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY', 'AIzaSyCK_gCPQL6JnsxeqmYSKixFKR-AB6Iq3OY')
+if GEMINI_API_KEY and GEMINI_API_KEY != 'YOUR_GEMINI_API_KEY_HERE':
+    genai.configure(api_key=GEMINI_API_KEY)
+    logging.info("Gemini API configured successfully")
+else:
+    logging.warning("Gemini API key not configured. Set GEMINI_API_KEY environment variable.")
+
 # Flask runtime configuration via environment variables
 FLASK_HOST = os.environ.get('FLASK_HOST', '0.0.0.0')
 FLASK_PORT = int(os.environ.get('FLASK_PORT', '5050'))
@@ -413,6 +423,148 @@ Be concise and practical in your response.
     except Exception as e:
         logging.error(f"Image analysis error: {str(e)}")
         return jsonify({"error": f"Image analysis failed: {str(e)}"}), 500
+
+
+@app.route("/api/chatbot/detect-disease-gemini", methods=["POST"])
+@limiter.limit("10 per minute")  # Limit Gemini API requests
+def detect_disease_gemini():
+    """
+    Detect plant disease using Google Gemini Vision API.
+    Accepts multipart/form-data with 'image' file.
+    Returns detailed disease analysis with treatment recommendations.
+    """
+    try:
+        # Check if Gemini API is configured
+        if not GEMINI_API_KEY or GEMINI_API_KEY == 'YOUR_GEMINI_API_KEY_HERE':
+            return jsonify({
+                "error": "Gemini API not configured",
+                "message": "Please set GEMINI_API_KEY environment variable"
+            }), 503
+        
+        # Validate image file
+        if 'image' not in request.files:
+            return jsonify({"error": "No image file provided"}), 400
+        
+        image_file = request.files['image']
+        if image_file.filename == '':
+            return jsonify({"error": "No image selected"}), 400
+        
+        # Validate file type
+        allowed_extensions = {'png', 'jpg', 'jpeg', 'gif', 'bmp', 'webp'}
+        file_ext = image_file.filename.rsplit('.', 1)[1].lower() if '.' in image_file.filename else ''
+        if file_ext not in allowed_extensions:
+            return jsonify({"error": f"Invalid file type. Allowed: {', '.join(allowed_extensions)}"}), 400
+        
+        # Save uploaded image temporarily
+        import tempfile
+        with tempfile.NamedTemporaryFile(delete=False, suffix=f'.{file_ext}') as temp_file:
+            image_file.save(temp_file.name)
+            temp_path = temp_file.name
+        
+        try:
+            # Open image using PIL
+            img = Image.open(temp_path)
+            
+            # Prepare detailed prompt for plant disease detection
+            prompt = """
+You are an expert agricultural pathologist and plant disease specialist. Analyze this plant/crop image carefully and provide a comprehensive disease diagnosis.
+
+Provide your analysis in the following structured format:
+
+**Plant Identification:**
+- Plant/Crop Name: [Identify the plant species]
+- Plant Part Shown: [leaf/stem/fruit/flower/root]
+
+**Disease Analysis:**
+- Disease Status: [Healthy/Diseased]
+- Disease Name: [Specific disease name if diseased, or "Healthy" if no disease detected]
+- Confidence Level: [High/Medium/Low]
+
+**Symptoms Observed:**
+- List all visible symptoms (spots, discoloration, wilting, lesions, etc.)
+- Describe the pattern and severity
+
+**Possible Causes:**
+- Primary cause (fungal/bacterial/viral/pest/nutrient deficiency/environmental)
+- Contributing factors
+
+**Treatment Recommendations:**
+1. Immediate actions
+2. Chemical treatments (fungicides/pesticides with names)
+3. Organic/natural alternatives
+4. Cultural practices to prevent spread
+
+**Prevention Measures:**
+- How to prevent this disease in the future
+- Best practices for crop health
+
+**Additional Notes:**
+- Severity level (Mild/Moderate/Severe)
+- Urgency of treatment
+- Expected recovery time
+
+Be specific, practical, and provide actionable advice for farmers.
+"""
+            
+            # Use Gemini Pro Vision model
+            model = genai.GenerativeModel('gemini-pro-latest')
+            
+            # Generate response
+            response = model.generate_content([prompt, img])
+            
+            # Extract text from response
+            if not response or not response.text:
+                return jsonify({"error": "No response from Gemini API"}), 502
+            
+            analysis_text = response.text.strip()
+            
+            # Try to extract structured data from the response
+            structured_data = {
+                "plant_name": "Unknown",
+                "disease_status": "Unknown",
+                "disease_name": "Unknown",
+                "confidence": "Unknown",
+                "symptoms": [],
+                "treatment": [],
+                "prevention": []
+            }
+            
+            # Simple parsing logic (can be enhanced with regex)
+            lines = analysis_text.split('\n')
+            current_section = None
+            
+            for line in lines:
+                line = line.strip()
+                if 'Plant/Crop Name:' in line or 'Plant Name:' in line:
+                    structured_data['plant_name'] = line.split(':', 1)[1].strip()
+                elif 'Disease Status:' in line:
+                    structured_data['disease_status'] = line.split(':', 1)[1].strip()
+                elif 'Disease Name:' in line:
+                    structured_data['disease_name'] = line.split(':', 1)[1].strip()
+                elif 'Confidence Level:' in line or 'Confidence:' in line:
+                    structured_data['confidence'] = line.split(':', 1)[1].strip()
+            
+            return jsonify({
+                "success": True,
+                "analysis": analysis_text,
+                "structured_data": structured_data,
+                "model": "gemini-pro-latest",
+                "timestamp": datetime.now().isoformat()
+            })
+            
+        finally:
+            # Clean up temporary file
+            try:
+                os.unlink(temp_path)
+            except Exception as cleanup_error:
+                logging.warning(f"Failed to delete temp file: {cleanup_error}")
+                
+    except Exception as e:
+        logging.error(f"Gemini disease detection error: {str(e)}")
+        return jsonify({
+            "error": "Disease detection failed",
+            "message": str(e)
+        }), 500
 
  
 

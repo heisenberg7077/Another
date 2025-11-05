@@ -1708,7 +1708,7 @@
       const formData = new FormData();
       formData.append('image', selectedImage);
       
-      fetch("/api/chatbot/analyze-image", {
+      fetch("/api/chatbot/detect-disease-gemini", {
         method: "POST",
         body: formData
       })
@@ -1718,15 +1718,46 @@
         if (loadingElem) loadingElem.remove();
         
         if (data.error) {
-          chatbotMessages.innerHTML += `<div class="bot-msg">❌ Error: ${data.error}</div>`;
-        } else {
+          chatbotMessages.innerHTML += `<div class="bot-msg">❌ Error: ${data.error || data.message}</div>`;
+        } else if (data.success && data.analysis) {
+          // Display Gemini analysis with structured data
           const botEl = document.createElement('div');
           botEl.className = 'bot-msg';
           const contentEl = document.createElement('div');
           contentEl.className = 'bot-typing';
           botEl.appendChild(contentEl);
           chatbotMessages.appendChild(botEl);
-          const text = String(data.response || '').trim();
+          
+          // Format the response with structured data if available
+          let displayText = '';
+          if (data.structured_data) {
+            const sd = data.structured_data;
+            displayText += '🌿 **Plant Disease Analysis**\n\n';
+            if (sd.plant_name && sd.plant_name !== 'Unknown') {
+              displayText += `**Plant:** ${sd.plant_name}\n`;
+            }
+            if (sd.disease_status && sd.disease_status !== 'Unknown') {
+              displayText += `**Status:** ${sd.disease_status}\n`;
+            }
+            if (sd.disease_name && sd.disease_name !== 'Unknown') {
+              displayText += `**Disease:** ${sd.disease_name}\n`;
+            }
+            if (sd.confidence && sd.confidence !== 'Unknown') {
+              displayText += `**Confidence:** ${sd.confidence}\n`;
+            }
+            displayText += '\n---\n\n';
+          }
+          displayText += data.analysis;
+          
+          typeText(contentEl, displayText, 14);
+        } else {
+          const text = String(data.response || data.analysis || 'No analysis available').trim();
+          const botEl = document.createElement('div');
+          botEl.className = 'bot-msg';
+          const contentEl = document.createElement('div');
+          contentEl.className = 'bot-typing';
+          botEl.appendChild(contentEl);
+          chatbotMessages.appendChild(botEl);
           typeText(contentEl, text, 14);
         }
         chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
@@ -1735,7 +1766,7 @@
       .catch(err => {
         const loadingElem = document.getElementById(loadingId);
         if (loadingElem) loadingElem.remove();
-        chatbotMessages.innerHTML += `<div class="bot-msg">❌ Error: Unable to analyze image.</div>`;
+        chatbotMessages.innerHTML += `<div class="bot-msg">❌ Error: Unable to analyze image. ${err.message || ''}</div>`;
         chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
         selectedImage = null;
       });

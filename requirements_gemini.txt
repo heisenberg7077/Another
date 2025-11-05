@@ -1,0 +1,11 @@
+# Additional requirements for Gemini API integration
+# Add these to your existing requirements.txt
+
+# Google Generative AI (Gemini)
+google-generativeai>=0.3.0
+
+# Image processing
+Pillow>=10.0.0
+
+# Environment variables (if not already installed)
+python-dotenv>=1.0.0

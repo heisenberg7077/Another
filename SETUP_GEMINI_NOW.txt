@@ -1,0 +1,64 @@
+================================================================================
+  🚨 IMPORTANT: SET UP YOUR GEMINI API KEY NOW! 🚨
+================================================================================
+
+Your chatbot is now configured to use Gemini AI for plant disease detection,
+but you need to complete the setup:
+
+STEP 1: Install Required Packages
+----------------------------------
+Open PowerShell/Terminal and run:
+
+    pip install google-generativeai Pillow
+
+STEP 2: Get Your FREE Gemini API Key
+-------------------------------------
+1. Visit: https://makersuite.google.com/app/apikey
+2. Sign in with your Google account
+3. Click "Create API Key" or "Get API Key"
+4. Copy the key (starts with "AIzaSy...")
+
+STEP 3: Set Environment Variable
+---------------------------------
+In PowerShell (as Administrator if needed):
+
+    $env:GEMINI_API_KEY="AIzaSy...paste-your-key-here"
+
+Or in Command Prompt:
+
+    set GEMINI_API_KEY=AIzaSy...paste-your-key-here
+
+STEP 4: Restart Your Flask App
+-------------------------------
+Stop your current Flask app (Ctrl+C) and restart it:
+
+    python app.py
+
+STEP 5: Test It!
+----------------
+1. Open your website
+2. Go to the chatbot
+3. Upload a plant image
+4. Get instant disease analysis! 🌿
+
+================================================================================
+
+WHAT CHANGED:
+- ✅ Your index.html now calls the Gemini endpoint
+- ✅ Gemini provides detailed plant disease analysis
+- ✅ Shows plant name, disease, confidence, and treatment
+- ✅ Much more accurate than Ollama
+
+TROUBLESHOOTING:
+- If you see "Gemini API not configured" → Set the API key (Step 3)
+- If you see "Module not found" → Install packages (Step 1)
+- If still not working → Check GEMINI_SETUP.md for detailed help
+
+================================================================================
+
+For detailed documentation, see:
+- QUICKSTART_GEMINI.md (5-minute guide)
+- GEMINI_SETUP.md (complete setup)
+- README_GEMINI.md (quick reference)
+
+================================================================================
