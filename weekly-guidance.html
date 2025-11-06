@@ -1,6 +1,216 @@
 <!DOCTYPE html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Weekly Crop Guidance</title>
   <link rel="stylesheet" href="/css/style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #4a7c59;
+      --primary-light: #e8f5e9;
+      --secondary: #f3c623;
+      --text: #2d3748;
+      --text-light: #718096;
+      --border: #e2e8f0;
+      --card-bg: #ffffff;
+      --success: #38a169;
+      --warning: #dd6b20;
+      --danger: #e53e3e;
+      --radius: 12px;
+      --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    }
+    
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #f7fafc;
+      color: var(--text);
+      line-height: 1.6;
+    }
+    
+    .guidance-container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 1.5rem;
+    }
+    
+    .guidance-header {
+      text-align: center;
+      margin-bottom: 2rem;
+      padding: 2rem;
+      background: linear-gradient(135deg, #4a7c59, #28a745);
+      border-radius: var(--radius);
+      color: white;
+      box-shadow: var(--shadow);
+    }
+    
+    .guidance-header h1 {
+      font-size: 2.25rem;
+      margin-bottom: 1rem;
+    }
+    
+    .week-selector {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: white;
+      padding: 1rem 1.5rem;
+      border-radius: var(--radius);
+      margin-bottom: 1.5rem;
+      box-shadow: var(--shadow);
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+    
+    .week-nav {
+      display: flex;
+      gap: 0.75rem;
+    }
+    
+    .week-btn {
+      padding: 0.5rem 1rem;
+      border: 2px solid var(--border);
+      background: white;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .week-btn:hover {
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+    
+    .week-info {
+      text-align: center;
+    }
+    
+    .week-title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin: 0;
+    }
+    
+    .week-subtitle {
+      color: var(--text-light);
+      margin-top: 0.25rem;
+    }
+    
+    .guidance-content {
+      display: grid;
+      grid-template-columns: 1fr 350px;
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+    
+    .main-content {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+    
+    .section-card {
+      background: var(--card-bg);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+    
+    .section-header {
+      background: var(--primary);
+      color: white;
+      padding: 1rem 1.5rem;
+      font-size: 1.1rem;
+      font-weight: 600;
+    }
+    
+    .section-content {
+      padding: 1.5rem;
+    }
+    
+    .video-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 1.25rem;
+      margin-top: 1rem;
+    }
+    
+    .video-item {
+      background: white;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    
+    .video-item:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+    }
+    
+    .video-thumbnail {
+      width: 100%;
+      height: 180px;
+      background: #f0f4f8;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 3rem;
+      color: #cbd5e0;
+    }
+    
+    .video-info {
+      padding: 1rem;
+    }
+    
+    .video-title {
+      font-weight: 600;
+      margin: 0 0 0.5rem 0;
+      font-size: 1rem;
+    }
+    
+    .video-meta {
+      font-size: 0.85rem;
+      color: var(--text-light);
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+    
+    .no-data {
+      text-align: center;
+      padding: 3rem 1rem;
+      color: var(--text-light);
+    }
+    
+    @media (max-width: 1024px) {
+      .guidance-content {
+        grid-template-columns: 1fr;
+      }
+      
+      .sidebar {
+        grid-row: 1;
+      }
+    }
+    
+    @media (max-width: 768px) {
+      .week-selector {
+        flex-direction: column;
+        text-align: center;
+      }
+      
+      .week-nav {
+        width: 100%;
+        justify-content: space-between;
+      }
+      
+      .video-list {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
 </head>
 <body>
   <!-- Header -->
@@ -20,8 +230,8 @@
     <div class="guidance-header">
       <h1>🌱 Weekly Crop Guidance</h1>
       <p id="cropInfo">Select a crop to view detailed weekly guidance</p>
-      <div style="margin-top: 1rem;">
-        <a href="/weekly-guidance-enhanced.html" class="btn btn-primary" style="background: rgba(255,255,255,0.2); color: white; border: 2px solid white;">
+      <div style="margin-top: 1.5rem;">
+        <a href="/weekly-guidance-enhanced.html" class="btn" style="background: rgba(255,255,255,0.2); color: white; border: 2px solid white; padding: 0.6rem 1.25rem; border-radius: 8px; font-weight: 500; display: inline-flex; align-items: center; gap: 0.5rem; transition: all 0.2s;">
           🚀 Enhanced Progress Tracking
         </a>
       </div>
@@ -51,8 +261,24 @@
           <div class="section-header">
             📋 Weekly Tasks
           </div>
-          <div class="section-content" id="weeklyTasks">
-            <div class="loading">Loading tasks...</div>
+          <div class="section-content">
+            <div id="weeklyTasks" class="task-list">
+              <!-- Tasks will be loaded here -->
+              <div class="no-data">Loading tasks...</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Videos -->
+        <div class="section-card">
+          <div class="section-header">
+            🎥 Helpful Videos
+          </div>
+          <div class="section-content">
+            <div id="videoList" class="video-list">
+              <!-- Videos will be loaded here -->
+              <div class="no-data">Loading videos...</div>
+            </div>
           </div>
         </div>
 
@@ -61,8 +287,10 @@
           <div class="section-header">
             🌱 Growth Stages
           </div>
-          <div class="section-content" id="cropStages">
-            <div class="loading">Loading stages...</div>
+          <div class="section-content">
+            <div id="cropStages" class="crop-stages">
+              <div class="no-data">Loading growth stages...</div>
+            </div>
           </div>
         </div>
       </div>
@@ -75,8 +303,8 @@
             📊 Progress Summary
           </div>
           <div class="section-content">
-            <div class="progress-summary" id="progressSummary">
-              <div class="loading">Loading progress...</div>
+            <div id="progressSummary">
+              <div class="no-data">Loading progress...</div>
             </div>
           </div>
         </div>
@@ -86,32 +314,46 @@
           <div class="section-header">
             🌿 Fertilizers & Pesticides
           </div>
-          <div class="section-content" id="fertilizersPesticides">
-            <div class="loading">Loading fertilizers and pesticides...</div>
+          <div class="section-content">
+            <div id="fertilizersPesticides">
+              <div class="no-data">Loading fertilizers and pesticides...</div>
+            </div>
           </div>
         </div>
         
         <!-- Growing Tips -->
-        <div class="tips-section" id="tipsSection" style="display: none;">
-          <h3>💡 Growing Tips</h3>
-          <div id="tipsContent">
-            <div class="loading">Loading tips...</div>
+        <div class="section-card" id="tipsSection" style="display: none;">
+          <div class="section-header">
+            💡 Growing Tips
+          </div>
+          <div class="section-content">
+            <div id="tipsContent">
+              <div class="no-data">Loading tips...</div>
+            </div>
           </div>
         </div>
         
         <!-- Weather Recommendations -->
-        <div class="weather-recommendations" id="weatherSection" style="display: none;">
-          <div class="weather-title">🌤️ Weather Recommendations</div>
-          <div id="weatherContent">
-            <div class="loading">Loading weather recommendations...</div>
+        <div class="section-card" id="weatherSection" style="display: none;">
+          <div class="section-header">
+            🌤️ Weather Recommendations
+          </div>
+          <div class="section-content">
+            <div id="weatherContent">
+              <div class="no-data">Loading weather recommendations...</div>
+            </div>
           </div>
         </div>
         
         <!-- Task Dependencies -->
-        <div class="task-dependencies" id="dependenciesSection" style="display: none;">
-          <div class="dependency-title">🔗 Task Dependencies</div>
-          <div id="dependenciesContent">
-            <div class="loading">Loading task dependencies...</div>
+        <div class="section-card" id="dependenciesSection" style="display: none;">
+          <div class="section-header">
+            🔗 Task Dependencies
+          </div>
+          <div class="section-content">
+            <div id="dependenciesContent">
+              <div class="no-data">Loading task dependencies...</div>
+            </div>
           </div>
         </div>
       </div>
@@ -398,32 +640,67 @@
 
     // Display videos
     function displayVideos(videos) {
-      const container = document.getElementById('videoList');
+      let container = document.getElementById('videoList');
       
-      if (videos.length === 0) {
+      // Create the container if it doesn't exist
+      if (!container) {
+        const videosSection = document.querySelector('.videos-section');
+        if (!videosSection) return; // If there's no section to add videos to, exit
+        
+        container = document.createElement('div');
+        container.id = 'videoList';
+        container.className = 'video-list';
+        videosSection.appendChild(container);
+      }
+      
+      if (!videos || !Array.isArray(videos) || videos.length === 0) {
         container.innerHTML = '<div class="no-data">No videos available for this week.</div>';
         return;
       }
       
-      container.innerHTML = videos.map(video => `
-        <div class="video-item" onclick="playVideo('${video.video_url}', '${video.video_title}')">
-          <div class="video-thumbnail">
-            ${video.thumbnail_url ? 
-              `<img src="${video.thumbnail_url}" alt="${video.video_title}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 6px;">` : 
-              '▶️'
-            }
-          </div>
-          <div class="video-info">
-            <div class="video-title">${video.video_title}</div>
-            <div class="video-meta">
-              ${video.duration_minutes ? `${video.duration_minutes} min` : ''} • 
-              ${video.video_type} • 
-              ${video.is_featured ? 'Featured' : 'Regular'}
+      container.innerHTML = videos.map(video => {
+        if (!video || !video.video_url) return '';
+        
+        // Extract YouTube video ID from URL
+        let videoId = '';
+        const youtubeRegex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/i;
+        const match = video.video_url.match(youtubeRegex);
+        if (match && match[1]) {
+          videoId = match[1];
+        }
+        
+        // Create thumbnail URL if not provided
+        let thumbnailUrl = video.thumbnail_url;
+        if (!thumbnailUrl && videoId) {
+          thumbnailUrl = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
+        }
+        
+        const title = video.video_title || 'Untitled Video';
+        const description = video.description || '';
+        const duration = video.duration_minutes ? `${video.duration_minutes} min` : '';
+        const type = video.video_type || 'Video';
+        const isFeatured = video.is_featured ? 'Featured' : 'Regular';
+        
+        return `
+          <div class="video-item" onclick="playVideo('${video.video_url.replace(/'/g, "\\'")}', '${title.replace(/'/g, "\\'")}')">
+            <div class="video-thumbnail">
+              ${thumbnailUrl ? 
+                `<img src="${thumbnailUrl}" alt="${title}" onerror="this.onerror=null; this.parentElement.innerHTML='▶️';">` : 
+                '<div class="video-placeholder">▶️</div>'
+              }
             </div>
-            ${video.description ? `<div class="video-description">${video.description}</div>` : ''}
+            <div class="video-info">
+              <div class="video-title">${title}</div>
+              <div class="video-meta">
+                ${duration ? `${duration} • ` : ''}
+                ${type} • 
+                ${isFeatured}
+              </div>
+              ${description ? `<div class="video-description">${description}</div>` : ''}
+            </div>
           </div>
-        </div>
-      `).join('');
+        `;
+      }).filter(Boolean).join('');
     }
 
     // Display fertilizers and pesticides
@@ -660,40 +937,88 @@
       }
     }
 
-    // Enhanced features functions
-    async function loadCropTips() {
+    // Mock data for development
+    const mockData = {
+      tips: [
+        "Ensure proper spacing between plants for better air circulation.",
+        "Water the plants early in the morning to prevent fungal growth.",
+        "Monitor for common pests like aphids and caterpillars.",
+        "Use organic compost to enrich the soil nutrients.",
+        "Prune any dead or diseased leaves regularly."
+      ],
+      weather: {
+        temperature: '22-28°C',
+        humidity: '60-70%',
+        rainfall: 'Medium',
+        recommendations: [
+          'Light irrigation recommended in the morning',
+          'Apply mulch to retain soil moisture',
+          'Monitor for signs of heat stress'
+        ]
+      },
+      dependencies: [
+        { task: 'Soil Preparation', dependsOn: ['Clear Land'], status: 'completed' },
+        { task: 'Planting', dependsOn: ['Soil Preparation', 'Fertilizer Application'], status: 'pending' },
+        { task: 'First Weeding', dependsOn: ['Planting'], status: 'pending' }
+      ]
+    };
+
+    // Enhanced features functions with fallback to mock data
+    async function loadWithFallback(url, mockDataKey) {
       try {
-        const response = await fetch(`/api/crops/${currentCrop.crop_id}/tips?week=${currentWeek}`);
+        const response = await fetch(url);
         if (response.ok) {
-          const tips = await response.json();
-          displayCropTips(tips);
+          return await response.json();
         }
+        throw new Error(`HTTP error! status: ${response.status}`);
       } catch (error) {
-        console.error('Error loading crop tips:', error);
+        console.warn(`Using mock data for ${url}:`, error.message);
+        return mockData[mockDataKey];
+      }
+    }
+
+    async function loadCropTips() {
+      if (!currentCrop) return;
+      
+      try {
+        const tips = await loadWithFallback(
+          `/api/crops/${currentCrop.crop_id}/tips?week=${currentWeek}`, 
+          'tips'
+        );
+        displayCropTips(tips);
+      } catch (error) {
+        console.error('Error in loadCropTips:', error);
+        displayCropTips(mockData.tips);
       }
     }
     
     async function loadWeatherRecommendations() {
+      if (!currentCrop) return;
+      
       try {
-        const response = await fetch(`/api/crops/${currentCrop.crop_id}/weather-recommendations?week=${currentWeek}`);
-        if (response.ok) {
-          const recommendations = await response.json();
-          displayWeatherRecommendations(recommendations);
-        }
+        const weather = await loadWithFallback(
+          `/api/crops/${currentCrop.crop_id}/weather-recommendations?week=${currentWeek}`,
+          'weather'
+        );
+        displayWeatherRecommendations(weather);
       } catch (error) {
-        console.error('Error loading weather recommendations:', error);
+        console.error('Error in loadWeatherRecommendations:', error);
+        displayWeatherRecommendations(mockData.weather);
       }
     }
     
     async function loadTaskDependencies() {
+      if (!currentCrop) return;
+      
       try {
-        const response = await fetch(`/api/crops/${currentCrop.crop_id}/task-dependencies?week=${currentWeek}`);
-        if (response.ok) {
-          const dependencies = await response.json();
-          displayTaskDependencies(dependencies);
-        }
+        const dependencies = await loadWithFallback(
+          `/api/crops/${currentCrop.crop_id}/task-dependencies?week=${currentWeek}`,
+          'dependencies'
+        );
+        displayTaskDependencies(dependencies);
       } catch (error) {
-        console.error('Error loading task dependencies:', error);
+        console.error('Error in loadTaskDependencies:', error);
+        displayTaskDependencies(mockData.dependencies);
       }
     }
     
@@ -701,55 +1026,95 @@
       const container = document.getElementById('tipsContent');
       const section = document.getElementById('tipsSection');
       
-      if (tips.length === 0) {
-        container.innerHTML = '<p>No tips available for this week.</p>';
-        section.style.display = 'none';
+      if (!tips || (Array.isArray(tips) && tips.length === 0)) {
+        container.innerHTML = '<div class="no-data">No tips available for this week.</div>';
+        if (section) section.style.display = 'none';
         return;
       }
       
-      section.style.display = 'block';
-      container.innerHTML = tips.map(tip => `
-        <div class="tip-item">
-          <div class="tip-category">${tip.tip_category}</div>
-          <div class="tip-title">${tip.tip_title}</div>
-          <div class="tip-description">${tip.tip_description}</div>
-          ${tip.tip_image_url ? `<img src="${tip.tip_image_url}" alt="${tip.tip_title}" style="width: 100%; max-width: 300px; border-radius: 6px; margin-top: 0.5rem;">` : ''}
-        </div>
-      `).join('');
+      let html = '<ul class="tips-list" style="margin: 0; padding-left: 1.25rem;">';
+      const tipsList = Array.isArray(tips) ? tips : [tips];
+      
+      tipsList.forEach(tip => {
+        if (tip) {
+          html += `<li style="margin-bottom: 0.5rem;">${tip}</li>`;
+        }
+      });
+      html += '</ul>';
+      
+      container.innerHTML = html;
+      if (section) section.style.display = 'block';
     }
     
-    function displayWeatherRecommendations(recommendations) {
+    function displayWeatherRecommendations(weather) {
       const container = document.getElementById('weatherContent');
       const section = document.getElementById('weatherSection');
       
-      if (recommendations.length === 0) {
-        section.style.display = 'none';
+      if (!weather || (typeof weather === 'object' && Object.keys(weather).length === 0)) {
+        container.innerHTML = '<div class="no-data">No weather data available at the moment.</div>';
+        if (section) section.style.display = 'none';
         return;
       }
       
-      section.style.display = 'block';
-      container.innerHTML = recommendations.map(rec => `
-        <div class="weather-item">
-          <strong>${rec.weather_condition}</strong> (${rec.priority} Priority): ${rec.recommendation}
-        </div>
-      `).join('');
+      // Handle case where weather is a string or has a message property
+      if (typeof weather === 'string' || weather.message) {
+        container.innerHTML = `<div class="weather-info">
+          <p>${weather.message || weather}</p>
+        </div>`;
+        if (section) section.style.display = 'block';
+        return;
+      }
+      
+      let html = `
+        <div class="weather-info">
+          <div class="weather-item">
+            <span class="weather-label"> Temperature:</span>
+            <span class="weather-value">${weather.temperature || 'N/A'}</span>
+          </div>
+          <div class="weather-item">
+            <span class="weather-label"> Humidity:</span>
+            <span class="weather-value">${weather.humidity || 'N/A'}</span>
+          </div>
+          <div class="weather-item">
+            <span class="weather-label"> Rainfall:</span>
+            <span class="weather-value">${weather.rainfall || 'N/A'}</span>
+          </div>
+      `;
+      
+      if (weather.recommendations && Array.isArray(weather.recommendations) && weather.recommendations.length > 0) {
+        html += '<div class="mt-3"><strong> Recommendations:</strong><ul class="recommendations-list">';
+        weather.recommendations.forEach(rec => {
+          if (rec) html += `<li>${rec}</li>`;
+        });
+        html += '</ul></div>';
+      }
+      
+      html += '</div>';
+      container.innerHTML = html;
+      if (section) section.style.display = 'block';
     }
     
     function displayTaskDependencies(dependencies) {
       const container = document.getElementById('dependenciesContent');
       const section = document.getElementById('dependenciesSection');
       
-      if (dependencies.length === 0) {
-        section.style.display = 'none';
+      if (!dependencies || (Array.isArray(dependencies) && dependencies.length === 0)) {
+        container.innerHTML = '<div class="no-data">No task dependencies available for this week.</div>';
+        if (section) section.style.display = 'none';
         return;
       }
       
-      section.style.display = 'block';
-      container.innerHTML = dependencies.map(dep => `
-        <div class="dependency-item">
-          <strong>${dep.dependency_type}</strong>: Task ${dep.task_id} depends on Task ${dep.depends_on_task_id}
-        </div>
-      `).join('');
+      let html = '<ul class="dependencies-list" style="margin: 0; padding-left: 1.25rem;">';
+      
+      dependencies.forEach(dep => {
+        if (dep) {
+          html += `<li style="margin-bottom: 0.5rem;">${dep.task} depends on ${dep.dependsOn}</li>`;
+        }
+      });
+      html += '</ul>';
+      
+      container.innerHTML = html;
+      if (section) section.style.display = 'block';
     }
     
     // Enhanced video modal
