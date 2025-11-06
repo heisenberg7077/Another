@@ -53,15 +53,7 @@
     <div class="content-grid">
       <!-- Main Content -->
       <div class="main-content">
-        <!-- Current Stage -->
-        <div class="section-card" id="stageSection">
-          <div class="section-card-header">
-            <h2 class="section-title">🌱 Current Growth Stage</h2>
-          </div>
-          <div class="section-card-body" id="stageContent">
-            <div class="loading">Loading stage information...</div>
-          </div>
-        </div>
+        <!-- Current Stage removed as requested -->
 
         <!-- Weekly Tasks -->
         <div class="section-card" id="tasksSection">
@@ -84,21 +76,7 @@
       </div>
 
 
-        <!-- Quick Actions -->
-        <div class="quick-actions">
-          <h3 class="section-title" style="margin-bottom: 1rem;">⚡ Quick Actions</h3>
-          <div class="quick-action-btns">
-            <button class="quick-action-btn" onclick="window.location.href='/my-tasks.html'">
-              📋 View My Tasks
-            </button>
-            <button class="quick-action-btn" onclick="window.print()">
-              🖨️ Print This Week
-            </button>
-            <button class="quick-action-btn" onclick="window.location.href='/index.html'">
-              🏠 Back to Home
-            </button>
-          </div>
-        </div>
+        <!-- Quick Actions removed as requested -->
       </div>
     </div>
   </div>
@@ -201,13 +179,15 @@
         updateNavigationButtons();
       } catch (error) {
         console.error('Error loading week data:', error);
-        document.getElementById('stageContent').innerHTML = '<div class="no-data">Error loading data</div>';
+        const stageEl = document.getElementById('stageContent');
+        if (stageEl) stageEl.innerHTML = '<div class="no-data">Error loading data</div>';
       }
     }
 
     // Display stage information
     function displayStageInfo(stages) {
       const container = document.getElementById('stageContent');
+      if (!container) return; // element removed from UI — nothing to render
       
       if (!stages || stages.length === 0) {
         container.innerHTML = '<div class="no-data">No stage information for this week</div>';
