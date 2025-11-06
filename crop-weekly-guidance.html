@@ -40,9 +40,16 @@
     <!-- Week Navigation -->
     <div class="week-navigation">
       <div class="week-selector-controls">
-        <button class="week-btn" id="prevWeek" onclick="changeWeek(-1)">← Previous</button>
-        <div class="current-week-display" id="currentWeekDisplay">Week 1</div>
-        <button class="week-btn" id="nextWeek" onclick="changeWeek(1)">Next →</button>
+        <button class="week-btn" id="prevWeek" onclick="changeWeek(-1)">
+          <span>←</span> Previous Week
+        </button>
+        <div class="current-week-display" id="currentWeekDisplay">
+          <span id="weekNumber">Week 1</span>
+          <div id="weekSubtitle" style="font-size: 0.8rem; font-weight: 500; color: #4a7c59; margin-top: 0.2rem;">Loading...</div>
+        </div>
+        <button class="week-btn" id="nextWeek" onclick="changeWeek(1)">
+          Next Week <span>→</span>
+        </button>
       </div>
       <div class="week-timeline" id="weekTimeline">
         <!-- Dynamic week timeline will be inserted here -->
