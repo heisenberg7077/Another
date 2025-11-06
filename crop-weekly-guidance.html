@@ -65,7 +65,7 @@
         <!-- Weekly Tasks -->
         <div class="section-card" id="tasksSection">
           <div class="section-card-header">
-            <h2 class="section-title">📋 Week's Tasks & Activities</h2>
+            <h2 class="section-title" style="color: white;">📋 Week's Tasks & Activities</h2>
           </div>
           <div class="section-card-body" id="tasksContent">
           </div>
@@ -74,7 +74,7 @@
         <!-- Fertilizers & Pesticides -->
         <div class="section-card" id="inputsSection">
           <div class="section-card-header">
-            <h2 class="section-title">💊 Fertilizers & Pesticides</h2>
+            <h2 class="section-title" style="color: white;">💊 Fertilizers & Pesticides</h2>
           </div>
           <div class="section-card-body" id="inputsContent">
             <div class="loading">Loading inputs...</div>
@@ -103,6 +103,72 @@
   </div>
 
   <script>
+    // Store completed tasks in localStorage
+    const COMPLETED_TASKS_KEY = 'completedTasks';
+    let completedTasks = JSON.parse(localStorage.getItem(COMPLETED_TASKS_KEY) || '{}');
+    
+    // Function to mark a task as complete
+    function markTaskComplete(taskId, button) {
+      // Mark as completed in memory
+      const taskKey = `task-${taskId}`;
+      completedTasks[taskKey] = true;
+      
+      // Save to localStorage
+      localStorage.setItem(COMPLETED_TASKS_KEY, JSON.stringify(completedTasks));
+      
+      // Update button appearance
+      button.classList.add('completed');
+      button.querySelector('.btn-text').textContent = 'Completed';
+      button.disabled = true;
+      
+      // Disable click events on the button
+      button.onclick = null;
+      
+      // Add visual feedback
+      const taskCard = document.getElementById(`task-${taskId}`);
+      if (taskCard) {
+        taskCard.classList.add('task-completed');
+        
+        // Add completed badge
+        const taskHeader = taskCard.querySelector('.task-header');
+        if (taskHeader && !taskCard.querySelector('.completed-badge')) {
+          const badge = document.createElement('div');
+          badge.className = 'completed-badge';
+          badge.innerHTML = '✓ Completed';
+          taskHeader.appendChild(badge);
+        }
+      }
+    }
+    
+    // Check and apply completed state on page load
+    function checkCompletedTasks() {
+      Object.keys(completedTasks).forEach(taskKey => {
+        const taskId = taskKey.replace('task-', '');
+        const button = document.getElementById(`complete-btn-${taskId}`);
+        const taskCard = document.getElementById(taskKey);
+        
+        if (button && completedTasks[taskKey]) {
+          button.classList.add('completed');
+          button.querySelector('.btn-text').textContent = 'Completed';
+          button.disabled = true;
+          button.onclick = null;
+        }
+        
+        if (taskCard && completedTasks[taskKey]) {
+          taskCard.classList.add('task-completed');
+          
+          // Add completed badge if not exists
+          const taskHeader = taskCard.querySelector('.task-header');
+          if (taskHeader && !taskCard.querySelector('.completed-badge')) {
+            const badge = document.createElement('div');
+            badge.className = 'completed-badge';
+            badge.innerHTML = '✓ Completed';
+            taskHeader.appendChild(badge);
+          }
+        }
+      });
+    }
+    
     let currentCropId = null;
     let currentWeek = 1;
     let totalWeeks = 12;
@@ -281,6 +347,10 @@
                 🎥 Watch Video
               </button>
             ` : ''}
+            <button class="complete-btn" id="complete-btn-${task.id}" onclick="markTaskComplete(${task.id}, this)">
+              <span class="btn-text">Mark as Complete</span>
+              <span class="check-icon">✓</span>
+            </button>
           </div>
           
           <div class="expandable-content" id="details-${task.id}">
@@ -316,6 +386,9 @@
           </div>
         </div>
       `).join('') + '</div>';
+      
+      // Check and apply completed state for tasks
+      checkCompletedTasks();
     }
 
     // Display fertilizers and pesticides

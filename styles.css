@@ -1968,7 +1968,7 @@ html,body{
 
 .section-card{ background: var(--cg-card-bg); border-radius:12px; padding:0.9rem; border:1px solid #eef9f6; }
 .section-card-header{ border-bottom:1px dashed #eef6f5; padding-bottom:0.5rem; margin-bottom:0.5rem; }
-.section-title{ margin:0; color:var(--cg-accent-dark); font-size:1.05rem; }
+.section-title{ margin:0; color:var(--admin-header-start); font-size:1.05rem; }
 .section-card-body{ min-height:80px; padding:0.5rem; }
 
 .loading, .no-data{ color:var(--cg-muted); padding:1rem; }
